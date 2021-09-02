@@ -4,7 +4,6 @@ import (
 	"context"
 	"io/ioutil"
 	"net/http"
-	"net/http/cookiejar"
 	"strings"
 	"time"
 
@@ -18,7 +17,7 @@ type Downloader struct {
 	app zapp_core.IApp
 }
 
-func (d *Downloader) Download(crawler core.ICrawler, seed *core.Seed) (*core.Seed, error) {
+func (d *Downloader) Download(crawler core.ICrawler, seed *core.Seed, cookieJar http.CookieJar) (*core.Seed, error) {
 	if seed.Request.Url == "" {
 		return seed, nil
 	}
@@ -34,12 +33,12 @@ func (d *Downloader) Download(crawler core.ICrawler, seed *core.Seed) (*core.See
 	}
 
 	// cookies
-	jar, _ := cookiejar.New(nil)
-	jar.SetCookies(req.URL, req.Cookies())        // 获取req的cookies, 因为headers中可能会有cookie
-	jar.SetCookies(req.URL, seed.Request.Cookies) // 写入seed的cookies
-	cookies := jar.Cookies(req.URL)               // 获取最终cookies
-	req.Header.Del("Cookie")                      // 删除req的cookies
-	for _, c := range cookies {                   // 重新设置cookies
+	cookieJar.SetCookies(req.URL, seed.Request.ParentCookies) // 写入父的cookies
+	cookieJar.SetCookies(req.URL, req.Cookies())              // 获取req的cookies, 因为headers中可能会有cookie
+	cookieJar.SetCookies(req.URL, seed.Request.Cookies)       // 写入seed的cookies
+	cookies := cookieJar.Cookies(req.URL)                     // 获取最终cookies
+	req.Header.Del("Cookie")                                  // 删除req的cookies
+	for _, c := range cookies {                               // 重新设置cookies
 		req.AddCookie(c)
 	}
 
@@ -57,8 +56,8 @@ func (d *Downloader) Download(crawler core.ICrawler, seed *core.Seed) (*core.See
 	seed.HttpResponseBody, _ = ioutil.ReadAll(resp.Body)
 
 	// 检查cookie
-	jar.SetCookies(resp.Request.URL, resp.Cookies()) // 根据响应添加或删除cookies
-	cookies = jar.Cookies(resp.Request.URL)          // 获取最终cookies
+	cookieJar.SetCookies(resp.Request.URL, resp.Cookies()) // 根据响应添加或删除cookies
+	cookies = cookieJar.Cookies(resp.Request.URL)          // 获取最终cookies
 	seed.HttpCookies = cookies
 
 	return seed, nil

@@ -25,7 +25,7 @@ type Crawler struct {
 	downloader core.IDownloader
 	middleware core.IMiddleware
 
-	seedCookies []*http.Cookie // 当前处理种子的最终cookies, 当前种子提交新种子时需要继承这些cookies
+	cookieJar http.CookieJar // 当前使用的cookieJar
 }
 
 func (c *Crawler) Inject(a ...interface{}) {

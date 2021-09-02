@@ -8,6 +8,7 @@ import (
 	"github.com/zly-app/zapp/pkg/utils"
 	"go.uber.org/zap"
 
+	"github.com/zly-app/crawler/cookiejar"
 	"github.com/zly-app/crawler/core"
 	"github.com/zly-app/crawler/seeds"
 )
@@ -89,6 +90,7 @@ func (c *Crawler) seedProcess(raw string) error {
 	}
 
 	var seedResult *core.Seed
+	var cookieJar http.CookieJar
 	// 循环尝试下载
 	var attempt int
 	for {
@@ -96,7 +98,7 @@ func (c *Crawler) seedProcess(raw string) error {
 
 		// 每次重新生成seed, 因为每次处理可能会修改seed
 		seedCopy := *seed
-		seedResult, err = c.download(raw, &seedCopy)
+		seedResult, cookieJar, err = c.download(raw, &seedCopy)
 		if err == nil {
 			break
 		}
@@ -112,10 +114,10 @@ func (c *Crawler) seedProcess(raw string) error {
 		time.Sleep(time.Duration(c.conf.Frame.RequestRetryWaitTime) * time.Millisecond)
 	}
 
-	// 保存cookies
-	c.seedCookies = append([]*http.Cookie{}, seedResult.HttpCookies...)
-	defer func() { // 处理完后清理cookies
-		c.seedCookies = nil
+	// 保存cookieJar
+	c.cookieJar = cookieJar
+	defer func() {
+		c.cookieJar = nil
 	}()
 
 	// 解析
@@ -123,26 +125,28 @@ func (c *Crawler) seedProcess(raw string) error {
 }
 
 // 下载完善种子
-func (c *Crawler) download(raw string, seed *core.Seed) (*core.Seed, error) {
+func (c *Crawler) download(raw string, seed *core.Seed) (*core.Seed, http.CookieJar, error) {
+	cookieJar, _ := cookiejar.New(nil)
+
 	// 下载
-	seed, err := c.downloader.Download(c, seed)
+	seed, err := c.downloader.Download(c, seed, cookieJar)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	// 响应处理
 	seed.Raw = raw
 	seed, err = c.middleware.ResponseProcess(c, seed)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	// 检查是符合期望的响应
 	seed.Raw = raw
 	seed, err = c.CheckIsExpectResponse(seed)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return seed, nil
+	return seed, cookieJar, nil
 }

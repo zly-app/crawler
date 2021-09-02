@@ -2,6 +2,8 @@ package crawler
 
 import (
 	"fmt"
+	"net/http"
+	"strings"
 
 	"go.uber.org/zap"
 
@@ -17,8 +19,12 @@ import (
 func (c *Crawler) NewSeed(url string, parserMethod interface{}) *core.Seed {
 	seed := seeds.NewSeed()
 	seed.Request.Url = url
-	if seed.Request.AutoCookie {
-		seed.Request.Cookies = append(seed.Request.Cookies, c.seedCookies...)
+	if seed.Request.AutoCookie && c.cookieJar != nil && url != "" {
+		req, err := http.NewRequest(strings.ToUpper(seed.Request.Method), url, nil)
+		if err == nil {
+			cookies := c.cookieJar.Cookies(req.URL) // 获取这个种子要用到的cookies
+			seed.Request.ParentCookies = cookies
+		}
 	}
 	seed.SetParserMethod(parserMethod)
 	return seed

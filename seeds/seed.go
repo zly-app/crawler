@@ -100,6 +100,9 @@ func EncodeSeed(seed *core.Seed) (string, error) {
 	if seed.Request.AutoCookie != config.DefaultSpiderAutoCookie {
 		req["AutoCookie"] = seed.Request.AutoCookie
 	}
+	if len(seed.Request.ParentCookies) > 0 {
+		req["ParentCookies"] = seed.Request.ParentCookies
+	}
 	if len(seed.Request.Cookies) > 0 {
 		req["Cookies"] = seed.Request.Cookies
 	}

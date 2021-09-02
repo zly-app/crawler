@@ -46,6 +46,11 @@ type Seed struct {
 
 		// 是否自动管理cookie
 		AutoCookie bool
+		// 父cookies, 保留提交这个种子的种子的最终cookies
+		//
+		// 由于headers中无法保留cookie的过期时间等相关信息, 只能额外提供字段来保存cookie的完整信息
+		// spider开发者不应该主动修改这个值
+		ParentCookies []*http.Cookie
 		// cookies, 这里的cookie会覆盖headers的cookie
 		Cookies []*http.Cookie
 		// 是否自动跳转
