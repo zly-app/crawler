@@ -71,6 +71,8 @@ Name = 'a_spider'
 SubmitInitialSeedOpportunity = 'start'
 # 使用调度器管理提交初始化种子的时机, 多进程时必须启用
 UseScheduler = false
+# 是否自动管理cookie
+AutoCookie = false
 
 # 框架配置
 [services.crawler.frame]

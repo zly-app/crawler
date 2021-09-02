@@ -16,8 +16,8 @@ const (
 	DefaultSpiderRequestMethod = "get"
 	// 默认user-agent类型
 	DefaultSpiderUserAgentType = "pc"
-	// 默认启用cookie
-	DefaultSpiderUseCookie = false
+	// 默认自动管理cookie
+	DefaultSpiderAutoCookie = false
 	// 默认自动跳转
 	DefaultSpiderAutoRedirects = true
 	// 默认html编码
@@ -43,7 +43,7 @@ type SpiderConfig struct {
 
 	RequestMethod          string // 默认请求方法
 	UserAgentType          string // user-agent 类型; pc,android,ios
-	UseCookie              bool   // 是否启用cookie
+	AutoCookie             bool   // 是否自动管理cookie, 当前任务提交的种子会继承之前的cookies
 	AutoRedirects          bool   // 是否自动跳转
 	HtmlEncoding           string // 默认html编码
 	ExpectHttpStatusCode   []int  // 期望的http状态码列表
@@ -58,7 +58,7 @@ func newSpiderConfig(app zapp_core.IApp) SpiderConfig {
 		SubmitInitialSeedOpportunity: defaultSpiderSubmitInitialSeedOpportunity,
 		UseScheduler:                 defaultSpiderUseScheduler,
 
-		UseCookie:              DefaultSpiderUseCookie,
+		AutoCookie:             DefaultSpiderAutoCookie,
 		AutoRedirects:          DefaultSpiderAutoRedirects,
 		HttpStatus4xxIsInvalid: defaultSpiderHttpStatus4xxIsInvalid,
 		HttpStatus5xxIsInvalid: defaultSpiderHttpStatus5xxIsInvalid,

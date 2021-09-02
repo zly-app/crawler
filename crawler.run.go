@@ -2,6 +2,7 @@ package crawler
 
 import (
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/zly-app/zapp/pkg/utils"
@@ -46,6 +47,14 @@ func (c *Crawler) runOnce() error {
 		return nil
 	}
 
+	// 提交初始化种子信号
+	if raw == SubmitInitialSeedSignal {
+		if err = c.SubmitInitialSeed(); err != nil {
+			return fmt.Errorf("提交初始化种子失败: %v", err)
+		}
+		return nil
+	}
+
 	// 开始处理
 	err = utils.Recover.WrapCall(func() error {
 		return c.seedProcess(raw)
@@ -83,6 +92,8 @@ func (c *Crawler) seedProcess(raw string) error {
 	// 循环尝试下载
 	var attempt int
 	for {
+		attempt++
+
 		// 每次重新生成seed, 因为每次处理可能会修改seed
 		seedCopy := *seed
 		seedResult, err = c.download(raw, &seedCopy)
@@ -93,13 +104,19 @@ func (c *Crawler) seedProcess(raw string) error {
 		if err == core.InterceptError || err == core.ParserError {
 			return err
 		}
-		c.app.Error("尝试下载失败", zap.Int("attempt", attempt), zap.Error(err))
-		attempt++
-		if attempt > c.conf.Frame.RequestMaxAttemptCount {
-			return fmt.Errorf("超过最大尝试次数")
+		if attempt >= c.conf.Frame.RequestMaxAttemptCount {
+			return fmt.Errorf("尝试下载失败, 超过最大尝试次数: %v", err)
 		}
+		c.app.Error("尝试下载失败, 等待重试", zap.Int64("waitTime", c.conf.Frame.EmptyQueueWaitTime),
+			zap.String("attempt", fmt.Sprintf("%d/%d", attempt, c.conf.Frame.RequestMaxAttemptCount)), zap.Error(err))
 		time.Sleep(time.Duration(c.conf.Frame.RequestRetryWaitTime) * time.Millisecond)
 	}
+
+	// 保存cookies
+	c.seedCookies = append([]*http.Cookie{}, seedResult.HttpCookies...)
+	defer func() { // 处理完后清理cookies
+		c.seedCookies = nil
+	}()
 
 	// 解析
 	return c.Parser(seedResult)

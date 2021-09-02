@@ -2,6 +2,7 @@ package crawler
 
 import (
 	"fmt"
+	"net/http"
 
 	zapp_core "github.com/zly-app/zapp/core"
 	"github.com/zly-app/zapp/logger"
@@ -23,6 +24,8 @@ type Crawler struct {
 	queue      core.IQueue
 	downloader core.IDownloader
 	middleware core.IMiddleware
+
+	seedCookies []*http.Cookie // 当前处理种子的最终cookies, 当前种子提交新种子时需要继承这些cookies
 }
 
 func (c *Crawler) Inject(a ...interface{}) {

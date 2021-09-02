@@ -23,7 +23,7 @@ func NewSeed() *core.Seed {
 	seed.Request.Form = make(url.Values)
 	seed.Request.PostForm = make(url.Values)
 	seed.Request.Trailer = make(http.Header)
-	seed.Request.UseCookie = conf.UseCookie
+	seed.Request.AutoCookie = conf.AutoCookie
 	seed.Request.AutoRedirects = conf.AutoRedirects
 	seed.Request.Encoding = conf.HtmlEncoding
 	seed.Request.Timeout = config.Conf.Frame.RequestTimeout
@@ -43,7 +43,7 @@ func MakeSeedOfRaw(raw string) (*core.Seed, error) {
 	seed.Request.Form = make(url.Values)
 	seed.Request.PostForm = make(url.Values)
 	seed.Request.Trailer = make(http.Header)
-	seed.Request.UseCookie = config.DefaultSpiderUseCookie
+	seed.Request.AutoCookie = config.DefaultSpiderAutoCookie
 	seed.Request.AutoRedirects = config.DefaultSpiderAutoRedirects
 	seed.Request.Encoding = config.DefaultSpiderHtmlEncoding
 	seed.Request.Timeout = config.DefaultFrameRequestTimeout
@@ -97,8 +97,11 @@ func EncodeSeed(seed *core.Seed) (string, error) {
 	if len(seed.Request.Trailer) > 0 {
 		req["Trailer"] = seed.Request.Trailer
 	}
-	if seed.Request.UseCookie != config.DefaultSpiderUseCookie {
-		req["UseCookie"] = seed.Request.UseCookie
+	if seed.Request.AutoCookie != config.DefaultSpiderAutoCookie {
+		req["AutoCookie"] = seed.Request.AutoCookie
+	}
+	if len(seed.Request.Cookies) > 0 {
+		req["Cookies"] = seed.Request.Cookies
 	}
 	if seed.Request.AutoRedirects != config.DefaultSpiderAutoRedirects {
 		req["AutoRedirects"] = seed.Request.AutoRedirects

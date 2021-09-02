@@ -19,6 +19,8 @@ type Seed struct {
 	HttpResponse *http.Response `json:"-"`
 	// 响应数据
 	HttpResponseBody []byte `json:"-"`
+	// 最终的cookies结果
+	HttpCookies []*http.Cookie `json:"-"`
 
 	// 请求参数
 	Request struct {
@@ -42,8 +44,10 @@ type Seed struct {
 		// 附加头
 		Trailer http.Header
 
-		// 是否使用cookie
-		UseCookie bool
+		// 是否自动管理cookie
+		AutoCookie bool
+		// cookies, 这里的cookie会覆盖headers的cookie
+		Cookies []*http.Cookie
 		// 是否自动跳转
 		AutoRedirects bool
 		// 响应数据编码

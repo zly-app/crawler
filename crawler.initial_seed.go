@@ -8,6 +8,10 @@ import (
 	"go.uber.org/zap"
 )
 
+// 提交初始化种子信号
+const SubmitInitialSeedSignal = "SubmitInitialSeed"
+
+// 一次性触发时间样式
 const onceTriggerTimeLayout = "2006-01-02 15:04:05"
 
 // 检查提交初始化种子
@@ -21,7 +25,7 @@ func (c *Crawler) CheckSubmitInitialSeed() {
 	case "", "none":
 		return
 	case "start":
-		c.SubmitInitialSeed()
+		c.SendSubmitInitialSeedSignal()
 		return
 	}
 
@@ -40,7 +44,7 @@ func (c *Crawler) CheckSubmitInitialSeed() {
 			select {
 			case <-c.app.BaseContext().Done():
 			case <-timer.C:
-				c.SubmitInitialSeed()
+				c.SendSubmitInitialSeedSignal()
 			}
 		}()
 		return
@@ -68,31 +72,56 @@ func (c *Crawler) CheckSubmitInitialSeed() {
 				timer.Stop()
 				return
 			case <-timer.C:
-				c.SubmitInitialSeed()
+				c.SendSubmitInitialSeedSignal()
 			}
 		}
 	}()
 }
 
-// 提交种子
-func (c *Crawler) SubmitInitialSeed() {
-	if c.conf.Frame.StopSubmitInitialSeedIfNotEmptyQueue {
-		empty, err := c.CheckQueueIsEmpty(c.conf.Spider.Name)
-		if err != nil {
-			c.app.Error("检查队列是否为空失败", zap.Error(err))
-			return
-		}
+// 检查是否允许提交初始化种子
+func (c *Crawler) checkAllowSubmitInitialSeed() bool {
+	if !c.conf.Frame.StopSubmitInitialSeedIfNotEmptyQueue {
+		return true
+	}
 
-		if !empty {
-			c.app.Debug("队列非空忽略初始化种子提交")
-			return
-		}
+	empty, err := c.CheckQueueIsEmpty(c.conf.Spider.Name)
+	if err != nil {
+		c.app.Error("检查队列是否为空失败", zap.Error(err))
+		return false
+	}
+
+	if !empty {
+		c.app.Debug("队列非空忽略初始化种子提交")
+		return false
+	}
+	return true
+}
+
+// 发送提交初始化种子信号
+func (c *Crawler) SendSubmitInitialSeedSignal() {
+	if !c.checkAllowSubmitInitialSeed() {
+		return
+	}
+
+	err := c.PutRawSeed(SubmitInitialSeedSignal, "", true)
+	if err != nil {
+		c.app.Error("发送提交初始化种子信号失败", zap.Error(err))
+		return
+	}
+
+	c.app.Info("发送提交初始化种子信号成功")
+}
+
+// 提交种子
+func (c *Crawler) SubmitInitialSeed() error {
+	if !c.checkAllowSubmitInitialSeed() {
+		return nil
 	}
 
 	c.app.Info("开始提交初始化种子")
 	if err := utils.Recover.WrapCall(c.spider.SubmitInitialSeed); err != nil {
-		c.app.Error("提交初始化种子失败", zap.String("error", utils.Recover.GetRecoverErrorDetail(err)))
-		return
+		return err
 	}
 	c.app.Info("初始化种子提交完成")
+	return nil
 }

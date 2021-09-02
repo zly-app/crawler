@@ -17,6 +17,9 @@ import (
 func (c *Crawler) NewSeed(url string, parserMethod interface{}) *core.Seed {
 	seed := seeds.NewSeed()
 	seed.Request.Url = url
+	if seed.Request.AutoCookie {
+		seed.Request.Cookies = append(seed.Request.Cookies, c.seedCookies...)
+	}
 	seed.SetParserMethod(parserMethod)
 	return seed
 }
@@ -31,6 +34,10 @@ func (c *Crawler) PopARawSeed() (string, error) {
 		}
 		if err != nil {
 			return "", err
+		}
+
+		if raw == SubmitInitialSeedSignal {
+			return raw, nil
 		}
 		c.app.Info("从队列取出一个种子", zap.String("queueName", queueName))
 		return raw, nil
@@ -72,6 +79,10 @@ func (c *Crawler) PutRawSeed(raw string, parserFuncName string, front bool) erro
 	size, err := c.queue.Put(queueName, raw, front)
 	if err != nil {
 		return fmt.Errorf("将seed放入队列失败: %v", err)
+	}
+
+	if raw == SubmitInitialSeedSignal {
+		return nil
 	}
 
 	c.app.Info("将seed放入队列", zap.String("parserFuncName", parserFuncName), zap.Int("queueSize", size))
