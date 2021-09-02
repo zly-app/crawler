@@ -68,9 +68,13 @@ func (c *Crawler) runOnce() error {
 	case core.InterceptError: // 拦截, 应该立即结束本次任务
 		return nil
 	case core.ParserError: // 解析错误
-		c.PutErrorRawSeed(raw, true)
+		if err := c.PutErrorRawSeed(raw, true); err != nil {
+			c.app.Error("将出错seed放入error队列失败", zap.Error(err))
+		}
 	default:
-		c.PutErrorRawSeed(raw, false)
+		if err := c.PutErrorRawSeed(raw, false); err != nil {
+			c.app.Error("将出错seed放入error队列失败", zap.Error(err))
+		}
 	}
 	return err
 }

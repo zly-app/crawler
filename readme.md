@@ -23,19 +23,19 @@ import (
 
 // 一个spider
 type Spider struct {
-	crawler core.ICrawler
+	core.ISpiderTool
 }
 
 // 初始化
-func (s *Spider) Init(crawler core.ICrawler) error {
-	s.crawler = crawler
+func (s *Spider) Init(tool core.ISpiderTool) error {
+	s.ISpiderTool = tool
 	return nil
 }
 
 // 提交初始化种子
 func (s *Spider) SubmitInitialSeed() error {
-	seed := s.crawler.NewSeed("https://www.baidu.com/", s.Parser) // 创建种子并指定解析方法
-	s.crawler.SubmitSeed(seed)                                    // 提交种子
+	seed := s.NewSeed("https://www.baidu.com/", s.Parser) // 创建种子并指定解析方法
+	s.SubmitSeed(seed)                                    // 提交种子
 	return nil
 }
 

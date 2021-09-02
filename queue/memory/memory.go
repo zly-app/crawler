@@ -14,20 +14,16 @@ type MemoryQueue struct {
 	mx     sync.Mutex
 }
 
-func (m *MemoryQueue) getQueue(queueName string) *list.List {
+func (m *MemoryQueue) Put(queueName string, raw string, front bool) (int, error) {
+	m.mx.Lock()
+	defer m.mx.Unlock()
+
 	queue, ok := m.queues[queueName]
 	if !ok {
 		queue = list.New()
 		m.queues[queueName] = queue
 	}
-	return queue
-}
 
-func (m *MemoryQueue) Put(queueName string, raw string, front bool) (int, error) {
-	m.mx.Lock()
-	defer m.mx.Unlock()
-
-	queue := m.getQueue(queueName)
 	if front {
 		queue.PushFront(raw)
 	} else {
@@ -41,8 +37,8 @@ func (m *MemoryQueue) Pop(queueName string, front bool) (string, error) {
 	m.mx.Lock()
 	defer m.mx.Unlock()
 
-	queue := m.getQueue(queueName)
-	if queue.Len() == 0 {
+	queue, ok := m.queues[queueName]
+	if !ok || queue.Len() == 0 {
 		return "", core.EmptyQueueError
 	}
 
@@ -69,9 +65,7 @@ func (m *MemoryQueue) QueueSize(queueName string) (int, error) {
 	return queue.Len(), nil
 }
 
-func (m *MemoryQueue) Close() error {
-	return nil
-}
+func (m *MemoryQueue) Close() error { return nil }
 
 func NewMemoryQueue(app zapp_core.IApp) core.IQueue {
 	return &MemoryQueue{

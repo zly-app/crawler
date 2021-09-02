@@ -5,9 +5,9 @@ const (
 )
 
 type QueueConfig struct {
-	/*
-		**队列类型
-		 redis
+	/**队列类型
+	  memory 内存, 重启后数据会丢失
+	  redis redis实现
 	*/
 	Type string
 }

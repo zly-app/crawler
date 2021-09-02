@@ -7,9 +7,11 @@ import (
 var _ core.ISpider = (*Spider)(nil)
 
 type Spider struct {
+	core.ISpiderTool
 }
 
-func (s *Spider) Init(crawler core.ICrawler) error {
+func (s *Spider) Init(tool core.ISpiderTool) error {
+	s.ISpiderTool = tool
 	return nil
 }
 

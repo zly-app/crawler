@@ -13,6 +13,8 @@ import (
 	"github.com/zly-app/crawler/downloader"
 	"github.com/zly-app/crawler/middleware"
 	"github.com/zly-app/crawler/queue"
+	"github.com/zly-app/crawler/set"
+	"github.com/zly-app/crawler/spider_tool"
 )
 
 type Crawler struct {
@@ -21,7 +23,9 @@ type Crawler struct {
 	parserMethods map[string]core.ParserMethod
 
 	spider     core.ISpider
+	spiderTool core.ISpiderTool
 	queue      core.IQueue
+	set        core.ISet
 	downloader core.IDownloader
 	middleware core.IMiddleware
 
@@ -47,7 +51,7 @@ func (c *Crawler) Inject(a ...interface{}) {
 }
 
 func (c *Crawler) Start() error {
-	err := c.spider.Init(c)
+	err := c.spider.Init(c.spiderTool)
 	if err != nil {
 		return fmt.Errorf("spider初始化失败: %v", err)
 	}
@@ -74,9 +78,11 @@ func (c *Crawler) Close() error {
 	return nil
 }
 
-func (c *Crawler) Spider() core.ISpider {
-	return c.spider
-}
+func (c *Crawler) Spider() core.ISpider         { return c.spider }
+func (c *Crawler) Queue() core.IQueue           { return c.queue }
+func (c *Crawler) Downloader() core.IDownloader { return c.downloader }
+func (c *Crawler) Set() core.ISet               { return c.set }
+func (c *Crawler) CookieJar() http.CookieJar    { return c.cookieJar }
 
 func NewCrawler(app zapp_core.IApp) zapp_core.IService {
 	conf := config.NewConfig(app)
@@ -92,11 +98,14 @@ func NewCrawler(app zapp_core.IApp) zapp_core.IService {
 		logger.Log.Panic("服务配置错误", zap.String("serviceType", string(config.NowServiceType)), zap.Error(err))
 	}
 
-	return &Crawler{
+	crawler := &Crawler{
 		app:        app,
 		conf:       conf,
-		queue:      queue.NewQueue(app),
+		queue:      queue.NewQueue(app, conf.Queue.Type),
+		set:        set.NewSet(app, conf.Set.Type),
 		downloader: downloader.NewDownloader(app),
 		middleware: middleware.NewMiddleware(app),
 	}
+	crawler.spiderTool = spider_tool.NewSpiderTool(crawler)
+	return crawler
 }

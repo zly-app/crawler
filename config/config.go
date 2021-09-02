@@ -17,6 +17,7 @@ type ServiceConfig struct {
 	Frame  FrameConfig // 框架配置
 	Queue  QueueConfig // 队列配置
 	Proxy  ProxyConfig // 代理配置
+	Set    SetConfig   // 集合配置
 }
 
 func NewConfig(app zapp_core.IApp) *ServiceConfig {
@@ -25,6 +26,7 @@ func NewConfig(app zapp_core.IApp) *ServiceConfig {
 		Frame:  newFrameConfig(),
 		Queue:  newQueueConfig(),
 		Proxy:  newProxyConfig(),
+		Set:    newSetConfig(),
 	}
 	return Conf
 }
@@ -39,6 +41,9 @@ func (conf *ServiceConfig) Check() (err error) {
 		return err
 	}
 	if err = conf.Proxy.Check(); err != nil {
+		return err
+	}
+	if err = conf.Set.Check(); err != nil {
 		return err
 	}
 	return nil

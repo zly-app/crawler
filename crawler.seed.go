@@ -2,33 +2,12 @@ package crawler
 
 import (
 	"fmt"
-	"net/http"
-	"strings"
 
 	"go.uber.org/zap"
 
 	"github.com/zly-app/crawler/core"
 	"github.com/zly-app/crawler/seeds"
 )
-
-/*
-**创建种子
- url 抓取连接
- parserMethod 解析方法, 可以是方法名或方法实体
-*/
-func (c *Crawler) NewSeed(url string, parserMethod interface{}) *core.Seed {
-	seed := seeds.NewSeed()
-	seed.Request.Url = url
-	if seed.Request.AutoCookie && c.cookieJar != nil && url != "" {
-		req, err := http.NewRequest(strings.ToUpper(seed.Request.Method), url, nil)
-		if err == nil {
-			cookies := c.cookieJar.Cookies(req.URL) // 获取这个种子要用到的cookies
-			seed.Request.ParentCookies = cookies
-		}
-	}
-	seed.SetParserMethod(parserMethod)
-	return seed
-}
 
 // 弹出一个种子
 func (c *Crawler) PopARawSeed() (string, error) {
@@ -49,15 +28,6 @@ func (c *Crawler) PopARawSeed() (string, error) {
 		return raw, nil
 	}
 	return "", core.EmptyQueueError
-}
-
-// 提交种子
-//
-// 这里提交失败会立即终止
-func (c *Crawler) SubmitSeed(seed *core.Seed) {
-	if err := c.PutSeed(seed, c.conf.Frame.SubmitSeedToQueueFront); err != nil {
-		panic(err)
-	}
 }
 
 /*
@@ -100,14 +70,13 @@ func (c *Crawler) PutRawSeed(raw string, parserFuncName string, front bool) erro
  seed 种子
  isParserError 是否为解析错误
 */
-func (c *Crawler) PutErrorSeed(seed *core.Seed, isParserError bool) {
+func (c *Crawler) PutErrorSeed(seed *core.Seed, isParserError bool) error {
 	data, err := seeds.EncodeSeed(seed)
 	if err != nil {
-		c.app.Error("seed编码失败", zap.Error(err))
-		return
+		return fmt.Errorf("seed编码失败: %s", err)
 	}
 
-	c.PutErrorRawSeed(data, isParserError)
+	return c.PutErrorRawSeed(data, isParserError)
 }
 
 /*
@@ -115,7 +84,7 @@ func (c *Crawler) PutErrorSeed(seed *core.Seed, isParserError bool) {
  raw 种子原始数据
  isParserError 是否为解析错误
 */
-func (c *Crawler) PutErrorRawSeed(raw string, isParserError bool) {
+func (c *Crawler) PutErrorRawSeed(raw string, isParserError bool) error {
 	c.app.Warn("将出错seed放入error队列")
 	var queueName string
 	if isParserError {
@@ -126,8 +95,9 @@ func (c *Crawler) PutErrorRawSeed(raw string, isParserError bool) {
 
 	_, err := c.queue.Put(queueName, raw, false)
 	if err != nil {
-		c.app.Error("将出错seed放入error队列失败", zap.Error(err))
+		return err
 	}
+	return nil
 }
 
 // 检查队列是否为空, 如果spiderName为空则取默认值

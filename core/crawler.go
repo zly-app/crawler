@@ -2,6 +2,7 @@ package core
 
 import (
 	"errors"
+	"net/http"
 )
 
 var (
@@ -12,10 +13,15 @@ var (
 type ICrawler interface {
 	// 获取spider
 	Spider() ISpider
-	// 创建种子
-	NewSeed(uri string, parserMethod interface{}) *Seed
-	// 提交种子
-	SubmitSeed(seed *Seed)
+	// 获取队列
+	Queue() IQueue
+	// 获取集合
+	Set() ISet
+	// 获取下载器
+	Downloader() IDownloader
+	// 获取当前的cookieJar, 可能是空的
+	CookieJar() http.CookieJar
+
 	/*
 	   **放入种子
 	    seed 种子
@@ -34,13 +40,13 @@ type ICrawler interface {
 	    seed 种子
 	    isParserError 是否为解析错误
 	*/
-	PutErrorSeed(seed *Seed, isParserError bool)
+	PutErrorSeed(seed *Seed, isParserError bool) error
 	/*
 	   **放入错误种子原始数据
 	    raw 种子原始数据
 	    isParserError 是否为解析错误
 	*/
-	PutErrorRawSeed(raw string, isParserError bool)
+	PutErrorRawSeed(raw string, isParserError bool) error
 
 	// 检查队列是否为空, 如果spiderName为空则取默认值
 	CheckQueueIsEmpty(spiderName string) (bool, error)
