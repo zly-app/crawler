@@ -9,7 +9,7 @@ import (
 const (
 	// 默认提交初始化种子的时机
 	defaultSpiderSubmitInitialSeedOpportunity = "start"
-	// 默认使用调度器
+	// 默认使用调度器管理提交初始化种子的时机
 	defaultSpiderUseScheduler = false
 
 	// 默认请求方法
@@ -38,7 +38,7 @@ type SpiderConfig struct {
 		 cron表达式
 	*/
 	SubmitInitialSeedOpportunity string
-	// 使用调度器, 提交初始化种子的时机交给调度器管理, 这可以解决多进程运行时每个进程都在提交种子
+	// 使用调度器管理提交初始化种子的时机, 多进程时必须启用, 可以防止多进程启动时每个进程都提交初始化种子
 	UseScheduler bool
 
 	RequestMethod          string // 默认请求方法

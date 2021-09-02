@@ -9,30 +9,35 @@ import (
 	"github.com/zly-app/crawler/core"
 )
 
+// 一个spider
 type Spider struct {
 	crawler core.ICrawler
-	crawler.Spider
 }
 
+// 初始化
 func (s *Spider) Init(crawler core.ICrawler) error {
 	s.crawler = crawler
 	return nil
 }
 
+// 提交初始化种子
 func (s *Spider) SubmitInitialSeed() error {
-	seed := s.crawler.NewSeed("https://www.baidu.com/", s.Parser)
-	s.crawler.SubmitSeed(seed)
+	seed := s.crawler.NewSeed("https://www.baidu.com/", s.Parser) // 创建种子并指定解析方法
+	s.crawler.SubmitSeed(seed)                                    // 提交种子
 	return nil
 }
 
+// 解析方法
 func (s *Spider) Parser(seed *core.Seed) error {
-	fmt.Println(seed.Raw)
-	fmt.Println(string(seed.HttpResponseBody))
+	fmt.Println(string(seed.HttpResponseBody)) // 打印响应body
 	return nil
 }
+
+// 关闭
+func (s *Spider) Close() error { return nil }
 
 func main() {
-	app := zapp.NewApp("a_spider", crawler.WithService())
-	crawler.RegistrySpider(new(Spider))
-	app.Run()
+	app := zapp.NewApp("a_spider", crawler.WithService()) // 启用crawler服务
+	crawler.RegistrySpider(new(Spider))                   // 注入spider
+	app.Run()                                             // 运行
 }
