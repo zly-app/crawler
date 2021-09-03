@@ -38,6 +38,23 @@ func (d *Dom) CssOne(expr string) *Dom {
 	return makeOneDom(node)
 }
 
+// 获取属性
+func (d *Dom) GetAttr(name string) string {
+	return htmlquery.SelectAttr(d.Node, name)
+}
+
+// 获取node内所有的文本值
+func (d *Dom) InnerText() string {
+	return htmlquery.InnerText(d.Node)
+}
+
+/*将node转为html
+  self 表示是否输入自己
+*/
+func (d *Dom) HTML(self bool) string {
+	return htmlquery.OutputHTML(d.Node, self)
+}
+
 func NewDom(r io.Reader) (*Dom, error) {
 	node, err := html.Parse(r)
 	if err != nil {
