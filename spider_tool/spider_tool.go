@@ -1,6 +1,7 @@
 package spider_tool
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -86,6 +87,19 @@ func (s *SpiderTool) GetSetSize() int {
 		panic(err)
 	}
 	return size
+}
+
+// 生成相对于在当前种子页面上的某个连接的实际连接
+func (s *SpiderTool) UrlJoin(seed *core.Seed, link string) string {
+	if seed.HttpResponse == nil || seed.HttpResponse.Request == nil || seed.HttpResponse.Request.URL == nil {
+		panic("seed不存在页面")
+	}
+
+	u, err := seed.HttpResponse.Request.URL.Parse(link)
+	if err != nil {
+		panic(fmt.Errorf("UrlJoin失败: %v", err))
+	}
+	return u.String()
 }
 
 func (s *SpiderTool) Crawler() core.ICrawler { return s.crawler }

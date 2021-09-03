@@ -56,4 +56,6 @@ type ISpiderTool interface {
 	SetRemove(items ...string) int
 	// 获取集合大小
 	GetSetSize() int
+	// 生成相对于在当前种子页面上的某个连接的实际连接
+	UrlJoin(seed *Seed, link string) string
 }
