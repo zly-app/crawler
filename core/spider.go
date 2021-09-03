@@ -1,5 +1,9 @@
 package core
 
+import (
+	"github.com/zly-app/crawler/core/dom"
+)
+
 type ParserMethod = func(seed *Seed) error
 
 type ISpider interface {
@@ -58,4 +62,8 @@ type ISpiderTool interface {
 	GetSetSize() int
 	// 生成相对于在当前种子页面上的某个连接的实际连接
 	UrlJoin(seed *Seed, link string) string
+	// 获取dom
+	GetDom(seed *Seed) *dom.Dom
+	// 获取xmlDom
+	GetXmlDom(seed *Seed) *dom.XmlDom
 }

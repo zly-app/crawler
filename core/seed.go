@@ -1,12 +1,15 @@
 package core
 
 import (
+	"bytes"
 	"fmt"
 	"net/http"
 	"net/url"
 	"reflect"
 	"runtime"
 	"strings"
+
+	"github.com/zly-app/crawler/core/dom"
 )
 
 // 种子数据
@@ -69,6 +72,9 @@ type Seed struct {
 	CheckExpectMethod string
 	// 元数据
 	Meta map[string]interface{}
+
+	dom    *dom.Dom
+	xmlDom *dom.XmlDom
 }
 
 // GetFuncName 获取函数或方法的名称
@@ -103,4 +109,36 @@ func (s *Seed) SetCheckExpectMethod(checkMethod interface{}) {
 	default:
 		panic(fmt.Errorf("无法获取方法名: [%T]%v", checkMethod, checkMethod))
 	}
+}
+
+// 获取dom
+func (s *Seed) GetDom() (*dom.Dom, error) {
+	if s.dom != nil {
+		return s.dom, nil
+	}
+	if len(s.HttpResponseBody) == 0 {
+		return nil, fmt.Errorf("body is empty")
+	}
+	d, err := dom.NewDom(bytes.NewReader(s.HttpResponseBody))
+	if err != nil {
+		return nil, err
+	}
+	s.dom = d
+	return d, nil
+}
+
+// 获取xmlDom
+func (s *Seed) GetXmlDom() (*dom.XmlDom, error) {
+	if s.xmlDom != nil {
+		return s.xmlDom, nil
+	}
+	if len(s.HttpResponseBody) == 0 {
+		return nil, fmt.Errorf("body is empty")
+	}
+	d, err := dom.NewXmlDom(bytes.NewReader(s.HttpResponseBody))
+	if err != nil {
+		return nil, err
+	}
+	s.xmlDom = d
+	return d, nil
 }

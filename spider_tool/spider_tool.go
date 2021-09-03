@@ -7,6 +7,7 @@ import (
 
 	"github.com/zly-app/crawler/config"
 	"github.com/zly-app/crawler/core"
+	"github.com/zly-app/crawler/core/dom"
 	"github.com/zly-app/crawler/seeds"
 )
 
@@ -14,6 +15,8 @@ type SpiderTool struct {
 	crawler core.ICrawler
 	key     string
 }
+
+func (s *SpiderTool) Crawler() core.ICrawler { return s.crawler }
 
 func (s *SpiderTool) NewSeed(url string, parserMethod interface{}) *core.Seed {
 	seed := seeds.NewSeed()
@@ -102,7 +105,21 @@ func (s *SpiderTool) UrlJoin(seed *core.Seed, link string) string {
 	return u.String()
 }
 
-func (s *SpiderTool) Crawler() core.ICrawler { return s.crawler }
+func (s *SpiderTool) GetDom(seed *core.Seed) *dom.Dom {
+	d, err := seed.GetDom()
+	if err != nil {
+		panic(err)
+	}
+	return d
+}
+
+func (s *SpiderTool) GetXmlDom(seed *core.Seed) *dom.XmlDom {
+	d, err := seed.GetXmlDom()
+	if err != nil {
+		panic(err)
+	}
+	return d
+}
 
 func NewSpiderTool(crawler core.ICrawler) core.ISpiderTool {
 	return &SpiderTool{
