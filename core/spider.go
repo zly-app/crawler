@@ -13,6 +13,7 @@ type ISpider interface {
 
 // 给spider用的工具
 type ISpiderTool interface {
+	Crawler() ICrawler
 	/**创建种子
 	  url 抓取连接
 	  parserMethod 解析方法, 可以是方法名或方法实体
@@ -48,11 +49,11 @@ type ISpiderTool interface {
 	PutErrorRawSeed(raw string, isParserError bool)
 
 	// 添加一些元素到集合中, 返回添加的数量, 已存在的元素不会计数
-	SetAdd(key string, items ...string) int
+	SetAdd(items ...string) int
 	// 判断集合是否包含某个元素
-	SetHasItem(key, item string) bool
+	SetHasItem(item string) bool
 	// 从集合中移除一些元素, 返回成功移除的数量, 元素不存在不会计数也不会报错
-	SetRemove(key string, items ...string) int
+	SetRemove(items ...string) int
 	// 获取集合大小
-	GetSetSize(key string) int
+	GetSetSize() int
 }

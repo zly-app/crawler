@@ -18,6 +18,8 @@ const (
 	defaultFrameErrorSeedQueueSuffix = ":error"
 	// 解析错误种子队列后缀名
 	defaultFrameParserErrorSeedQueueSuffix = ":error_parser"
+	// 集合后缀名
+	defaultFrameSetSuffix = ":set"
 
 	// 默认非空队列不提交初始化种子
 	defaultFrameStopSubmitInitialSeedIfNotEmptyQueue = true
@@ -43,6 +45,7 @@ type FrameConfig struct {
 	SeedQueueSuffix            string   // 种子队列后缀名
 	ErrorSeedQueueSuffix       string   // 错误种子队列后缀名, 主要是下载器错误
 	ParserErrorSeedQueueSuffix string   // 解析错误种子队列后缀名, 包括处理程序错误, 处理程序不存在, 种子解析失败等
+	SetSuffix                  string   // 集合后缀名
 
 	StopSubmitInitialSeedIfNotEmptyQueue bool // 非空队列不提交初始化种子
 	CheckEmptyQueueIgnoreErrorQueue      bool // 检查是否为空队列的程序忽略error队列
@@ -74,6 +77,9 @@ func (conf *FrameConfig) Check() error {
 	}
 	if conf.ParserErrorSeedQueueSuffix == "" {
 		conf.ParserErrorSeedQueueSuffix = defaultFrameParserErrorSeedQueueSuffix
+	}
+	if conf.SetSuffix == "" {
+		conf.SetSuffix = defaultFrameSetSuffix
 	}
 
 	if conf.RequestTimeout <= 0 {

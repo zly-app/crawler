@@ -13,7 +13,7 @@ import (
 type Seed struct {
 	// 原始数据, 构建种子时的数据
 	Raw string `json:"-"`
-
+	// 请求时生成的请求体
 	HttpRequest *http.Request `json:"-"`
 	// 响应, 注意: 不能使用它的body, 而是应该使用 ResponseBody
 	HttpResponse *http.Response `json:"-"`

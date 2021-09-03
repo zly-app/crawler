@@ -11,6 +11,7 @@ import (
 
 type SpiderTool struct {
 	crawler core.ICrawler
+	key     string
 }
 
 func (s *SpiderTool) NewSeed(url string, parserMethod interface{}) *core.Seed {
@@ -55,22 +56,43 @@ func (s *SpiderTool) PutErrorRawSeed(raw string, isParserError bool) {
 	}
 }
 
-func (s *SpiderTool) SetAdd(key string, items ...string) int {
-	panic("implement me")
+func (s *SpiderTool) SetAdd(items ...string) int {
+	count, err := s.crawler.Set().Add(s.key, items...)
+	if err != nil {
+		panic(err)
+	}
+	return count
 }
 
-func (s *SpiderTool) SetHasItem(key, item string) bool {
-	panic("implement me")
+func (s *SpiderTool) SetHasItem(item string) bool {
+	b, err := s.crawler.Set().HasItem(s.key, item)
+	if err != nil {
+		panic(err)
+	}
+	return b
 }
 
-func (s *SpiderTool) SetRemove(key string, items ...string) int {
-	panic("implement me")
+func (s *SpiderTool) SetRemove(items ...string) int {
+	count, err := s.crawler.Set().Remove(s.key, items...)
+	if err != nil {
+		panic(err)
+	}
+	return count
 }
 
-func (s *SpiderTool) GetSetSize(key string) int {
-	panic("implement me")
+func (s *SpiderTool) GetSetSize() int {
+	size, err := s.crawler.Set().GetSetSize(s.key)
+	if err != nil {
+		panic(err)
+	}
+	return size
 }
+
+func (s *SpiderTool) Crawler() core.ICrawler { return s.crawler }
 
 func NewSpiderTool(crawler core.ICrawler) core.ISpiderTool {
-	return &SpiderTool{crawler: crawler}
+	return &SpiderTool{
+		crawler: crawler,
+		key:     config.Conf.Spider.Name + config.Conf.Frame.SetSuffix,
+	}
 }
