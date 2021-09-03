@@ -26,7 +26,7 @@ func NewQueue(app zapp_core.IApp, queryType string) core.IQueue {
 // 注册队列创造者, 重复注册会报错并结束程序
 func RegistryQueueCreator(queueType string, creator func(app zapp_core.IApp) core.IQueue) {
 	if _, ok := queueCreator[queueType]; ok {
-		logger.Log.Fatal("重复注册queue建造者", zap.String("queueType", queueType))
+		logger.Log.Fatal("重复注册queue建造者", zap.String("type", queueType))
 	}
 	queueCreator[queueType] = creator
 }

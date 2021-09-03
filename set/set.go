@@ -26,7 +26,7 @@ func NewSet(app zapp_core.IApp, setType string) core.ISet {
 // 注册集合创造者, 重复注册会报错并结束程序
 func RegistrySetCreator(setType string, creator func(app zapp_core.IApp) core.ISet) {
 	if _, ok := setCreator[setType]; ok {
-		logger.Log.Fatal("重复注册set建造者", zap.String("queueType", setType))
+		logger.Log.Fatal("重复注册set建造者", zap.String("type", setType))
 	}
 	setCreator[setType] = creator
 }

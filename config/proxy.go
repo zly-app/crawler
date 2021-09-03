@@ -11,11 +11,10 @@ const (
 )
 
 type ProxyConfig struct {
-	/*
-		**代理类型:
-		 direct 直接的, 不使用代理
-		 http http或https
-		 socks5 sock5
+	/**代理类型:
+	  direct 直接的, 不使用代理
+	  http http或https
+	  socks5 sock5
 	*/
 	Type string
 }

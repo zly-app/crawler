@@ -2,6 +2,7 @@ package middleware
 
 import (
 	zapp_core "github.com/zly-app/zapp/core"
+	"github.com/zly-app/zapp/logger"
 	"go.uber.org/zap"
 
 	"github.com/zly-app/crawler/core"
@@ -9,18 +10,35 @@ import (
 	"github.com/zly-app/crawler/middleware/response_middleware"
 )
 
-type Middleware struct {
-	app                 zapp_core.IApp
-	requestMiddlewares  []core.IRequestMiddleware
-	responseMiddlewares []core.IResponseMiddleware
+// 请求中间件
+var requestMiddlewares = []core.IRequestMiddleware{
+	request_middleware.NewCheckSeedIsValidMiddleware(),
 }
+
+// 响应中间件
+var responseMiddlewares = []core.IResponseMiddleware{
+	response_middleware.NewCheckSeedIsValidMiddleware(),
+}
+
+// 注册请求中间件
+func RegistryRequestMiddleware(m core.IRequestMiddleware) {
+	requestMiddlewares = append(requestMiddlewares, m)
+	requestMiddlewares = append(requestMiddlewares, m)
+}
+
+// 注册响应中间件
+func RegistryResponseMiddleware(m core.IResponseMiddleware) {
+	responseMiddlewares = append(responseMiddlewares, m)
+}
+
+type Middleware struct{}
 
 func (m *Middleware) RequestProcess(crawler core.ICrawler, seed *core.Seed) (*core.Seed, error) {
 	var err error
-	for _, middleware := range m.requestMiddlewares {
+	for _, middleware := range requestMiddlewares {
 		seed, err = middleware.Process(crawler, seed)
 		if err != nil {
-			m.app.Error("请求中间件检查不通过", zap.String("middleware", middleware.Name()), zap.Error(err))
+			logger.Log.Error("请求中间件检查不通过", zap.String("middleware", middleware.Name()), zap.Error(err))
 			return nil, err
 		}
 	}
@@ -29,10 +47,10 @@ func (m *Middleware) RequestProcess(crawler core.ICrawler, seed *core.Seed) (*co
 
 func (m *Middleware) ResponseProcess(crawler core.ICrawler, seed *core.Seed) (*core.Seed, error) {
 	var err error
-	for _, middleware := range m.responseMiddlewares {
+	for _, middleware := range responseMiddlewares {
 		seed, err = middleware.Process(crawler, seed)
 		if err != nil {
-			m.app.Error("响应中间件检查不通过", zap.String("middleware", middleware.Name()), zap.Error(err))
+			logger.Log.Error("响应中间件检查不通过", zap.String("middleware", middleware.Name()), zap.Error(err))
 			return nil, err
 		}
 	}
@@ -44,13 +62,5 @@ func (m *Middleware) Close() error {
 }
 
 func NewMiddleware(app zapp_core.IApp) core.IMiddleware {
-	return &Middleware{
-		app: app,
-		requestMiddlewares: []core.IRequestMiddleware{
-			request_middleware.NewCheckSeedIsValidMiddleware(),
-		},
-		responseMiddlewares: []core.IResponseMiddleware{
-			response_middleware.NewCheckSeedIsValidMiddleware(),
-		},
-	}
+	return &Middleware{}
 }
