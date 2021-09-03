@@ -14,49 +14,50 @@ import (
 	"github.com/zly-app/crawler/core"
 )
 
-type RedisQueue struct {
+type RedisSet struct {
 	client redis.UniversalClient
 }
 
-func (r *RedisQueue) Put(queueName string, raw string, front bool) (int, error) {
-	if front {
-		size, err := r.client.LPush(context.Background(), queueName, raw).Result()
-		return int(size), err
+func (r *RedisSet) Add(key string, items ...string) (int, error) {
+	a := make([]interface{}, len(items))
+	for i, item := range items {
+		a[i] = item
 	}
-	size, err := r.client.RPush(context.Background(), queueName, raw).Result()
+	count, err := r.client.SAdd(context.Background(), key, a...).Result()
+	return int(count), err
+}
+
+func (r *RedisSet) HasItem(key, item string) (bool, error) {
+	return r.client.SIsMember(context.Background(), key, item).Result()
+}
+
+func (r *RedisSet) Remove(key string, items ...string) (int, error) {
+	a := make([]interface{}, len(items))
+	for i, item := range items {
+		a[i] = item
+	}
+	count, err := r.client.SRem(context.Background(), key, a...).Result()
+	return int(count), err
+}
+
+func (r *RedisSet) GetSetSize(key string) (int, error) {
+	size, err := r.client.SCard(context.Background(), key).Result()
 	return int(size), err
 }
 
-func (r *RedisQueue) Pop(queueName string, front bool) (result string, err error) {
-	if front {
-		result, err = r.client.LPop(context.Background(), queueName).Result()
-	} else {
-		result, err = r.client.RPop(context.Background(), queueName).Result()
-	}
-	if err == redis.Nil {
-		return "", core.EmptyQueueError
-	}
-	return result, err
-}
-
-func (r *RedisQueue) QueueSize(queueName string) (int, error) {
-	size, err := r.client.LLen(context.Background(), queueName).Result()
-	return int(size), err
-}
-
-func (r *RedisQueue) Close() error {
+func (r *RedisSet) Close() error {
 	return r.client.Close()
 }
 
-func NewRedisQueue(app zapp_core.IApp) core.IQueue {
+func NewRedisSet(app zapp_core.IApp) core.ISet {
 	conf := newRedisConfig()
-	confKey := fmt.Sprintf("services.%s.queue.redis", config.NowServiceType)
+	confKey := fmt.Sprintf("services.%s.set.redis", config.NowServiceType)
 	err := app.GetConfig().Parse(confKey, &conf)
 	if err == nil {
 		err = conf.Check()
 	}
 	if err != nil {
-		app.Fatal("queue.redis配置错误", zap.Error(err))
+		app.Fatal("set.redis配置错误", zap.Error(err))
 	}
 
 	var client redis.UniversalClient
@@ -84,5 +85,5 @@ func NewRedisQueue(app zapp_core.IApp) core.IQueue {
 			DialTimeout:  time.Duration(conf.DialTimeout) * time.Millisecond,
 		})
 	}
-	return &RedisQueue{client: client}
+	return &RedisSet{client: client}
 }
