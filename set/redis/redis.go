@@ -51,7 +51,7 @@ func (r *RedisSet) Close() error {
 
 func NewRedisSet(app zapp_core.IApp) core.ISet {
 	conf := newRedisConfig()
-	confKey := fmt.Sprintf("services.%s.set.redis", config.NowServiceType)
+	confKey := fmt.Sprintf("services.%s.set", config.NowServiceType)
 	err := app.GetConfig().Parse(confKey, &conf)
 	if err == nil {
 		err = conf.Check()

@@ -14,6 +14,8 @@ const (
 
 	// 默认请求方法
 	DefaultSpiderRequestMethod = "get"
+	// 允许使用代理
+	DefaultSpiderAllowProxy = true
 	// 默认user-agent类型
 	DefaultSpiderUserAgentType = "pc"
 	// 默认自动管理cookie
@@ -42,6 +44,7 @@ type SpiderConfig struct {
 	UseScheduler bool
 
 	RequestMethod          string // 默认请求方法
+	AllowProxy             bool   // 允许使用代理
 	UserAgentType          string // user-agent 类型; pc,android,ios
 	AutoCookie             bool   // 是否自动管理cookie, 当前任务提交的种子会继承之前的cookies
 	AutoRedirects          bool   // 是否自动跳转
@@ -58,6 +61,7 @@ func newSpiderConfig(app zapp_core.IApp) SpiderConfig {
 		SubmitInitialSeedOpportunity: defaultSpiderSubmitInitialSeedOpportunity,
 		UseScheduler:                 defaultSpiderUseScheduler,
 
+		AllowProxy:             DefaultSpiderAllowProxy,
 		AutoCookie:             DefaultSpiderAutoCookie,
 		AutoRedirects:          DefaultSpiderAutoRedirects,
 		HttpStatus4xxIsInvalid: defaultSpiderHttpStatus4xxIsInvalid,

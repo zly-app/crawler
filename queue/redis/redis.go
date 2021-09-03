@@ -50,7 +50,7 @@ func (r *RedisQueue) Close() error {
 
 func NewRedisQueue(app zapp_core.IApp) core.IQueue {
 	conf := newRedisConfig()
-	confKey := fmt.Sprintf("services.%s.queue.redis", config.NowServiceType)
+	confKey := fmt.Sprintf("services.%s.queue", config.NowServiceType)
 	err := app.GetConfig().Parse(confKey, &conf)
 	if err == nil {
 		err = conf.Check()

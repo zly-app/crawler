@@ -19,6 +19,8 @@ type ICrawler interface {
 	Set() ISet
 	// 获取下载器
 	Downloader() IDownloader
+	// 代理
+	Proxy() IProxy
 	// 获取当前的cookieJar, 可能是空的
 	CookieJar() http.CookieJar
 

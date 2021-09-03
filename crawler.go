@@ -12,6 +12,7 @@ import (
 	"github.com/zly-app/crawler/core"
 	"github.com/zly-app/crawler/downloader"
 	"github.com/zly-app/crawler/middleware"
+	"github.com/zly-app/crawler/proxy"
 	"github.com/zly-app/crawler/queue"
 	"github.com/zly-app/crawler/set"
 	"github.com/zly-app/crawler/spider_tool"
@@ -27,6 +28,7 @@ type Crawler struct {
 	queue      core.IQueue
 	set        core.ISet
 	downloader core.IDownloader
+	proxy      core.IProxy
 	middleware core.IMiddleware
 
 	cookieJar http.CookieJar // 当前使用的cookieJar
@@ -66,14 +68,20 @@ func (c *Crawler) Close() error {
 		c.app.Error("spider关闭时出错", zap.Error(err))
 	}
 
-	if err = c.downloader.Close(); err != nil {
-		c.app.Error("关闭下载器时出错误", zap.Error(err))
-	}
-	if err = c.middleware.Close(); err != nil {
-		c.app.Error("关闭中间件时出错误", zap.Error(err))
-	}
 	if err = c.queue.Close(); err != nil {
 		c.app.Error("关闭队列时出错误", zap.Error(err))
+	}
+	if err = c.set.Close(); err != nil {
+		c.app.Error("关闭集合时出错", zap.Error(err))
+	}
+	if err = c.downloader.Close(); err != nil {
+		c.app.Error("关闭下载器时出错", zap.Error(err))
+	}
+	if err = c.proxy.Close(); err != nil {
+		c.app.Error("关闭代理时出错", zap.Error(err))
+	}
+	if err = c.middleware.Close(); err != nil {
+		c.app.Error("关闭中间件时出错", zap.Error(err))
 	}
 	return nil
 }
@@ -81,6 +89,7 @@ func (c *Crawler) Close() error {
 func (c *Crawler) Spider() core.ISpider         { return c.spider }
 func (c *Crawler) Queue() core.IQueue           { return c.queue }
 func (c *Crawler) Downloader() core.IDownloader { return c.downloader }
+func (c *Crawler) Proxy() core.IProxy           { return c.proxy }
 func (c *Crawler) Set() core.ISet               { return c.set }
 func (c *Crawler) CookieJar() http.CookieJar    { return c.cookieJar }
 
@@ -104,6 +113,7 @@ func NewCrawler(app zapp_core.IApp) zapp_core.IService {
 		queue:      queue.NewQueue(app, conf.Queue.Type),
 		set:        set.NewSet(app, conf.Set.Type),
 		downloader: downloader.NewDownloader(app),
+		proxy:      proxy.NewProxy(app, conf.Proxy.Type),
 		middleware: middleware.NewMiddleware(app),
 	}
 	crawler.spiderTool = spider_tool.NewSpiderTool(crawler)

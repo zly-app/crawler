@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -13,8 +12,7 @@ const (
 type ProxyConfig struct {
 	/**代理类型:
 	  direct 直接的, 不使用代理
-	  http http或https
-	  socks5 sock5
+	  static 静态代理, 支持 http, https, socks5, socks5h
 	*/
 	Type string
 }
@@ -26,8 +24,6 @@ func (conf *ProxyConfig) Check() error {
 	switch strings.ToLower(conf.Type) {
 	case "", "direct":
 		conf.Type = defaultProxyType
-	default:
-		return fmt.Errorf("不支持的代理类型: %s", conf.Type)
 	}
 	return nil
 }

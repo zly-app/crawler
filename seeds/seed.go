@@ -17,6 +17,7 @@ func NewSeed() *core.Seed {
 		Meta: make(map[string]interface{}),
 	}
 	seed.Request.Method = conf.RequestMethod
+	seed.Request.AllowProxy = conf.AllowProxy
 	seed.Request.Params = make(url.Values)
 	seed.Request.Headers = make(http.Header)
 	seed.Request.UserAgentType = conf.UserAgentType
@@ -37,6 +38,7 @@ func MakeSeedOfRaw(raw string) (*core.Seed, error) {
 	}
 	// 这是为了降低种子保存在队列的占用大小, 不使用用户自定义配置作为默认值是因为用户自定义配置可能会随时变更
 	seed.Request.Method = config.DefaultSpiderRequestMethod
+	seed.Request.AllowProxy = config.DefaultSpiderAllowProxy
 	seed.Request.Params = make(url.Values)
 	seed.Request.Headers = make(http.Header)
 	seed.Request.UserAgentType = config.DefaultSpiderUserAgentType
@@ -72,6 +74,9 @@ func EncodeSeed(seed *core.Seed) (string, error) {
 	req := make(map[string]interface{})
 	if seed.Request.Method != config.DefaultSpiderRequestMethod {
 		req["Method"] = seed.Request.Method
+	}
+	if seed.Request.AllowProxy != config.DefaultSpiderAllowProxy {
+		req["AllowProxy"] = seed.Request.AllowProxy
 	}
 	if seed.Request.Url != "" {
 		req["Url"] = seed.Request.Url

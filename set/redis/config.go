@@ -30,8 +30,8 @@ type RedisConfig struct {
 	DialTimeout  int64  // 超时(毫秒
 }
 
-func newRedisConfig() RedisConfig {
-	return RedisConfig{
+func newRedisConfig() *RedisConfig {
+	return &RedisConfig{
 		MinIdleConns: defaultMinIdleConns,
 		PoolSize:     defaultPoolSize,
 		ReadTimeout:  defaultReadTimeout,
@@ -42,7 +42,7 @@ func newRedisConfig() RedisConfig {
 
 func (conf *RedisConfig) Check() error {
 	if conf.Address == "" {
-		return errors.New("redis队列的address为空")
+		return errors.New("redis的address为空")
 	}
 	return nil
 }

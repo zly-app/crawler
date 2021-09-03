@@ -43,9 +43,11 @@ func (d *Downloader) Download(crawler core.ICrawler, seed *core.Seed, cookieJar 
 	}
 
 	// 开始请求
-	Client.UseSeed(seed)
+	Client.UseSeed(crawler, seed)
 	resp, err := Client.Do(req)
 	if err != nil {
+		// 切换代理
+		Client.ChangeProxy(crawler, seed)
 		return nil, err
 	}
 	defer resp.Body.Close()

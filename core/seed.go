@@ -26,6 +26,8 @@ type Seed struct {
 	Request struct {
 		// 请求方法
 		Method string
+		// 允许使用代理
+		AllowProxy bool
 		// url
 		Url string
 		// url参数
