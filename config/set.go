@@ -8,6 +8,7 @@ type SetConfig struct {
 	/**集合类型
 	  memory 内存, 重启后数据会丢失
 	  redis redis实现
+	  ssdb ssdb实现
 	*/
 	Type string
 }
