@@ -21,17 +21,9 @@ type SsdbQueue struct {
 
 func (s *SsdbQueue) Add(key string, items ...string) (int, error) {
 	if len(items) == 1 {
-		has, err := s.pool.GetClient().ZExists(key, items[0])
-		if has || err != nil {
-			return 0, err
-		}
-		return 1, s.pool.GetClient().ZSet(key, items[0], 1)
+		return zSet(s.pool.GetClient(), key, items[0])
 	}
-	a := make(map[string]int64, len(items))
-	for _, item := range items {
-		a[item] = 1
-	}
-	return len(items), s.pool.GetClient().MultiZSet(key, a)
+	return multiZSet(s.pool.GetClient(), key, items...)
 }
 
 func (s *SsdbQueue) HasItem(key, item string) (bool, error) {
@@ -40,9 +32,9 @@ func (s *SsdbQueue) HasItem(key, item string) (bool, error) {
 
 func (s *SsdbQueue) Remove(key string, items ...string) (int, error) {
 	if len(items) == 1 {
-		return 1, s.pool.GetClient().ZDel(key, items[0])
+		return zDel(s.pool.GetClient(), key, items[0])
 	}
-	return len(items), s.pool.GetClient().MultiZDel(key, items...)
+	return multiZDel(s.pool.GetClient(), key, items...)
 }
 
 func (s *SsdbQueue) GetSetSize(key string) (int, error) {
