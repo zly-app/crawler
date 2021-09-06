@@ -89,6 +89,15 @@ func (d *Dom) NextSibling() *Dom {
 	return makeOneDom(d.node.NextSibling)
 }
 
+// 获取所有子
+func (d *Dom) Children() []*Dom {
+	var a []*html.Node
+	for nn := d.node.FirstChild; nn != nil; nn = nn.NextSibling {
+		a = append(a, nn)
+	}
+	return makeDom(a)
+}
+
 func NewDom(r io.Reader) (*Dom, error) {
 	node, err := html.Parse(r)
 	if err != nil {

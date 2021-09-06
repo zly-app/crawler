@@ -66,4 +66,6 @@ type ISpiderTool interface {
 	GetDom(seed *Seed) *dom.Dom
 	// 获取xmlDom
 	GetXmlDom(seed *Seed) *dom.XmlDom
+	// 获取jsonDom
+	GetJsonDom(seed *Seed) *dom.JsonDom
 }

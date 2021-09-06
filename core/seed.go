@@ -73,8 +73,9 @@ type Seed struct {
 	// 元数据
 	Meta map[string]interface{}
 
-	dom    *dom.Dom
-	xmlDom *dom.XmlDom
+	dom     *dom.Dom
+	xmlDom  *dom.XmlDom
+	jsonDom *dom.JsonDom
 }
 
 // GetFuncName 获取函数或方法的名称
@@ -140,5 +141,21 @@ func (s *Seed) GetXmlDom() (*dom.XmlDom, error) {
 		return nil, err
 	}
 	s.xmlDom = d
+	return d, nil
+}
+
+// 获取xmlDom
+func (s *Seed) GetJsonDom() (*dom.JsonDom, error) {
+	if s.jsonDom != nil {
+		return s.jsonDom, nil
+	}
+	if len(s.HttpResponseBody) == 0 {
+		return nil, fmt.Errorf("body is empty")
+	}
+	d, err := dom.NewJsonDom(bytes.NewReader(s.HttpResponseBody))
+	if err != nil {
+		return nil, err
+	}
+	s.jsonDom = d
 	return d, nil
 }

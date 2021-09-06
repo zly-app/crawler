@@ -75,6 +75,15 @@ func (d *XmlDom) NextSibling() *XmlDom {
 	return makeOneXmlDom(d.node.NextSibling)
 }
 
+// 获取所有子
+func (d *XmlDom) Children() []*XmlDom {
+	var a []*xmlquery.Node
+	for nn := d.node.FirstChild; nn != nil; nn = nn.NextSibling {
+		a = append(a, nn)
+	}
+	return makeXmlDom(a)
+}
+
 func NewXmlDom(r io.Reader) (*XmlDom, error) {
 	node, err := xmlquery.Parse(r)
 	if err != nil {
@@ -92,6 +101,9 @@ func makeXmlDom(nodes []*xmlquery.Node) []*XmlDom {
 }
 
 func makeOneXmlDom(node *xmlquery.Node) *XmlDom {
+	if node == nil {
+		return nil
+	}
 	return &XmlDom{
 		node:         node,
 		Type:         node.Type,

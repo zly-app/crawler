@@ -121,6 +121,14 @@ func (s *SpiderTool) GetXmlDom(seed *core.Seed) *dom.XmlDom {
 	return d
 }
 
+func (s *SpiderTool) GetJsonDom(seed *core.Seed) *dom.JsonDom {
+	d, err := seed.GetJsonDom()
+	if err != nil {
+		panic(err)
+	}
+	return d
+}
+
 func NewSpiderTool(crawler core.ICrawler) core.ISpiderTool {
 	return &SpiderTool{
 		crawler: crawler,

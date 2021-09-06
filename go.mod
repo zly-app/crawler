@@ -5,6 +5,7 @@ go 1.16
 require (
 	github.com/andybalholm/cascadia v1.2.0
 	github.com/antchfx/htmlquery v1.2.3
+	github.com/antchfx/jsonquery v1.1.4
 	github.com/antchfx/xmlquery v1.3.6
 	github.com/go-redis/redis/v8 v8.11.3
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e
