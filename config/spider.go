@@ -9,8 +9,6 @@ import (
 const (
 	// 默认提交初始化种子的时机
 	defaultSpiderSubmitInitialSeedOpportunity = "start"
-	// 默认使用调度器管理提交初始化种子的时机
-	defaultSpiderUseScheduler = false
 
 	// 默认请求方法
 	DefaultSpiderRequestMethod = "get"
@@ -34,14 +32,12 @@ type SpiderConfig struct {
 	Name string // 爬虫名
 	/*
 		**提交初始化种子的时机
-		 none 无
+		 none或空字符串 交给调度器管理
 		 start 启动时
 		 YYYY-MM-DD hh:mm:ss 指定时间触发
 		 cron表达式
 	*/
 	SubmitInitialSeedOpportunity string
-	// 使用调度器管理提交初始化种子的时机, 多进程时必须启用, 可以防止多进程启动时每个进程都提交初始化种子
-	UseScheduler bool
 
 	RequestMethod          string // 默认请求方法
 	AllowProxy             bool   // 允许使用代理
@@ -59,7 +55,6 @@ func newSpiderConfig(app zapp_core.IApp) SpiderConfig {
 	return SpiderConfig{
 		Name:                         app.Name(),
 		SubmitInitialSeedOpportunity: defaultSpiderSubmitInitialSeedOpportunity,
-		UseScheduler:                 defaultSpiderUseScheduler,
 
 		AllowProxy:             DefaultSpiderAllowProxy,
 		AutoCookie:             DefaultSpiderAutoCookie,

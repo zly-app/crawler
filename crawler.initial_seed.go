@@ -16,10 +16,6 @@ const onceTriggerTimeLayout = "2006-01-02 15:04:05"
 
 // 检查提交初始化种子
 func (c *Crawler) CheckSubmitInitialSeed() {
-	if c.conf.Spider.UseScheduler { // 交给调度器管理
-		return
-	}
-
 	expression := c.conf.Spider.SubmitInitialSeedOpportunity
 	switch expression {
 	case "", "none":
