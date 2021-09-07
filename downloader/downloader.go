@@ -2,6 +2,7 @@ package downloader
 
 import (
 	"context"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -11,6 +12,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/zly-app/crawler/core"
+	"github.com/zly-app/crawler/utils"
 )
 
 type Downloader struct {
@@ -56,6 +58,16 @@ func (d *Downloader) Download(crawler core.ICrawler, seed *core.Seed, cookieJar 
 	seed.HttpRequest = req
 	seed.HttpResponse = resp
 	seed.HttpResponseBody, _ = ioutil.ReadAll(resp.Body)
+
+	// 编码转换
+	switch strings.ToLower(seed.Request.Encoding) {
+	case "gbk", "gb2312", "gb18030":
+		body, err := utils.Convert.GBKToUTF8Bytes(seed.HttpResponseBody)
+		if err != nil {
+			return nil, fmt.Errorf("将编码%s转换为utf8失败: %v", seed.Request.Encoding, err)
+		}
+		seed.HttpResponseBody = body
+	}
 
 	// 检查cookie
 	cookieJar.SetCookies(resp.Request.URL, resp.Cookies()) // 根据响应添加或删除cookies
