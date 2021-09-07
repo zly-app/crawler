@@ -3,6 +3,7 @@ package crawler
 import (
 	"fmt"
 	"net/http"
+	"reflect"
 	"sync/atomic"
 
 	zapp_core "github.com/zly-app/zapp/core"
@@ -18,6 +19,8 @@ import (
 	"github.com/zly-app/crawler/set"
 	"github.com/zly-app/crawler/spider_tool"
 )
+
+var typeOfISpiderTool = reflect.TypeOf((*core.ISpiderTool)(nil)).Elem()
 
 type Crawler struct {
 	app           zapp_core.IApp
@@ -51,11 +54,37 @@ func (c *Crawler) Inject(a ...interface{}) {
 		c.app.Fatal("crawler服务注入类型错误, 它必须能转为 crawler/core.ISpider")
 	}
 
+	// 检查继承于core.ISpiderTool
+	_, ok = a[0].(core.ISpiderTool)
+	if !ok {
+		c.app.Fatal("crawler服务注入类型错误, 它必须继承 crawler/core.ISpiderTool")
+	}
+	// 检查是带指针的结构体
+	aType := reflect.TypeOf(a[0])
+	if aType.Kind() != reflect.Ptr {
+		c.app.Fatal("crawler服务注入类型错误, 它必须是带指针的结构体")
+	}
+	aType = aType.Elem()
+	if aType.Kind() != reflect.Struct {
+		c.app.Fatal("crawler服务注入类型错误, 它必须是带指针的结构体")
+	}
+	// 检查ISpiderTool字段
+	fieldT, ok := aType.FieldByName("ISpiderTool")
+	if !ok {
+		c.app.Fatal("crawler服务注入类型错误, 它必须继承 crawler/core.ISpiderTool")
+	}
+	if !fieldT.Type.AssignableTo(typeOfISpiderTool) {
+		c.app.Fatal("crawler服务注入类型错误, 它必须继承 crawler/core.ISpiderTool")
+	}
+	// 注入
+	field := reflect.ValueOf(a[0]).Elem().FieldByName("ISpiderTool")
+	field.Set(reflect.ValueOf(c.spiderTool))
+
 	c.CheckSpiderParserMethod()
 }
 
 func (c *Crawler) Start() error {
-	err := c.spider.Init(c.spiderTool)
+	err := c.spider.Init()
 	if err != nil {
 		return fmt.Errorf("spider初始化失败: %v", err)
 	}

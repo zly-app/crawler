@@ -56,14 +56,11 @@ import (
 
 // 一个spider
 type Spider struct {
-	core.ISpiderTool
+	core.ISpiderTool // 必须继承这个接口
 }
 
 // 初始化
-func (s *Spider) Init(tool core.ISpiderTool) error {
-	s.ISpiderTool = tool
-	return nil
-}
+func (s *Spider) Init() error {	return nil }
 
 // 提交初始化种子
 func (s *Spider) SubmitInitialSeed() error {

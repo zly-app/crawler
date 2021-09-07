@@ -15,8 +15,7 @@ type Spider struct {
 }
 
 // 初始化
-func (s *Spider) Init(tool core.ISpiderTool) error {
-	s.ISpiderTool = tool
+func (s *Spider) Init() error {
 	return nil
 }
 

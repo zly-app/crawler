@@ -8,7 +8,7 @@ type ParserMethod = func(seed *Seed) error
 
 type ISpider interface {
 	// 初始化
-	Init(tool ISpiderTool) error
+	Init() error
 	// 提交初始化种子
 	SubmitInitialSeed() error
 	// 关闭

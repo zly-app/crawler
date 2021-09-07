@@ -10,8 +10,7 @@ type Spider struct {
 	core.ISpiderTool
 }
 
-func (s *Spider) Init(tool core.ISpiderTool) error {
-	s.ISpiderTool = tool
+func (s *Spider) Init() error {
 	return nil
 }
 
