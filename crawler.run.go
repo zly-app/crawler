@@ -56,6 +56,10 @@ func (c *Crawler) runOnce() error {
 		return nil
 	}
 
+	// 保存原始种子数据
+	c.nowRawSeed.Store(raw)
+	defer c.nowRawSeed.Store("")
+
 	// 开始处理
 	err = utils.Recover.WrapCall(func() error {
 		return c.seedProcess(raw)

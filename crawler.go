@@ -3,6 +3,7 @@ package crawler
 import (
 	"fmt"
 	"net/http"
+	"sync/atomic"
 
 	zapp_core "github.com/zly-app/zapp/core"
 	"github.com/zly-app/zapp/logger"
@@ -31,7 +32,8 @@ type Crawler struct {
 	proxy      core.IProxy
 	middleware core.IMiddleware
 
-	cookieJar http.CookieJar // 当前使用的cookieJar
+	cookieJar  http.CookieJar // 当前使用的cookieJar
+	nowRawSeed atomic.Value   // 当前的原始种子数据, 用于在程序退出之前回退到队列中
 }
 
 func (c *Crawler) Inject(a ...interface{}) {
@@ -63,6 +65,8 @@ func (c *Crawler) Start() error {
 }
 
 func (c *Crawler) Close() error {
+	c.rollbackRawSeed() // 回退原始种子数据
+
 	err := c.spider.Close()
 	if err != nil {
 		c.app.Error("spider关闭时出错", zap.Error(err))
@@ -84,6 +88,24 @@ func (c *Crawler) Close() error {
 		c.app.Error("关闭中间件时出错", zap.Error(err))
 	}
 	return nil
+}
+
+// 回退原始种子数据
+func (c *Crawler) rollbackRawSeed() {
+	rawData := c.nowRawSeed.Load()
+	if rawData == nil {
+		return
+	}
+
+	raw := rawData.(string)
+	if raw == "" {
+		return
+	}
+
+	err := c.PutRawSeed(raw, "", true)
+	if err != nil {
+		c.app.Error("回退原始种子数据失败", zap.String("raw", raw), zap.Error(err))
+	}
 }
 
 func (c *Crawler) Spider() core.ISpider         { return c.spider }
