@@ -34,16 +34,23 @@ func main() {
 			{
 				Name:      "clean",
 				Aliases:   []string{"cq"},
-				Usage:     "清空爬虫所有队列",
+				Usage:     "* 清空爬虫所有队列 - 慎用",
 				ArgsUsage: "<your_spider_name>",
 				Action:    CmdCleanSpiderQueue,
 			},
 			{
 				Name:      "clean_set",
 				Aliases:   []string{"cs"},
-				Usage:     "清空爬虫集合数据",
+				Usage:     "* 清空爬虫集合数据 - 慎用",
 				ArgsUsage: "<your_spider_name>",
 				Action:    CmdCleanSpiderSet,
+			},
+			{
+				Name:      "make_supervisor",
+				Aliases:   []string{"make"},
+				Usage:     "生成supervisor配置, 会生成文件 configs/supervisor/*.ini",
+				ArgsUsage: " ",
+				Action:    CmdMakeSupervisorConfig,
 			},
 		},
 	}

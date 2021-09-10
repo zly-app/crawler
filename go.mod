@@ -14,6 +14,7 @@ require (
 	github.com/seefan/goerr v1.1.2
 	github.com/seefan/gossdb v1.1.2 // indirect
 	github.com/seefan/gossdb/v2 v2.0.0
+	github.com/spf13/viper v1.7.1
 	github.com/urfave/cli/v2 v2.3.0
 	github.com/zly-app/zapp v1.1.2
 	github.com/zlyuancn/zstr v0.0.0-20210820024718-ae79a4fc86c3

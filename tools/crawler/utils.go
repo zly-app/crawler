@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -200,4 +201,25 @@ func ExtractMiddleText(s, pre, suf, def string, greedy bool) string {
 	}
 	end += start // 添加偏移
 	return s[start:end]
+}
+
+// 必须获取工作目录
+func MustGetWorkdir() string {
+	dir, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+	return dir
+}
+
+// 必须连接目录
+func MustDirJoin(path1, path2 string) string {
+	if !filepath.IsAbs(path2) {
+		path2 = filepath.Join(path1, path2)
+	}
+	path, err := filepath.Abs(path2)
+	if err != nil {
+		panic(err)
+	}
+	return path
 }

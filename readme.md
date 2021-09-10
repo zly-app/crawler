@@ -286,3 +286,5 @@ Password = ''       # 密码, 可选
     `crawler clean <spider>`
 5. 清空爬虫集合数据
     `crawler clean_set <spider>`
+6. 生成 [supervisor](http://supervisord.org/) 配置
+    `crawler make`
