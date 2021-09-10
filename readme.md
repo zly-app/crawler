@@ -32,6 +32,7 @@
 - [一些操作](#%E4%B8%80%E4%BA%9B%E6%93%8D%E4%BD%9C)
     - [这条数据我已经抓过了, 怎么让爬虫不再抓它了](#%E8%BF%99%E6%9D%A1%E6%95%B0%E6%8D%AE%E6%88%91%E5%B7%B2%E7%BB%8F%E6%8A%93%E8%BF%87%E4%BA%86-%E6%80%8E%E4%B9%88%E8%AE%A9%E7%88%AC%E8%99%AB%E4%B8%8D%E5%86%8D%E6%8A%93%E5%AE%83%E4%BA%86)
     - [非请求的seed](#%E9%9D%9E%E8%AF%B7%E6%B1%82%E7%9A%84seed)
+- [工程管理工具](#%E5%B7%A5%E7%A8%8B%E7%AE%A1%E7%90%86%E5%B7%A5%E5%85%B7)
 
 <!-- /TOC -->
 
@@ -264,3 +265,12 @@ Password = ''       # 密码, 可选
 ## 非请求的`seed`
 
 1. 一个`seed`可能不需要请求, 但是`seed`必须要有处理程序
+
+# 工程管理工具
+
+用于管理你的一系列爬虫
+
+1. 安装
+    ```go install github.com/zly-app/crawler/tools/crawler```
+2. 使用
+   ```crawler help```

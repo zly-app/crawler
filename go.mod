@@ -14,7 +14,8 @@ require (
 	github.com/seefan/goerr v1.1.2
 	github.com/seefan/gossdb v1.1.2 // indirect
 	github.com/seefan/gossdb/v2 v2.0.0
-	github.com/zly-app/zapp v1.1.1
+	github.com/urfave/cli/v2 v2.3.0
+	github.com/zly-app/zapp v1.1.2
 	go.uber.org/zap v1.16.0
 	golang.org/x/net v0.0.0-20210428140749-89ef3d95e781
 	golang.org/x/text v0.3.6
