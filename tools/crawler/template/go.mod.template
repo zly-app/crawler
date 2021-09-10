@@ -1,0 +1,8 @@
+module {@project_name}
+
+go 1.16
+
+require (
+	github.com/zly-app/crawler v0.0.0-20210910025827-60abbb095c2f
+	github.com/zly-app/zapp v1.1.2
+)

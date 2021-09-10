@@ -1,0 +1,51 @@
+package main
+
+import (
+	"fmt"
+
+	"github.com/zly-app/crawler"
+	"github.com/zly-app/crawler/core"
+	"github.com/zly-app/zapp"
+
+	"{@project_name}/component"
+)
+
+// 一个spider
+type Spider struct {
+	c component.IComponent
+	core.ISpiderTool
+}
+
+func newSpider() core.ISpider {
+	return &Spider{c: component.GetComponent()}
+}
+
+// 初始化
+func (s *Spider) Init() error {
+	return nil
+}
+
+// 提交初始化种子
+func (s *Spider) SubmitInitialSeed() error {
+	seed := s.NewSeed("https://www.baidu.com/", s.Parser) // 创建种子并指定解析方法
+	s.SubmitSeed(seed)                                    // 提交种子
+	return nil
+}
+
+// 解析方法
+func (s *Spider) Parser(seed *core.Seed) error {
+	fmt.Println(string(seed.HttpResponseBody)) // 打印响应body
+	return nil
+}
+
+// 关闭
+func (s *Spider) Close() error { return nil }
+
+func main() {
+	app := zapp.NewApp("{@spider_name}",
+		crawler.WithService(), // 启用crawler服务
+		zapp.WithCustomComponent(component.CustomComponentCreator), // 使用自定义组件
+	)
+	crawler.RegistrySpider(newSpider()) // 注入spider
+	app.Run()                           // 运行
+}

@@ -1,17 +1,29 @@
 package main
 
 import (
+	"embed"
+	"errors"
 	"fmt"
 	"io"
 	"os"
+	"strings"
 )
+
+//go:embed template/*
+var embedFiles embed.FS
+
+// 必须读取内嵌文件数据
+func MustReadEmbedFile(file string) []byte {
+	data, err := embedFiles.ReadFile(file)
+	if err != nil {
+		panic(err)
+	}
+	return data
+}
 
 // 目录是否为空
 func DirIsEmpty(path string) (bool, error) {
 	dir, err := os.Open(path)
-	if err == io.EOF {
-		return true, nil
-	}
 	if err != nil {
 		return false, err
 	}
@@ -24,7 +36,7 @@ func DirIsEmpty(path string) (bool, error) {
 
 // 目录必须为空
 func DirMustEmpty(path string) {
-	empty, err := DirIsEmpty(".")
+	empty, err := DirIsEmpty(path)
 	if err != nil {
 		panic(err)
 	}
@@ -34,19 +46,153 @@ func DirMustEmpty(path string) {
 }
 
 // 必须创建文件夹
-func MustMkdir(perm os.FileMode, names ...string) {
-	for _, name := range names {
-		err := os.MkdirAll(name, perm)
-		if err != nil {
-			panic(err)
-		}
+func MustMkdir(name string, perm ...os.FileMode) {
+	var p os.FileMode = 0666
+	if len(perm) > 0 {
+		p = perm[0]
+	}
+	err := os.MkdirAll(name, p)
+	if err != nil {
+		panic(err)
+	}
+}
+
+// 必须创建文件夹并且是创建
+func MustMkdirAndIsCreate(name string, perm ...os.FileMode) {
+	var p os.FileMode = 0666
+	if len(perm) > 0 {
+		p = perm[0]
+	}
+	_, err := os.Open(name)
+	if err == nil {
+		panic(fmt.Errorf("文件夹'%s'已存在", name))
+	}
+	if !os.IsNotExist(err) {
+		panic(err)
+	}
+
+	err = os.MkdirAll(name, p)
+	if err != nil {
+		panic(err)
 	}
 }
 
 // 必须创建文件
-func MustWriteFile(name string, data []byte, perm os.FileMode) {
-	err := os.WriteFile(name, data, perm)
+func MustWriteFile(name string, data []byte, perm ...os.FileMode) {
+	var p os.FileMode = 0666
+	if len(perm) > 0 {
+		p = perm[0]
+	}
+	err := os.WriteFile(name, data, p)
 	if err != nil {
 		panic(err)
 	}
+}
+
+// 检查是否存在路径并指定为文件夹或文件, 读取失败或者权限不足会panic
+func CheckHasPath(path string, isDir bool) bool {
+	d, err := os.Open(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return false
+		}
+		panic(err)
+	}
+	s, err := d.Stat()
+	if err != nil {
+		panic(fmt.Errorf("'%s'读取失败"))
+	}
+	return s.IsDir() == isDir
+}
+
+// 必须存在路径
+func MustHasPath(path string, isDir bool) {
+	d, err := os.Open(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			panic(fmt.Errorf("'%s'不存在", path))
+		}
+		panic(err)
+	}
+	s, err := d.Stat()
+	if err != nil {
+		panic(fmt.Errorf("'%s'读取失败"))
+	}
+	if isDir && !s.IsDir() {
+		panic(fmt.Errorf("'%s'不是一个目录", path))
+	}
+	if !isDir && s.IsDir() {
+		panic(fmt.Errorf("'%s'不是一个文件", path))
+	}
+}
+
+// 必须不存在某个路径
+func MustNoExistPath(path string) {
+	_, err := os.Open(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return
+		}
+		panic(err)
+	}
+	panic(fmt.Errorf("'%s'已存在", path))
+}
+
+// 必须在项目目录中并获取项目名
+func MustGetProjectName() string {
+	if !CheckHasPath("go.mod", false) ||
+		!CheckHasPath("component", true) ||
+		!CheckHasPath("component/component.go", false) ||
+		!CheckHasPath("configs", true) ||
+		!CheckHasPath("configs/scheduler.toml", false) ||
+		!CheckHasPath("configs/spider_base.toml", false) {
+		_, _ = os.Stderr.WriteString("必须在项目中\n")
+		os.Exit(1)
+	}
+
+	data, err := os.ReadFile("go.mod")
+	if err != nil {
+		panic(err)
+	}
+	projectName := ExtractMiddleText(string(data), "module ", "\n", "", false)
+	projectName = strings.TrimSuffix(projectName, "\r")
+	if projectName == "" {
+		panic(errors.New("无法读取项目名"))
+	}
+	return projectName
+}
+
+/**提取中间文本
+  s 原始文本
+  pre 提取数据的前面的数据, 如果为空则从最开头提取
+  suf 提取数据的后面的数据, 如果为空则提取到结尾
+  def 找不到时返回的默认数据
+  greedy 贪婪的, 默认从开头开始查找suf, 如果是贪婪的则从结尾开始查找suf
+*/
+func ExtractMiddleText(s, pre, suf, def string, greedy bool) string {
+	var start int  // 开始位置
+	if pre != "" { // 需要查找开始数据
+		k := strings.Index(s, pre)
+		if k == -1 {
+			return def
+		}
+		start = k + len(pre)
+	}
+
+	if suf == "" {
+		return s[start:]
+	}
+
+	// 结束位置
+	var end int
+	if greedy { // 贪婪的从结尾开始查找suf
+		end = strings.LastIndex(s[start:], suf)
+	} else {
+		end = strings.Index(s[start:], suf)
+	}
+	if end == -1 {
+		return def
+	}
+	end += start // 添加偏移
+	return s[start:end]
 }

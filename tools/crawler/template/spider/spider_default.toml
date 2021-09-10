@@ -1,0 +1,8 @@
+[include]
+files = '../../configs/spider_base.toml'
+
+[services.crawler.spider]
+# 爬虫名
+Name = '@spider_name'
+# 提交初始化种子的时机
+SubmitInitialSeedOpportunity = 'none'

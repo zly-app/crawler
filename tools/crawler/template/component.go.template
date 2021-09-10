@@ -1,0 +1,30 @@
+package component
+
+import (
+	"github.com/zly-app/zapp/component"
+	zapp_core "github.com/zly-app/zapp/core"
+)
+
+type IComponent interface {
+	zapp_core.IComponent
+}
+
+type Component struct {
+	zapp_core.IComponent
+}
+
+func (c *Component) Close() {
+	c.IComponent.Close()
+}
+
+// 自定义component创造者
+func CustomComponentCreator(app zapp_core.IApp) zapp_core.IComponent {
+	return &Component{
+		IComponent: app.GetComponent(),
+	}
+}
+
+// 获取组件
+func GetComponent() IComponent {
+	return component.GetComponent().(IComponent)
+}
