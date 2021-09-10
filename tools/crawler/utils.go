@@ -162,6 +162,11 @@ func MustGetProjectName() string {
 	return projectName
 }
 
+// 必须在项目目录中
+func MustInProjectDir() {
+	_ = MustGetProjectName()
+}
+
 /**提取中间文本
   s 原始文本
   pre 提取数据的前面的数据, 如果为空则从最开头提取

@@ -138,13 +138,14 @@ func (c *Crawler) rollbackRawSeed() {
 }
 
 func (c *Crawler) Spider() core.ISpider         { return c.spider }
+func (c *Crawler) SpiderTool() core.ISpiderTool { return c.spiderTool }
 func (c *Crawler) Queue() core.IQueue           { return c.queue }
 func (c *Crawler) Downloader() core.IDownloader { return c.downloader }
 func (c *Crawler) Proxy() core.IProxy           { return c.proxy }
 func (c *Crawler) Set() core.ISet               { return c.set }
 func (c *Crawler) CookieJar() http.CookieJar    { return c.cookieJar }
 
-func NewCrawler(app zapp_core.IApp) zapp_core.IService {
+func NewCrawler(app zapp_core.IApp) *Crawler {
 	conf := config.NewConfig(app)
 	confKey := "services." + string(config.NowServiceType)
 	if app.GetConfig().GetViper().IsSet(confKey) {

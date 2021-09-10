@@ -13,6 +13,8 @@ var (
 type ICrawler interface {
 	// 获取spider
 	Spider() ISpider
+	// 获取spider工具
+	SpiderTool() ISpiderTool
 	// 获取队列
 	Queue() IQueue
 	// 获取集合

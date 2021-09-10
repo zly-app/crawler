@@ -24,6 +24,13 @@ func main() {
 				ArgsUsage: "<your_spider_name>",
 				Action:    CmdCreateSpider,
 			},
+			{
+				Name:      "start",
+				Aliases:   []string{"ss"},
+				Usage:     "发送提交初始化种子信号",
+				ArgsUsage: "<your_spider_name>",
+				Action:    CmdInitSeedSignal,
+			},
 		},
 	}
 	err := app.Run(os.Args)
