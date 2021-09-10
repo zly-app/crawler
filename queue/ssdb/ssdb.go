@@ -56,6 +56,10 @@ func (s *SsdbQueue) Close() error {
 	return nil
 }
 
+func (s *SsdbQueue) Delete(queueName string) error {
+	return s.pool.GetClient().Del(queueName)
+}
+
 func NewSsdbQueue(app zapp_core.IApp) core.IQueue {
 	conf := newSsdbConfig()
 	confKey := fmt.Sprintf("services.%s.queue", config.NowServiceType)

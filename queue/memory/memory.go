@@ -65,6 +65,14 @@ func (m *MemoryQueue) QueueSize(queueName string) (int, error) {
 	return queue.Len(), nil
 }
 
+func (m *MemoryQueue) Delete(queueName string) error {
+	m.mx.Lock()
+	defer m.mx.Unlock()
+
+	delete(m.queues, queueName)
+	return nil
+}
+
 func (m *MemoryQueue) Close() error { return nil }
 
 func NewMemoryQueue(app zapp_core.IApp) core.IQueue {

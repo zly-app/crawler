@@ -48,6 +48,10 @@ func (r *RedisQueue) Close() error {
 	return r.client.Close()
 }
 
+func (r *RedisQueue) Delete(queueName string) error {
+	return r.client.Del(context.Background(), queueName).Err()
+}
+
 func NewRedisQueue(app zapp_core.IApp) core.IQueue {
 	conf := newRedisConfig()
 	confKey := fmt.Sprintf("services.%s.queue", config.NowServiceType)

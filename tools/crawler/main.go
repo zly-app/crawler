@@ -31,6 +31,20 @@ func main() {
 				ArgsUsage: "<your_spider_name>",
 				Action:    CmdInitSeedSignal,
 			},
+			{
+				Name:      "clean",
+				Aliases:   []string{"cq"},
+				Usage:     "清空爬虫所有队列",
+				ArgsUsage: "<your_spider_name>",
+				Action:    CmdCleanSpiderQueue,
+			},
+			{
+				Name:      "clean_set",
+				Aliases:   []string{"cs"},
+				Usage:     "清空爬虫集合数据",
+				ArgsUsage: "<your_spider_name>",
+				Action:    CmdCleanSpiderSet,
+			},
 		},
 	}
 	err := app.Run(os.Args)

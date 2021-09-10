@@ -26,6 +26,8 @@ type IQueue interface {
 	Pop(queueName string, front bool) (string, error)
 	// 获取队列长度
 	QueueSize(queueName string) (int, error)
+	// 删除队列
+	Delete(queueName string) error
 	// 关闭
 	Close() error
 }
