@@ -277,6 +277,12 @@ Password = ''       # 密码, 可选
 ## 命令
 
 1. 初始化一个项目
-   `crawler init mycrawler && cd mycrawler`
+    `crawler init <project_name> && cd <project_name>`
 2. 创建一个爬虫
-   `crawler create a_spider`
+    `crawler create <spider>`
+3. 提交初始化种子
+    `crawler start <spider>`
+4. 清空爬虫所有队列
+    `crawler clean <spider>`
+5. 清空爬虫集合数据
+    `crawler clean_set <spider>`
