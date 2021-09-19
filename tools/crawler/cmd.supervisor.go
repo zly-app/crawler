@@ -3,11 +3,16 @@ package main
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
+	"time"
 
+	"github.com/robfig/cron/v3"
 	"github.com/spf13/viper"
 	"github.com/urfave/cli/v2"
 	"github.com/zlyuancn/zstr"
+
+	"github.com/zly-app/crawler"
 )
 
 // 生成supervisor配置
@@ -19,11 +24,7 @@ func CmdMakeSupervisorConfig(context *cli.Context) error {
 		return fmt.Errorf("读取configs/scheduler.toml文件失败: %v", err)
 	}
 
-	var groups map[string]map[string]struct {
-		Process int    // 进程数
-		Seed    string // 提交初始化种子的时机
-		Desc    string // spider描述
-	}
+	var groups map[string]map[string]string
 	if err := vi.Unmarshal(&groups); err != nil {
 		return fmt.Errorf("解析configs/scheduler.toml文件失败: %v", err)
 	}
@@ -56,22 +57,45 @@ programs = @spider_names`
 			if !CheckHasPath(fmt.Sprintf("./spiders/%s", spiderName), true) {
 				panic(fmt.Errorf("spider<%s>不存在", spiderName))
 			}
-			if conf.Process == 0 {
+			// 解析配置
+			confValue := strings.Split(conf, ",")
+			if len(confValue) != 2 {
+				panic(fmt.Errorf("spider<%s>的配置错误", spiderName))
+			}
+			processNum, err := strconv.Atoi(confValue[0])
+			if err != nil {
+				panic(fmt.Errorf("spider<%s>的配置错误, 无法获取到进程数", spiderName))
+			}
+
+			// 检查进程数
+			if processNum < 1 {
 				continue
 			}
-			if conf.Process > 99 {
+			if processNum > 99 {
 				panic(fmt.Errorf("spider<%s>的process太多, 超过99通常是无意义的", spiderName))
 			}
-			spiderNames = append(spiderNames, spiderName)
+			// 检查提交初始化种子的时机
+			expression := confValue[1]
+			switch expression {
+			case "", "none", "start":
+			default:
+				_, err := time.ParseInLocation(crawler.OnceTriggerTimeLayout, expression, time.Local)
+				if err != nil {
+					_, err = cron.ParseStandard(expression)
+				}
+				if err != nil {
+					panic(fmt.Errorf("spider<%s>的配置错误, 提交初始化种子的时机无法解析", spiderName))
+				}
+			}
 
+			spiderNames = append(spiderNames, spiderName)
 			args := map[string]interface{}{
 				"project_name": projectName,                          // 项目名
 				"group_name":   groupName,                            // 组名
 				"spider_name":  spiderName,                           // 爬虫名
 				"spider_dir":   MustDirJoin("./spiders", spiderName), // 爬虫目录
-				"process":      conf.Process,                         // 进程数
-				"seed":         conf.Seed,                            // 初始化种子提交时机
-				"desc":         conf.Desc,                            // 爬虫描述
+				"process":      processNum,                           // 进程数
+				"seed":         confValue[1],                         // 初始化种子提交时机
 			}
 			text := zstr.Render(spiderConfigTemplate, args)
 			spiderConfigs = append(spiderConfigs, text)

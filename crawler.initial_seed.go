@@ -12,7 +12,7 @@ import (
 const SubmitInitialSeedSignal = "SubmitInitialSeed"
 
 // 一次性触发时间样式
-const onceTriggerTimeLayout = "2006-01-02 15:04:05"
+const OnceTriggerTimeLayout = "2006-01-02 15:04:05"
 
 // 检查提交初始化种子
 func (c *Crawler) CheckSubmitInitialSeed() {
@@ -26,7 +26,7 @@ func (c *Crawler) CheckSubmitInitialSeed() {
 	}
 
 	// 一次性触发器
-	targetTime, err := time.ParseInLocation(onceTriggerTimeLayout, expression, time.Local)
+	targetTime, err := time.ParseInLocation(OnceTriggerTimeLayout, expression, time.Local)
 	if err == nil {
 		interval := targetTime.Sub(time.Now())
 		if interval <= 0 {

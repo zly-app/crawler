@@ -48,7 +48,7 @@ func main() {
 			{
 				Name:      "make_supervisor",
 				Aliases:   []string{"make"},
-				Usage:     "生成supervisor配置, 会生成文件 configs/supervisor/*.ini",
+				Usage:     "删除supervisor配置后根据 configs/scheduler.toml 重新生成supervisor配置, 生成的文件路径为 configs/supervisor/*.ini",
 				ArgsUsage: " ",
 				Action:    CmdMakeSupervisorConfig,
 			},
