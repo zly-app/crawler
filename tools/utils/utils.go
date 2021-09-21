@@ -144,7 +144,7 @@ func MustGetProjectName() string {
 		!CheckHasPath("component", true) ||
 		!CheckHasPath("component/component.go", false) ||
 		!CheckHasPath("configs", true) ||
-		!CheckHasPath("configs/scheduler.toml", false) ||
+		!CheckHasPath("configs/spiders.toml", false) ||
 		!CheckHasPath("configs/base_config.toml", false) ||
 		!CheckHasPath("spiders", true) {
 		_, _ = os.Stderr.WriteString("必须在项目中\n")
