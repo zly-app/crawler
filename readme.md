@@ -270,25 +270,28 @@ Password = ''       # 密码, 可选
 # 工程管理工具
 
 1. 安装
-    `go install github.com/zly-app/crawler/tools/crawler@latest`
+   `go install github.com/zly-app/crawler/tools/crawler@latest`
 2. 使用说明
-    `crawler help`
+   `crawler help`
 
 ## 命令
 
 1. 初始化一个项目
-    `crawler init <project_name> && cd <project_name>`
+   `crawler init <project_name> && cd <project_name>`
 2. 创建一个爬虫
-    `crawler create <spider>`
+   `crawler create <spider>`
 3. 提交初始化种子
-    `crawler start <spider>`
+   `crawler start <spider>`
 4. 清空爬虫所有队列
-    `crawler clean <spider>`
+   `crawler clean <spider>`
 5. 清空爬虫集合数据
-    `crawler clean_set <spider>`
-6. 生成 [supervisor](http://supervisord.org/) 配置
-    `crawler make`
+   `crawler clean_set <spider>`
+6. 生成 `supervisor` 配置, 点 [这里](http://supervisord.org/) 进入supervisor官网
+    1. `crawler make` 会在 `configs/supervisor` 目录下生成一些 `ini` 文件
+    2. 将 `supervisor` 的配置修改包含文件 `<project_dir>/configs/supervisor/*.ini`
 
 # 调度器工具
 
 1. 安装
+   `go build github.com/zly-app/crawler/tools/crawler_scheduler`
+2. 使用 将 `supervisor` 的配置修改包含文件 `<project_dir>/configs/supervisor_scheduler_config.ini`
