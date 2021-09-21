@@ -21,7 +21,7 @@ func CmdInit(context *cli.Context) error {
 
 	MustMkdir(fmt.Sprintf("%s/configs", projectName))
 	MustWriteFile(fmt.Sprintf("%s/configs/scheduler.toml", projectName), MustReadEmbedFile("template/scheduler.toml"))
-	MustWriteFile(fmt.Sprintf("%s/configs/spider_base.toml", projectName), MustReadEmbedFile("template/spider_base.toml"))
+	MustWriteFile(fmt.Sprintf("%s/configs/spider_config.toml", projectName), MustReadEmbedFile("template/spider_config.toml"))
 	MustWriteFile(fmt.Sprintf("%s/configs/supervisor_spider_config.ini", projectName), MustReadEmbedFile("template/supervisor_spider_config.ini"))
 
 	MustMkdir(fmt.Sprintf("%s/spiders", projectName))
