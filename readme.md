@@ -288,3 +288,7 @@ Password = ''       # 密码, 可选
     `crawler clean_set <spider>`
 6. 生成 [supervisor](http://supervisord.org/) 配置
     `crawler make`
+
+# 调度器工具
+
+1. 安装
