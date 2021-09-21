@@ -1,10 +1,14 @@
 package main
 
 import (
+	"embed"
 	"os"
 
 	"github.com/urfave/cli/v2"
 )
+
+//go:embed template/*
+var embedFiles embed.FS
 
 func main() {
 	app := &cli.App{

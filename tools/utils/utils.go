@@ -1,4 +1,4 @@
-package main
+package utils
 
 import (
 	"embed"
@@ -10,12 +10,9 @@ import (
 	"strings"
 )
 
-//go:embed template/*
-var embedFiles embed.FS
-
 // 必须读取内嵌文件数据
-func MustReadEmbedFile(file string) []byte {
-	data, err := embedFiles.ReadFile(file)
+func MustReadEmbedFile(fs embed.FS, file string) []byte {
+	data, err := fs.ReadFile(file)
 	if err != nil {
 		panic(err)
 	}
@@ -146,7 +143,8 @@ func MustGetProjectName() string {
 		!CheckHasPath("component/component.go", false) ||
 		!CheckHasPath("configs", true) ||
 		!CheckHasPath("configs/scheduler.toml", false) ||
-		!CheckHasPath("configs/spider_base.toml", false) {
+		!CheckHasPath("configs/spider_config.toml", false) ||
+		!CheckHasPath("spiders", true) {
 		_, _ = os.Stderr.WriteString("必须在项目中\n")
 		os.Exit(1)
 	}

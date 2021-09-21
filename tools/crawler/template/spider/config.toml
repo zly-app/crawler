@@ -1,5 +1,5 @@
 [include]
-files = '../../configs/spider_base.toml'
+files = '../../configs/spider_config.toml'
 
 [services.crawler.spider]
 # 爬虫名

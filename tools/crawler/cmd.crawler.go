@@ -12,17 +12,18 @@ import (
 
 	"github.com/zly-app/crawler"
 	"github.com/zly-app/crawler/config"
+	"github.com/zly-app/crawler/tools/utils"
 )
 
 func makeCrawler(context *cli.Context) (core.IApp, *crawler.Crawler, string, error) {
 	if context.Args().Len() != 1 {
 		return nil, nil, "", errors.New("必须也只能写入一个爬虫名")
 	}
-	MustInProjectDir()
+	utils.MustInProjectDir()
 	spiderName := context.Args().Get(0)
 
 	// 检查spider存在
-	if !CheckHasPath(fmt.Sprintf("spiders/%s", spiderName), true) {
+	if !utils.CheckHasPath(fmt.Sprintf("spiders/%s", spiderName), true) {
 		_, _ = os.Stderr.WriteString(fmt.Sprintf("spider<%s>不存在\n", spiderName))
 		os.Exit(1)
 	}

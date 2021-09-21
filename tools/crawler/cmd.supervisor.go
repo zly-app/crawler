@@ -13,11 +13,12 @@ import (
 	"github.com/zlyuancn/zstr"
 
 	"github.com/zly-app/crawler"
+	"github.com/zly-app/crawler/tools/utils"
 )
 
 // 生成supervisor配置
 func CmdMakeSupervisorConfig(context *cli.Context) error {
-	projectName := MustGetProjectName()
+	projectName := utils.MustGetProjectName()
 	vi := viper.New()
 	vi.SetConfigFile("configs/scheduler.toml")
 	if err := vi.MergeInConfig(); err != nil {
@@ -48,13 +49,13 @@ programs = @spider_names`
 	}
 
 	// 创建配置目录
-	MustMkdir("configs/supervisor")
+	utils.MustMkdir("configs/supervisor")
 
 	for groupName, g := range groups {
 		var spiderConfigs []string
 		var spiderNames []string
 		for spiderName, conf := range g {
-			if !CheckHasPath(fmt.Sprintf("./spiders/%s", spiderName), true) {
+			if !utils.CheckHasPath(fmt.Sprintf("./spiders/%s", spiderName), true) {
 				panic(fmt.Errorf("spider<%s>不存在", spiderName))
 			}
 			// 解析配置
@@ -90,12 +91,12 @@ programs = @spider_names`
 
 			spiderNames = append(spiderNames, spiderName)
 			args := map[string]interface{}{
-				"project_name": projectName,                          // 项目名
-				"group_name":   groupName,                            // 组名
-				"spider_name":  spiderName,                           // 爬虫名
-				"spider_dir":   MustDirJoin("./spiders", spiderName), // 爬虫目录
-				"process":      processNum,                           // 进程数
-				"seed":         confValue[1],                         // 初始化种子提交时机
+				"project_name": projectName,                                // 项目名
+				"group_name":   groupName,                                  // 组名
+				"spider_name":  spiderName,                                 // 爬虫名
+				"spider_dir":   utils.MustDirJoin("./spiders", spiderName), // 爬虫目录
+				"process":      processNum,                                 // 进程数
+				"seed":         confValue[1],                               // 初始化种子提交时机
 			}
 			text := zstr.Render(spiderConfigTemplate, args)
 			spiderConfigs = append(spiderConfigs, text)
