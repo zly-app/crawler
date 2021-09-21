@@ -22,9 +22,9 @@ import (
 func CmdMakeSupervisorConfig(context *cli.Context) error {
 	projectName := utils.MustGetProjectName()
 	vi := viper.New()
-	vi.SetConfigFile("configs/scheduler.toml")
+	vi.SetConfigFile("configs/spiders.toml")
 	if err := vi.MergeInConfig(); err != nil {
-		logger.Log.Fatal("读取调度器配置文件失败", zap.String("configFile", "configs/scheduler.toml"), zap.Error(err))
+		logger.Log.Fatal("读取爬虫配置文件失败", zap.String("configFile", "configs/spiders.toml"), zap.Error(err))
 	}
 
 	var groups map[string]map[string]string
@@ -82,7 +82,7 @@ programs = @spider_names`
 			switch expression {
 			case "", "none", "start":
 			default:
-				_, err := time.ParseInLocation(crawler.OnceTriggerTimeLayout, expression, time.Local)
+				_, err = time.ParseInLocation(crawler.OnceTriggerTimeLayout, expression, time.Local)
 				if err != nil {
 					_, err = cron.ParseStandard(expression)
 				}
@@ -92,15 +92,13 @@ programs = @spider_names`
 			}
 
 			spiderNames = append(spiderNames, spiderName)
-			args := map[string]interface{}{
-				"project_name": projectName,                                // 项目名
-				"group_name":   groupName,                                  // 组名
-				"spider_name":  spiderName,                                 // 爬虫名
-				"spider_dir":   utils.MustDirJoin("./spiders", spiderName), // 爬虫目录
-				"process":      processNum,                                 // 进程数
-				"seed":         confValue[1],                               // 初始化种子提交时机
-			}
-			text := zstr.Render(spiderConfigTemplate, args)
+			templateArgs := utils.MakeTemplateArgs(projectName)
+			templateArgs["group_name"] = groupName                                  // 组名
+			templateArgs["spider_name"] = spiderName                                // 爬虫名
+			templateArgs["spider_dir"] = utils.MustDirJoin("./spiders", spiderName) // 爬虫目录
+			templateArgs["process_num"] = processNum                                // 进程数
+			templateArgs["seed_cron"] = confValue[1]                                // 初始化种子提交时机
+			text := zstr.Render(spiderConfigTemplate, templateArgs)
 			spiderConfigs = append(spiderConfigs, text)
 		}
 
@@ -108,13 +106,12 @@ programs = @spider_names`
 			continue
 		}
 
-		args := map[string]interface{}{
-			"group_name":   groupName,                      // 组名
-			"spider_names": strings.Join(spiderNames, ","), // 爬虫列表
-		}
-		groupConfigData := zstr.Render(groupConfigTemplate, args)
+		templateArgs := utils.MakeTemplateArgs(projectName)
+		templateArgs["group_name"] = groupName                        // 组名
+		templateArgs["spider_names"] = strings.Join(spiderNames, ",") // 爬虫列表
+		groupConfigData := zstr.Render(groupConfigTemplate, templateArgs)
 		data := strings.Join(spiderConfigs, "\n\n") + "\n\n\n" + groupConfigData
-		err := os.WriteFile(fmt.Sprintf("configs/supervisor/%s.ini", groupName), []byte(data), 0666)
+		err = os.WriteFile(fmt.Sprintf("configs/supervisor/%s.ini", groupName), []byte(data), 0666)
 		if err != nil {
 			logger.Log.Fatal("写入supervisor配置失败", zap.String("file", fmt.Sprintf("configs/supervisor/%s.ini", groupName)), zap.Error(err))
 		}

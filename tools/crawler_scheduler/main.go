@@ -30,14 +30,14 @@ func (s *Scheduler) Start() {
 	}
 
 	vi := viper.New()
-	vi.SetConfigFile("configs/scheduler.toml")
+	vi.SetConfigFile("configs/spiders.toml")
 	if err := vi.MergeInConfig(); err != nil {
-		s.app.Fatal("读取configs/scheduler.toml文件失败", zap.Error(err))
+		s.app.Fatal("读取爬虫配置文件失败", zap.String("configFile", "configs/spiders.toml"), zap.Error(err))
 	}
 
 	var groups map[string]map[string]string
 	if err := vi.Unmarshal(&groups); err != nil {
-		s.app.Fatal("解析configs/scheduler.toml文件失败", zap.Error(err))
+		s.app.Fatal("解析调度器配置文件失败", zap.String("configFile", "configs/scheduler.toml"), zap.Error(err))
 	}
 
 	for _, g := range groups {

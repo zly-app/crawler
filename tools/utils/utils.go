@@ -7,7 +7,9 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
+	"time"
 )
 
 // 必须读取内嵌文件数据
@@ -143,7 +145,7 @@ func MustGetProjectName() string {
 		!CheckHasPath("component/component.go", false) ||
 		!CheckHasPath("configs", true) ||
 		!CheckHasPath("configs/scheduler.toml", false) ||
-		!CheckHasPath("configs/spider_config.toml", false) ||
+		!CheckHasPath("configs/base_config.toml", false) ||
 		!CheckHasPath("spiders", true) {
 		_, _ = os.Stderr.WriteString("必须在项目中\n")
 		os.Exit(1)
@@ -220,4 +222,20 @@ func MustDirJoin(path1, path2 string) string {
 		panic(err)
 	}
 	return path
+}
+
+// 构建模板参数
+func MakeTemplateArgs(projectName string) map[string]interface{} {
+	numCpu := runtime.NumCPU()
+	if numCpu < 1 {
+		numCpu = 1
+	}
+	return map[string]interface{}{
+		"project_name": projectName,      // 项目名
+		"project_dir":  MustGetWorkdir(), // 项目路径
+		"date":         time.Now().Format("2006-01-02"),
+		"time":         time.Now().Format("15:04:05"),
+		"date_time":    time.Now().Format("2006-01-02 15:04:05"),
+		"num_cpu":      numCpu,
+	}
 }

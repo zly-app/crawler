@@ -22,13 +22,15 @@ func CmdInit(context *cli.Context) error {
 	utils.MustWriteFile(fmt.Sprintf("%s/component/component.go", projectName), utils.MustReadEmbedFile(embedFiles, "template/component.go.template"))
 
 	utils.MustMkdir(fmt.Sprintf("%s/configs", projectName))
-	utils.MustWriteFile(fmt.Sprintf("%s/configs/scheduler.toml", projectName), utils.MustReadEmbedFile(embedFiles, "template/scheduler.toml"))
-	utils.MustWriteFile(fmt.Sprintf("%s/configs/spider_config.toml", projectName), utils.MustReadEmbedFile(embedFiles, "template/spider_config.toml"))
+	utils.MustWriteFile(fmt.Sprintf("%s/configs/spiders.toml", projectName), utils.MustReadEmbedFile(embedFiles, "template/spiders.toml"))
+	utils.MustWriteFile(fmt.Sprintf("%s/configs/base_config.toml", projectName), utils.MustReadEmbedFile(embedFiles, "template/base_config.toml"))
+	supervisorSchedulerConfig := zstr.Render(string(utils.MustReadEmbedFile(embedFiles, "template/supervisor_scheduler_config.ini")), utils.MakeTemplateArgs(projectName))
+	utils.MustWriteFile(fmt.Sprintf("%s/configs/supervisor_scheduler_config.ini", projectName), []byte(supervisorSchedulerConfig))
 	utils.MustWriteFile(fmt.Sprintf("%s/configs/supervisor_spider_config.ini", projectName), utils.MustReadEmbedFile(embedFiles, "template/supervisor_spider_config.ini"))
 
 	utils.MustMkdir(fmt.Sprintf("%s/spiders", projectName))
 
-	goModContent := zstr.Render(string(utils.MustReadEmbedFile(embedFiles, "template/go.mod.template")), zstr.KV{"project_name", projectName})
+	goModContent := zstr.Render(string(utils.MustReadEmbedFile(embedFiles, "template/go.mod.template")), utils.MakeTemplateArgs(projectName))
 	utils.MustWriteFile(fmt.Sprintf("%s/go.mod", projectName), []byte(goModContent))
 	return nil
 }
