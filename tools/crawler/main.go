@@ -5,6 +5,8 @@ import (
 	"os"
 
 	"github.com/urfave/cli/v2"
+	"github.com/zly-app/zapp/logger"
+	"go.uber.org/zap"
 )
 
 //go:embed template/*
@@ -60,6 +62,6 @@ func main() {
 	}
 	err := app.Run(os.Args)
 	if err != nil {
-		panic(err)
+		logger.Log.Fatal("启动失败", zap.Error(err))
 	}
 }

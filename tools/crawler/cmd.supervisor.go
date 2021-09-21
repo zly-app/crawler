@@ -10,7 +10,9 @@ import (
 	"github.com/robfig/cron/v3"
 	"github.com/spf13/viper"
 	"github.com/urfave/cli/v2"
+	"github.com/zly-app/zapp/logger"
 	"github.com/zlyuancn/zstr"
+	"go.uber.org/zap"
 
 	"github.com/zly-app/crawler"
 	"github.com/zly-app/crawler/tools/utils"
@@ -22,18 +24,18 @@ func CmdMakeSupervisorConfig(context *cli.Context) error {
 	vi := viper.New()
 	vi.SetConfigFile("configs/scheduler.toml")
 	if err := vi.MergeInConfig(); err != nil {
-		return fmt.Errorf("读取configs/scheduler.toml文件失败: %v", err)
+		logger.Log.Fatal("读取调度器配置文件失败", zap.String("configFile", "configs/scheduler.toml"), zap.Error(err))
 	}
 
 	var groups map[string]map[string]string
 	if err := vi.Unmarshal(&groups); err != nil {
-		return fmt.Errorf("解析configs/scheduler.toml文件失败: %v", err)
+		logger.Log.Fatal("解析调度器配置文件失败", zap.String("configFile", "configs/scheduler.toml"), zap.Error(err))
 	}
 
 	// 获取supervisor爬虫配置文件模板
 	s, err := os.ReadFile("configs/supervisor_spider_config.ini")
 	if err != nil {
-		panic(err)
+		logger.Log.Fatal("读取supervisor爬虫配置文件模板失败", zap.String("template", "configs/supervisor_spider_config.ini"), zap.Error(err))
 	}
 	spiderConfigTemplate := string(s)
 
@@ -45,7 +47,7 @@ programs = @spider_names`
 	// 删除目录
 	err = os.RemoveAll("configs/supervisor")
 	if err != nil {
-		panic(err)
+		logger.Log.Fatal("删除目录失败", zap.String("dir", "configs/supervisor"), zap.Error(err))
 	}
 
 	// 创建配置目录
@@ -56,16 +58,16 @@ programs = @spider_names`
 		var spiderNames []string
 		for spiderName, conf := range g {
 			if !utils.CheckHasPath(fmt.Sprintf("./spiders/%s", spiderName), true) {
-				panic(fmt.Errorf("spider<%s>不存在", spiderName))
+				continue // 可能在别的机器上部署
 			}
 			// 解析配置
 			confValue := strings.Split(conf, ",")
 			if len(confValue) != 2 {
-				panic(fmt.Errorf("spider<%s>的配置错误", spiderName))
+				logger.Log.Fatal("spider的配置错误", zap.String("spiderName", spiderName))
 			}
 			processNum, err := strconv.Atoi(confValue[0])
 			if err != nil {
-				panic(fmt.Errorf("spider<%s>的配置错误, 无法获取到进程数", spiderName))
+				logger.Log.Fatal("spider的配置错误, 无法获取到进程数", zap.String("spiderName", spiderName), zap.Error(err))
 			}
 
 			// 检查进程数
@@ -73,7 +75,7 @@ programs = @spider_names`
 				continue
 			}
 			if processNum > 99 {
-				panic(fmt.Errorf("spider<%s>的process太多, 超过99通常是无意义的", spiderName))
+				logger.Log.Fatal("spider的process太多, 超过99通常是无意义的", zap.String("spiderName", spiderName), zap.Int("processNum", processNum))
 			}
 			// 检查提交初始化种子的时机
 			expression := confValue[1]
@@ -85,7 +87,7 @@ programs = @spider_names`
 					_, err = cron.ParseStandard(expression)
 				}
 				if err != nil {
-					panic(fmt.Errorf("spider<%s>的配置错误, 提交初始化种子的时机无法解析", spiderName))
+					logger.Log.Fatal("spider的配置错误, 提交初始化种子的时机无法解析", zap.String("spiderName", spiderName))
 				}
 			}
 
@@ -114,10 +116,10 @@ programs = @spider_names`
 		data := strings.Join(spiderConfigs, "\n\n") + "\n\n\n" + groupConfigData
 		err := os.WriteFile(fmt.Sprintf("configs/supervisor/%s.ini", groupName), []byte(data), 0666)
 		if err != nil {
-			panic(err)
+			logger.Log.Fatal("写入supervisor配置失败", zap.String("file", fmt.Sprintf("configs/supervisor/%s.ini", groupName)), zap.Error(err))
 		}
 	}
 
-	fmt.Println("生成supervisor配置完毕")
+	logger.Log.Info("生成supervisor配置完毕")
 	return nil
 }

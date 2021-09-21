@@ -1,10 +1,10 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/urfave/cli/v2"
+	"github.com/zly-app/zapp/logger"
 	"github.com/zlyuancn/zstr"
 
 	"github.com/zly-app/crawler/tools/utils"
@@ -13,7 +13,7 @@ import (
 // 在当前位置初始化工程
 func CmdInit(context *cli.Context) error {
 	if context.Args().Len() != 1 {
-		return errors.New("必须也只能写入一个工程名")
+		logger.Log.Fatal("必须也只能写入一个工程名")
 	}
 	projectName := context.Args().Get(0)
 	utils.MustNoExistPath(projectName)

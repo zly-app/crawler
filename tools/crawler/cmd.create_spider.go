@@ -1,11 +1,11 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/urfave/cli/v2"
+	"github.com/zly-app/zapp/logger"
 	"github.com/zlyuancn/zstr"
 
 	"github.com/zly-app/crawler/tools/utils"
@@ -14,7 +14,7 @@ import (
 // 创建一个爬虫
 func CmdCreateSpider(context *cli.Context) error {
 	if context.Args().Len() != 1 {
-		return errors.New("必须也只能写入一个爬虫名")
+		logger.Log.Fatal("必须也只能写入一个爬虫名")
 	}
 	projectName := utils.MustGetProjectName()
 	spiderName := context.Args().Get(0)
