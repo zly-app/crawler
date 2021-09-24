@@ -45,6 +45,9 @@ func (s *Scheduler) Start() {
 			// 这里不需要检查爬虫是否存在, 只需要发信号就行了
 			// 解析配置
 			confValue := strings.Split(conf, ",")
+			if len(confValue) == 1 { // 允许不填写调度时机
+				confValue = append(confValue, "")
+			}
 			if len(confValue) != 2 {
 				panic(fmt.Errorf("spider<%s>的配置错误", spiderName))
 			}
