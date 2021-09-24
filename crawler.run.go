@@ -29,6 +29,11 @@ func (c *Crawler) Run() {
 			c.app.Error("运行出错, 稍后继续", zap.Int64("waitTime", c.conf.Frame.SpiderErrWaitTime/1000),
 				zap.String("error", utils.Recover.GetRecoverErrorDetail(err)))
 			time.Sleep(time.Duration(c.conf.Frame.SpiderErrWaitTime) * time.Millisecond)
+			continue
+		}
+
+		if c.conf.Frame.NextSeedWaitTime > 0 {
+			time.Sleep(time.Duration(c.conf.Frame.NextSeedWaitTime) * time.Millisecond)
 		}
 	}
 }
