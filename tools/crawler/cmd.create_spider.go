@@ -20,14 +20,14 @@ func CmdCreateSpider(context *cli.Context) error {
 	spiderName := context.Args().Get(0)
 
 	utils.MustMkdirAndIsCreate(fmt.Sprintf("spiders/%s", spiderName))
-	mainGoContent := strings.ReplaceAll(string(utils.MustReadEmbedFile(embedFiles, "template/spider/main.go.template")), "{@spider_name}", spiderName)
+	mainGoContent := strings.ReplaceAll(string(utils.MustReadEmbedFile(embedFiles, "template/template/spider/main.go.template")), "{@spider_name}", spiderName)
 	mainGoContent = strings.ReplaceAll(mainGoContent, "{@project_name}", projectName)
 	utils.MustWriteFile(fmt.Sprintf("spiders/%s/main.go", spiderName), []byte(mainGoContent))
 
 	utils.MustMkdir(fmt.Sprintf("spiders/%s/configs", spiderName))
 	templateArgs := utils.MakeTemplateArgs(projectName)
 	templateArgs["spider_name"] = spiderName
-	spiderDefaultConfigContent := zstr.Render(string(utils.MustReadEmbedFile(embedFiles, "template/spider/config.toml")), templateArgs)
+	spiderDefaultConfigContent := zstr.Render(string(utils.MustReadEmbedFile(embedFiles, "template/template/spider/config.toml")), templateArgs)
 	utils.MustWriteFile(fmt.Sprintf("spiders/%s/configs/default.toml", spiderName), []byte(spiderDefaultConfigContent))
 	return nil
 }

@@ -142,10 +142,7 @@ func MustNoExistPath(path string) {
 func MustGetProjectName() string {
 	if !CheckHasPath("go.mod", false) ||
 		!CheckHasPath("component", true) ||
-		!CheckHasPath("component/component.go", false) ||
 		!CheckHasPath("configs", true) ||
-		!CheckHasPath("configs/spiders.toml", false) ||
-		!CheckHasPath("configs/base_config.toml", false) ||
 		!CheckHasPath("spiders", true) {
 		_, _ = os.Stderr.WriteString("必须在项目中\n")
 		os.Exit(1)

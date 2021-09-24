@@ -19,7 +19,7 @@ func main() {
 		Commands: []*cli.Command{
 			{
 				Name:      "init",
-				Usage:     "在当前位置初始化工程",
+				Usage:     "初始化工程",
 				ArgsUsage: "<your_project_name>",
 				Action:    CmdInit,
 			},

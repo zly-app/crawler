@@ -22,20 +22,20 @@ import (
 func CmdMakeSupervisorConfig(context *cli.Context) error {
 	projectName := utils.MustGetProjectName()
 	vi := viper.New()
-	vi.SetConfigFile("configs/spiders.toml")
+	vi.SetConfigFile("configs/supervisor_programs.toml")
 	if err := vi.MergeInConfig(); err != nil {
-		logger.Log.Fatal("读取爬虫配置文件失败", zap.String("configFile", "configs/spiders.toml"), zap.Error(err))
+		logger.Log.Fatal("读取supervisor程序配置文件失败", zap.String("configFile", "configs/supervisor_programs.toml"), zap.Error(err))
 	}
 
 	var groups map[string]map[string]string
 	if err := vi.Unmarshal(&groups); err != nil {
-		logger.Log.Fatal("解析调度器配置文件失败", zap.String("configFile", "configs/scheduler.toml"), zap.Error(err))
+		logger.Log.Fatal("解析supervisor程序配置文件失败", zap.String("configFile", "configs/supervisor_programs.toml"), zap.Error(err))
 	}
 
-	// 获取supervisor爬虫配置文件模板
-	s, err := os.ReadFile("configs/supervisor_spider_config.ini")
+	// 读取supervisor程序配置文件模板
+	s, err := os.ReadFile("template/supervisor_program.ini")
 	if err != nil {
-		logger.Log.Fatal("读取supervisor爬虫配置文件模板失败", zap.String("template", "configs/supervisor_spider_config.ini"), zap.Error(err))
+		logger.Log.Fatal("读取supervisor程序配置文件模板失败", zap.String("template", "template/supervisor_program.ini"), zap.Error(err))
 	}
 	spiderConfigTemplate := string(s)
 
@@ -45,13 +45,13 @@ func CmdMakeSupervisorConfig(context *cli.Context) error {
 programs = @spider_names`
 
 	// 删除目录
-	err = os.RemoveAll("configs/supervisor")
+	err = os.RemoveAll("supervisor_config/conf.d")
 	if err != nil {
-		logger.Log.Fatal("删除目录失败", zap.String("dir", "configs/supervisor"), zap.Error(err))
+		logger.Log.Fatal("删除目录失败", zap.String("dir", "supervisor_config/conf.d"), zap.Error(err))
 	}
 
 	// 创建配置目录
-	utils.MustMkdir("configs/supervisor")
+	utils.MustMkdir("supervisor_config/conf.d")
 
 	for groupName, g := range groups {
 		var spiderConfigs []string
@@ -62,6 +62,9 @@ programs = @spider_names`
 			}
 			// 解析配置
 			confValue := strings.Split(conf, ",")
+			if len(confValue) == 1 { // 允许不填写调度时机
+				confValue = append(confValue, "")
+			}
 			if len(confValue) != 2 {
 				logger.Log.Fatal("spider的配置错误", zap.String("spiderName", spiderName))
 			}
@@ -110,10 +113,10 @@ programs = @spider_names`
 		templateArgs["group_name"] = groupName                        // 组名
 		templateArgs["spider_names"] = strings.Join(spiderNames, ",") // 爬虫列表
 		groupConfigData := zstr.Render(groupConfigTemplate, templateArgs)
-		data := strings.Join(spiderConfigs, "\n\n") + "\n\n\n" + groupConfigData
-		err = os.WriteFile(fmt.Sprintf("configs/supervisor/%s.ini", groupName), []byte(data), 0666)
+		data := strings.Join(spiderConfigs, "\n\n") + "\n\n" + groupConfigData
+		err = os.WriteFile(fmt.Sprintf("supervisor_config/conf.d/%s.ini", groupName), []byte(data), 0666)
 		if err != nil {
-			logger.Log.Fatal("写入supervisor配置失败", zap.String("file", fmt.Sprintf("configs/supervisor/%s.ini", groupName)), zap.Error(err))
+			logger.Log.Fatal("写入supervisor配置失败", zap.String("file", fmt.Sprintf("supervisor_config/conf.d/%s.ini", groupName)), zap.Error(err))
 		}
 	}
 
