@@ -1,6 +1,3 @@
-[include]
-files = '../../configs/base_config.toml'
-
 [services.crawler.spider]
 # 爬虫名
 Name = '@spider_name'

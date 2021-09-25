@@ -1,16 +1,12 @@
 package main
 
 import (
-	"embed"
 	"os"
 
 	"github.com/urfave/cli/v2"
 	"github.com/zly-app/zapp/logger"
 	"go.uber.org/zap"
 )
-
-//go:embed template/*
-var embedFiles embed.FS
 
 func main() {
 	app := &cli.App{

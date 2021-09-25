@@ -1,8 +1,7 @@
-[program:@spider_name]
-directory = @spider_dir
-command = @spider_dir/@spider_name -c ./configs/default.toml
-numprocs = @process_num
-numprocs_start = 1
+[program:crawler_scheduler]
+directory = @project_dir
+command = @project_dir/crawler_scheduler -c ./configs/crawler_config.toml
+numprocs = 1
 autostart = true
 autorestart = unexpected
 startsecs = 5
@@ -13,4 +12,3 @@ stdout_logfile = none
 stderr_logfile = none
 stdout_logfile_maxbytes = 100MB
 stdout_logfile_backups = 3
-process_name = %(program_name)s_%(process_num)02d

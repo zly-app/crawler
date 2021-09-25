@@ -1,7 +1,11 @@
 package main
 
 import (
+	"embed"
+	"io/fs"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/urfave/cli/v2"
 	"github.com/zly-app/zapp/logger"
@@ -10,6 +14,59 @@ import (
 
 	"github.com/zly-app/crawler/tools/utils"
 )
+
+//go:embed embed_assets/*
+var embedFiles embed.FS
+
+func embedFilesRelease(projectName, basePath string) {
+	templateArgs := utils.MakeTemplateArgs(projectName)
+
+	var dispatchDirs func(path string, dirs []fs.DirEntry)
+	var releaseDir func(path string, dir fs.DirEntry)
+	var releaseFile func(path string, file fs.DirEntry)
+	dispatchDirs = func(path string, dirs []fs.DirEntry) {
+		for _, dir := range dirs {
+			if dir.IsDir() {
+				releaseDir(path, dir)
+			} else {
+				releaseFile(path, dir)
+			}
+		}
+	}
+	releaseDir = func(path string, dir fs.DirEntry) {
+		path = filepath.Join(path, dir.Name())
+		dirs, err := embedFiles.ReadDir(path)
+		if err != nil {
+			logger.Log.Fatal("读取目录资源失败", zap.String("path", path), zap.Error(err))
+		}
+		utils.MustMkdir(strings.TrimPrefix(path, basePath)[1:], 666)
+		dispatchDirs(path, dirs)
+	}
+	releaseFile = func(path string, file fs.DirEntry) {
+		path = filepath.Join(path, file.Name())
+		bs, err := embedFiles.ReadFile(path)
+		if err != nil {
+			logger.Log.Fatal("读取文件资源失败", zap.String("path", path), zap.Error(err))
+		}
+
+		if strings.HasSuffix(path, ".file") {
+			path = strings.TrimSuffix(path, ".file")
+		} else if strings.HasSuffix(path, ".template") {
+			path = strings.TrimSuffix(path, ".template")
+			bs = []byte(zstr.Render(string(bs), templateArgs))
+		} else if strings.HasSuffix(path, ".t") {
+			path += "emplate"
+		}
+
+		utils.MustWriteFile(strings.TrimPrefix(path, basePath)[1:], bs, 666)
+	}
+
+	dirs, err := embedFiles.ReadDir(basePath)
+	if err != nil {
+		logger.Log.Fatal("读取资源失败", zap.String("path", basePath), zap.Error(err))
+	}
+	dispatchDirs(basePath, dirs)
+}
 
 // 初始化工程
 func CmdInit(context *cli.Context) error {
@@ -25,23 +82,7 @@ func CmdInit(context *cli.Context) error {
 		logger.Log.Fatal("进入工程目录", zap.String("projectName", projectName), zap.Error(err))
 	}
 
-	utils.MustMkdir("component")
-	utils.MustWriteFile("component/component.go", utils.MustReadEmbedFile(embedFiles, "template/component/component.go.template"))
-
-	utils.MustMkdir("configs")
-	utils.MustWriteFile("configs/base_config.toml", utils.MustReadEmbedFile(embedFiles, "template/configs/base_config.toml"))
-	utils.MustWriteFile("configs/supervisor_programs.toml", utils.MustReadEmbedFile(embedFiles, "template/configs/supervisor_programs.toml"))
-
-	utils.MustMkdir("supervisor_config")
-	supervisorSchedulerConfig := zstr.Render(string(utils.MustReadEmbedFile(embedFiles, "template/supervisor_config/scheduler_config.ini")), utils.MakeTemplateArgs(projectName))
-	utils.MustWriteFile("supervisor_config/scheduler_config.ini", []byte(supervisorSchedulerConfig))
-
-	utils.MustMkdir("template")
-	utils.MustWriteFile("template/supervisor_program.ini", utils.MustReadEmbedFile(embedFiles, "template/template/supervisor_program.ini"))
-
 	utils.MustMkdir("spiders")
-
-	goModContent := zstr.Render(string(utils.MustReadEmbedFile(embedFiles, "template/go.mod.template")), utils.MakeTemplateArgs(projectName))
-	utils.MustWriteFile("go.mod", []byte(goModContent))
+	embedFilesRelease(projectName, "embed_assets")
 	return nil
 }

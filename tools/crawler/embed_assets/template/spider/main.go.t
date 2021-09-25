@@ -6,6 +6,7 @@ import (
 	"github.com/zly-app/crawler"
 	"github.com/zly-app/crawler/core"
 	"github.com/zly-app/zapp"
+	zapp_config "github.com/zly-app/zapp/config"
 
 	"{@project_name}/component"
 )
@@ -45,6 +46,7 @@ func main() {
 	app := zapp.NewApp("{@spider_name}",
 		crawler.WithService(), // 启用crawler服务
 		zapp.WithCustomComponent(component.CustomComponentCreator), // 使用自定义组件
+		zapp.WithConfigOption(zapp_config.WithFiles("./configs/crawler_config.toml", "./spiders/{@spider_name}/configs/config.toml")),
 	)
 	crawler.RegistrySpider(newSpider()) // 注入spider
 	app.Run()                           // 运行

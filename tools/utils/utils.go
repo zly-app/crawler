@@ -21,6 +21,15 @@ func MustReadEmbedFile(fs embed.FS, file string) []byte {
 	return data
 }
 
+// 必须读取文件数据
+func MustReadFile(file string) []byte {
+	data, err := os.ReadFile(file)
+	if err != nil {
+		panic(err)
+	}
+	return data
+}
+
 // 目录是否为空
 func DirIsEmpty(path string) (bool, error) {
 	dir, err := os.Open(path)
