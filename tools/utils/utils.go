@@ -2,21 +2,22 @@ package utils
 
 import (
 	"embed"
-	"errors"
-	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
 	"time"
+
+	"github.com/zly-app/zapp/logger"
+	"go.uber.org/zap"
 )
 
 // 必须读取内嵌文件数据
 func MustReadEmbedFile(fs embed.FS, file string) []byte {
 	data, err := fs.ReadFile(file)
 	if err != nil {
-		panic(err)
+		logger.Log.Fatal("读取内嵌文件数据失败", zap.String("file", file), zap.Error(err))
 	}
 	return data
 }
@@ -25,7 +26,7 @@ func MustReadEmbedFile(fs embed.FS, file string) []byte {
 func MustReadFile(file string) []byte {
 	data, err := os.ReadFile(file)
 	if err != nil {
-		panic(err)
+		logger.Log.Fatal("读取文件数据失败", zap.String("file", file), zap.Error(err))
 	}
 	return data
 }
@@ -47,10 +48,10 @@ func DirIsEmpty(path string) (bool, error) {
 func DirMustEmpty(path string) {
 	empty, err := DirIsEmpty(path)
 	if err != nil {
-		panic(err)
+		logger.Log.Fatal("检查目录为空失败", zap.String("path", path), zap.Error(err))
 	}
 	if !empty {
-		panic(fmt.Errorf("目录必须为空"))
+		logger.Log.Fatal("目录必须为空", zap.String("path", path))
 	}
 }
 
@@ -62,7 +63,7 @@ func MustMkdir(name string, perm ...os.FileMode) {
 	}
 	err := os.MkdirAll(name, p)
 	if err != nil {
-		panic(err)
+		logger.Log.Fatal("创建文件夹失败", zap.String("path", name), zap.Error(err))
 	}
 }
 
@@ -74,15 +75,15 @@ func MustMkdirAndIsCreate(name string, perm ...os.FileMode) {
 	}
 	_, err := os.Open(name)
 	if err == nil {
-		panic(fmt.Errorf("文件夹'%s'已存在", name))
+		logger.Log.Fatal("创建文件夹失败, 文件夹已存在", zap.String("path", name))
 	}
 	if !os.IsNotExist(err) {
-		panic(err)
+		logger.Log.Fatal("创建文件夹失败", zap.String("path", name), zap.Error(err))
 	}
 
 	err = os.MkdirAll(name, p)
 	if err != nil {
-		panic(err)
+		logger.Log.Fatal("创建文件夹失败", zap.String("path", name), zap.Error(err))
 	}
 }
 
@@ -94,22 +95,22 @@ func MustWriteFile(name string, data []byte, perm ...os.FileMode) {
 	}
 	err := os.WriteFile(name, data, p)
 	if err != nil {
-		panic(err)
+		logger.Log.Fatal("创建文件失败", zap.Error(err))
 	}
 }
 
-// 检查是否存在路径并指定为文件夹或文件, 读取失败或者权限不足会panic
+// 检查是否存在路径并指定为文件夹或文件, 读取失败或者权限不足会fatal
 func CheckHasPath(path string, isDir bool) bool {
 	d, err := os.Open(path)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return false
 		}
-		panic(err)
+		logger.Log.Fatal("读取失败", zap.String("path", path), zap.Error(err))
 	}
 	s, err := d.Stat()
 	if err != nil {
-		panic(fmt.Errorf("'%s'读取失败"))
+		logger.Log.Fatal("读取失败", zap.String("path", path), zap.Error(err))
 	}
 	return s.IsDir() == isDir
 }
@@ -119,19 +120,19 @@ func MustHasPath(path string, isDir bool) {
 	d, err := os.Open(path)
 	if err != nil {
 		if os.IsNotExist(err) {
-			panic(fmt.Errorf("'%s'不存在", path))
+			logger.Log.Fatal("path不存在", zap.String("path", path))
 		}
-		panic(err)
+		logger.Log.Fatal("读取失败", zap.String("path", path), zap.Error(err))
 	}
 	s, err := d.Stat()
 	if err != nil {
-		panic(fmt.Errorf("'%s'读取失败"))
+		logger.Log.Fatal("读取失败", zap.String("path", path), zap.Error(err))
 	}
 	if isDir && !s.IsDir() {
-		panic(fmt.Errorf("'%s'不是一个目录", path))
+		logger.Log.Fatal("path不是一个目录", zap.String("path", path))
 	}
 	if !isDir && s.IsDir() {
-		panic(fmt.Errorf("'%s'不是一个文件", path))
+		logger.Log.Fatal("path不是一个文件", zap.String("path", path))
 	}
 }
 
@@ -142,9 +143,9 @@ func MustNoExistPath(path string) {
 		if os.IsNotExist(err) {
 			return
 		}
-		panic(err)
+		logger.Log.Fatal("读取失败", zap.String("path", path), zap.Error(err))
 	}
-	panic(fmt.Errorf("'%s'已存在", path))
+	logger.Log.Fatal("路径已存在", zap.String("path", path))
 }
 
 // 必须在项目目录中并获取项目名
@@ -153,18 +154,17 @@ func MustGetProjectName() string {
 		!CheckHasPath("component", true) ||
 		!CheckHasPath("configs", true) ||
 		!CheckHasPath("spiders", true) {
-		_, _ = os.Stderr.WriteString("必须在项目中\n")
-		os.Exit(1)
+		logger.Log.Fatal("必须在项目中")
 	}
 
 	data, err := os.ReadFile("go.mod")
 	if err != nil {
-		panic(err)
+		logger.Log.Fatal("读取失败", zap.String("file", "go.mod"), zap.Error(err))
 	}
 	projectName := ExtractMiddleText(string(data), "module ", "\n", "", false)
 	projectName = strings.TrimSuffix(projectName, "\r")
 	if projectName == "" {
-		panic(errors.New("无法读取项目名"))
+		logger.Log.Fatal("无法读取项目名")
 	}
 	return projectName
 }
@@ -213,7 +213,7 @@ func ExtractMiddleText(s, pre, suf, def string, greedy bool) string {
 func MustGetWorkdir() string {
 	dir, err := os.Getwd()
 	if err != nil {
-		panic(err)
+		logger.Log.Fatal("无法获取当前目录", zap.Error(err))
 	}
 	return dir
 }
@@ -225,7 +225,7 @@ func MustDirJoin(path1, path2 string) string {
 	}
 	path, err := filepath.Abs(path2)
 	if err != nil {
-		panic(err)
+		logger.Log.Fatal("获取绝对路径失败", zap.String("path", path2), zap.Error(err))
 	}
 	return path
 }

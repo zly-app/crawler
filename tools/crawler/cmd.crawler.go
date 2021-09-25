@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/urfave/cli/v2"
 	"github.com/zly-app/zapp"
+	zapp_config "github.com/zly-app/zapp/config"
 	"github.com/zly-app/zapp/core"
 	"github.com/zly-app/zapp/logger"
 	"go.uber.org/zap"
@@ -28,13 +28,10 @@ func makeCrawler(context *cli.Context) (core.IApp, *crawler.Crawler, string, err
 		logger.Log.Fatal("spider不存在", zap.String("spiderName", spiderName))
 	}
 
-	// 进入spider目录
-	if err := os.Chdir(fmt.Sprintf("spiders/%s", spiderName)); err != nil {
-		logger.Log.Fatal("进入spider目录失败", zap.String("spiderName", spiderName), zap.Error(err))
-	}
-
 	// 通过zapp创建crawler
-	app := zapp.NewApp("crawler")
+	app := zapp.NewApp("crawler",
+		zapp.WithConfigOption(zapp_config.WithFiles("./configs/crawler_config.toml", "./spiders/s1/configs/config.toml")),
+	)
 	c := crawler.NewCrawler(app)
 
 	return app, c, spiderName, nil
