@@ -1,1 +1,5 @@
 #spider会继承并覆盖这里的配置
+
+[crawler_scheduler]
+# 程序配置文件路径
+programs_config_file = './configs/supervisor_programs.toml'

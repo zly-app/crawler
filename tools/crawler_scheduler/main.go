@@ -29,15 +29,21 @@ func (s *Scheduler) Start() {
 		s.app.Fatal("使用memory队列是无意义的")
 	}
 
+	var configFile string
+	err := s.app.GetConfig().Parse("crawler_scheduler.programs_config_file", &configFile)
+	if err != nil {
+		s.app.Fatal("获取程序配置文件路径失败", zap.Error(err))
+	}
+
 	vi := viper.New()
-	vi.SetConfigFile("configs/supervisor_programs.toml")
+	vi.SetConfigFile(configFile)
 	if err := vi.MergeInConfig(); err != nil {
-		s.app.Fatal("读取supervisor程序配置文件失败", zap.String("configFile", "configs/supervisor_programs.toml"), zap.Error(err))
+		s.app.Fatal("读取程序配置文件失败", zap.String("configFile", configFile), zap.Error(err))
 	}
 
 	var groups map[string]map[string]string
 	if err := vi.Unmarshal(&groups); err != nil {
-		s.app.Fatal("解析supervisor程序配置文件失败", zap.String("configFile", "configs/supervisor_programs.toml"), zap.Error(err))
+		s.app.Fatal("解析程序配置文件失败", zap.String("configFile", configFile), zap.Error(err))
 	}
 
 	for _, g := range groups {

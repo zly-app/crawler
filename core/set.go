@@ -7,6 +7,8 @@ type ISet interface {
 	HasItem(key, item string) (bool, error)
 	// 从集合中移除一些元素, 返回成功移除的数量, 元素不存在不会计数也不会报错
 	Remove(key string, items ...string) (int, error)
+	// 删除set
+	DeleteSet(key string) error
 	// 获取集合大小
 	GetSetSize(key string) (int, error)
 	// 关闭

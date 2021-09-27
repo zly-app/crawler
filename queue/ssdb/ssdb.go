@@ -71,7 +71,7 @@ func NewSsdbQueue(app zapp_core.IApp) core.IQueue {
 		app.Fatal("queue.ssdb配置错误", zap.Error(err))
 	}
 
-	addr, err := net.ResolveTCPAddr("tcp", "")
+	addr, err := net.ResolveTCPAddr("tcp", conf.Address)
 	if err != nil {
 		app.Fatal("queue.ssdb配置错误, 无法解析addres", zap.Error(err))
 	}
@@ -87,6 +87,9 @@ func NewSsdbQueue(app zapp_core.IApp) core.IQueue {
 		MaxPoolSize:    conf.PoolSize,
 		AutoClose:      true,
 	})
+	if err != nil {
+		app.Fatal("创建queue.ssdb失败", zap.Error(err))
+	}
 
 	return &SsdbQueue{p}
 }

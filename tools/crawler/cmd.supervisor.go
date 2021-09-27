@@ -21,21 +21,31 @@ import (
 // 生成supervisor配置
 func CmdMakeSupervisorConfig(context *cli.Context) error {
 	projectName := utils.MustGetProjectName()
+
+	// 环境
+	configFile := "./configs/supervisor_programs.toml"
+	templateFile := "./template/supervisor_programs.ini"
+	env := context.String("env")
+	if env != "" {
+		configFile = fmt.Sprintf("./configs/supervisor_programs_%s.toml", env)
+		templateFile = fmt.Sprintf("./template/supervisor_programs_%s.ini", env)
+	}
+
 	vi := viper.New()
-	vi.SetConfigFile("configs/supervisor_programs.toml")
+	vi.SetConfigFile(configFile)
 	if err := vi.MergeInConfig(); err != nil {
-		logger.Log.Fatal("读取supervisor程序配置文件失败", zap.String("configFile", "configs/supervisor_programs.toml"), zap.Error(err))
+		logger.Log.Fatal("读取supervisor程序配置文件失败", zap.String("configFile", configFile), zap.Error(err))
 	}
 
 	var groups map[string]map[string]string
 	if err := vi.Unmarshal(&groups); err != nil {
-		logger.Log.Fatal("解析supervisor程序配置文件失败", zap.String("configFile", "configs/supervisor_programs.toml"), zap.Error(err))
+		logger.Log.Fatal("解析supervisor程序配置文件失败", zap.String("configFile", configFile), zap.Error(err))
 	}
 
 	// 读取supervisor程序配置文件模板
-	s, err := os.ReadFile("template/supervisor_program.ini")
+	s, err := os.ReadFile(templateFile)
 	if err != nil {
-		logger.Log.Fatal("读取supervisor程序配置文件模板失败", zap.String("template", "template/supervisor_program.ini"), zap.Error(err))
+		logger.Log.Fatal("读取supervisor程序配置文件模板失败", zap.String("template", templateFile), zap.Error(err))
 	}
 	spiderConfigTemplate := string(s)
 

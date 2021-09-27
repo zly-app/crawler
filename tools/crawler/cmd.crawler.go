@@ -23,6 +23,15 @@ func makeCrawler(context *cli.Context) (core.IApp, *crawler.Crawler, string, err
 	utils.MustInProjectDir()
 	spiderName := context.Args().Get(0)
 
+	// 环境
+	configFile := "./configs/crawler_config.toml"
+	spiderFile := fmt.Sprintf("./spiders/%s/configs/config.toml", spiderName)
+	env := context.String("env")
+	if env != "" {
+		configFile = fmt.Sprintf("./configs/crawler_config_%s.toml", env)
+		spiderFile = fmt.Sprintf("./spiders/%s/configs/config_%s.toml", spiderName, env)
+	}
+
 	// 检查spider存在
 	if !utils.CheckHasPath(fmt.Sprintf("spiders/%s", spiderName), true) {
 		logger.Log.Fatal("spider不存在", zap.String("spiderName", spiderName))
@@ -30,7 +39,7 @@ func makeCrawler(context *cli.Context) (core.IApp, *crawler.Crawler, string, err
 
 	// 通过zapp创建crawler
 	app := zapp.NewApp("crawler",
-		zapp.WithConfigOption(zapp_config.WithFiles("./configs/crawler_config.toml", "./spiders/s1/configs/config.toml")),
+		zapp.WithConfigOption(zapp_config.WithFiles(configFile, spiderFile)),
 	)
 	c := crawler.NewCrawler(app)
 
@@ -117,7 +126,7 @@ func CmdCleanSpiderSet(context *cli.Context) error {
 	}
 
 	setName := spiderName + config.Conf.Frame.SetSuffix
-	if err = c.Queue().Delete(setName); err != nil {
+	if err = c.Set().DeleteSet(setName); err != nil {
 		logger.Log.Fatal("删除集合失败", zap.String("setName", setName), zap.Error(err))
 	}
 	logger.Log.Info("清空爬虫集合数据成功", zap.String("spiderName", spiderName))

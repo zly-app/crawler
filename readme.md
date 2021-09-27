@@ -154,7 +154,7 @@ DialTimeout = 5000  # 连接超时(毫秒, 可选, 默认5000
 
 ```toml
 [services.crawler.set]
-type = 'redis'      # 使用redis作为队列, 默认是memory
+type = 'redis'      # 使用redis作为集合, 默认是memory
 Address = '127.0.0.1:6379' # 地址
 UserName = ''       # 用户名, 可选
 Password = ''       # 密码, 可选
@@ -171,7 +171,7 @@ DialTimeout = 5000  # 连接超时(毫秒, 可选, 默认5000
 
 ```toml
 [services.crawler.set]
-type = 'ssdb'       # 使用ssdb作为队列, 默认是memory
+type = 'ssdb'       # 使用ssdb作为集合, 默认是memory
 Address = '127.0.0.1:8888' # 地址
 Password = ''       # 密码, 可选
 MinIdleConns = 1    # 最小空闲连接数, 可选, 默认1
@@ -282,13 +282,13 @@ Password = ''       # 密码, 可选
 2. 创建一个爬虫
    `crawler create <spider>`
 3. 提交初始化种子
-   `crawler start <spider>`
+   `crawler start [-env env] <spider>`
 4. 清空爬虫所有队列
-   `crawler clean <spider>`
+   `crawler clean [-env env] <spider>`
 5. 清空爬虫集合数据
-   `crawler clean_set <spider>`
+   `crawler clean_set [-env env] <spider>`
 6. 生成 `supervisor` 配置, 点 [这里](http://supervisord.org/) 进入supervisor官网
-    1. `crawler make` 会根据文件 `configs/supervisor_programs.toml` 在 `supervisor_config/conf.d` 目录下生成一些 `ini` 文件
+    1. `crawler make [-env env]` 会根据文件 `configs/supervisor_programs.toml` 在 `supervisor_config/conf.d` 目录下生成一些 `ini` 文件
     2. 将 `supervisor` 的配置修改包含文件 `<project_dir>/supervisor_config/conf.d/*.ini`
 
 # 调度器工具

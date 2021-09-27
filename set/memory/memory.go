@@ -81,6 +81,14 @@ func (m *MemorySet) Remove(key string, items ...string) (int, error) {
 	return count, nil
 }
 
+func (m *MemorySet) DeleteSet(key string) error {
+	m.mx.Lock()
+	defer m.mx.Unlock()
+
+	delete(m.sets, key)
+	return nil
+}
+
 func (m *MemorySet) GetSetSize(key string) (int, error) {
 	m.mx.Lock()
 	defer m.mx.Unlock()

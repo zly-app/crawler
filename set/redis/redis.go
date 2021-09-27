@@ -40,6 +40,10 @@ func (r *RedisSet) Remove(key string, items ...string) (int, error) {
 	return int(count), err
 }
 
+func (r *RedisSet) DeleteSet(key string) error {
+	return r.client.Del(context.Background(), key).Err()
+}
+
 func (r *RedisSet) GetSetSize(key string) (int, error) {
 	size, err := r.client.SCard(context.Background(), key).Result()
 	return int(size), err
