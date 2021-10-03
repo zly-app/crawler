@@ -252,8 +252,8 @@ github.com/yuin/goldmark v1.2.1/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9dec
 github.com/zly-app/service/cron v0.0.0-20210917022909-c4ea4eff6dad h1:N5KMXlfbFpJ0AVXjaVHuiTdNIl1dlK8brti2qQxhb2U=
 github.com/zly-app/service/cron v0.0.0-20210917022909-c4ea4eff6dad/go.mod h1:PBB5SIxc+XoNLd5V23gzIiaG85lvzkClhN2TrOZsHvk=
 github.com/zly-app/zapp v1.1.1/go.mod h1:Z5V+S/+OakHkuPKzwbU5zf5Om2Ryh2TCG2eKb1U2VTk=
-github.com/zly-app/zapp v1.1.3 h1:lDCTti24KVcPwbfXKU/F/ozjxByBJ83cCsjFn+nDhWE=
-github.com/zly-app/zapp v1.1.3/go.mod h1:Z5V+S/+OakHkuPKzwbU5zf5Om2Ryh2TCG2eKb1U2VTk=
+github.com/zly-app/zapp v1.1.4 h1:JSSbET10xYZi6+/xKBwLy+ypnANqtEEkalHZW280zco=
+github.com/zly-app/zapp v1.1.4/go.mod h1:Z5V+S/+OakHkuPKzwbU5zf5Om2Ryh2TCG2eKb1U2VTk=
 github.com/zlyuancn/zstr v0.0.0-20210820024718-ae79a4fc86c3 h1:nSBWQ7kneAk8jTD98s8/oH+an+W1e1iTR97BxW6dlPo=
 github.com/zlyuancn/zstr v0.0.0-20210820024718-ae79a4fc86c3/go.mod h1:gcWCwemINH4jJeg+sXWMf45IAWc/fSn4rZ38eW2zqI8=
 go.etcd.io/bbolt v1.3.2/go.mod h1:IbVyRI1SCnLcuJnV2u8VeU0CEYM7e686BmAb1XKL+uU=

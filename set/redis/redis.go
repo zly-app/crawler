@@ -3,8 +3,6 @@ package redis
 import (
 	"context"
 	"fmt"
-	"strings"
-	"time"
 
 	"github.com/go-redis/redis/v8"
 	zapp_core "github.com/zly-app/zapp/core"
@@ -12,6 +10,8 @@ import (
 
 	"github.com/zly-app/crawler/config"
 	"github.com/zly-app/crawler/core"
+
+	redis_utils "github.com/zly-app/crawler/utils/redis"
 )
 
 type RedisSet struct {
@@ -54,40 +54,10 @@ func (r *RedisSet) Close() error {
 }
 
 func NewRedisSet(app zapp_core.IApp) core.ISet {
-	conf := newRedisConfig()
 	confKey := fmt.Sprintf("services.%s.set", config.NowServiceType)
-	err := app.GetConfig().Parse(confKey, &conf)
-	if err == nil {
-		err = conf.Check()
-	}
+	client, err := redis_utils.NewRedis(app, confKey)
 	if err != nil {
-		app.Fatal("set.redis配置错误", zap.Error(err))
-	}
-
-	var client redis.UniversalClient
-	if conf.IsCluster {
-		client = redis.NewClusterClient(&redis.ClusterOptions{
-			Addrs:        strings.Split(conf.Address, ","),
-			Username:     conf.UserName,
-			Password:     conf.Password,
-			MinIdleConns: conf.MinIdleConns,
-			PoolSize:     conf.PoolSize,
-			ReadTimeout:  time.Duration(conf.ReadTimeout) * time.Millisecond,
-			WriteTimeout: time.Duration(conf.WriteTimeout) * time.Millisecond,
-			DialTimeout:  time.Duration(conf.DialTimeout) * time.Millisecond,
-		})
-	} else {
-		client = redis.NewClient(&redis.Options{
-			Addr:         conf.Address,
-			Username:     conf.UserName,
-			Password:     conf.Password,
-			DB:           conf.DB,
-			MinIdleConns: conf.MinIdleConns,
-			PoolSize:     conf.PoolSize,
-			ReadTimeout:  time.Duration(conf.ReadTimeout) * time.Millisecond,
-			WriteTimeout: time.Duration(conf.WriteTimeout) * time.Millisecond,
-			DialTimeout:  time.Duration(conf.DialTimeout) * time.Millisecond,
-		})
+		app.Fatal("创建set.redis失败", zap.Error(err))
 	}
 	return &RedisSet{client: client}
 }

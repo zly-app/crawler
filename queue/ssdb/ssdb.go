@@ -2,18 +2,15 @@ package ssdb
 
 import (
 	"fmt"
-	"net"
 
 	"github.com/seefan/gossdb/v2/client"
-	rconf "github.com/seefan/gossdb/v2/conf"
 	"github.com/seefan/gossdb/v2/pool"
 	zapp_core "github.com/zly-app/zapp/core"
 	"go.uber.org/zap"
 
-	"github.com/seefan/gossdb/v2"
-
 	"github.com/zly-app/crawler/config"
 	"github.com/zly-app/crawler/core"
+	"github.com/zly-app/crawler/utils/ssdb"
 )
 
 type SsdbQueue struct {
@@ -61,35 +58,10 @@ func (s *SsdbQueue) Delete(queueName string) error {
 }
 
 func NewSsdbQueue(app zapp_core.IApp) core.IQueue {
-	conf := newSsdbConfig()
 	confKey := fmt.Sprintf("services.%s.queue", config.NowServiceType)
-	err := app.GetConfig().Parse(confKey, &conf)
-	if err == nil {
-		err = conf.Check()
-	}
-	if err != nil {
-		app.Fatal("queue.ssdb配置错误", zap.Error(err))
-	}
-
-	addr, err := net.ResolveTCPAddr("tcp", conf.Address)
-	if err != nil {
-		app.Fatal("queue.ssdb配置错误, 无法解析addres", zap.Error(err))
-	}
-
-	p, err := gossdb.NewPool(&rconf.Config{
-		Host:           addr.IP.String(),
-		Port:           addr.Port,
-		Password:       conf.Password,
-		ReadTimeout:    conf.ReadTimeout / 1e3,
-		WriteTimeout:   conf.WriteTimeout / 1e3,
-		ConnectTimeout: conf.DialTimeout / 1e3,
-		MinPoolSize:    conf.MinIdleConns,
-		MaxPoolSize:    conf.PoolSize,
-		AutoClose:      true,
-	})
+	p, err := ssdb.NewSsdb(app, confKey)
 	if err != nil {
 		app.Fatal("创建queue.ssdb失败", zap.Error(err))
 	}
-
 	return &SsdbQueue{p}
 }
