@@ -25,6 +25,8 @@ type ISpiderTool interface {
 	NewSeed(url string, parserMethod interface{}) *Seed
 	// 提交种子
 	SubmitSeed(seed *Seed)
+	// 保存结果
+	SaveResult(data interface{})
 
 	/*
 	   **放入种子

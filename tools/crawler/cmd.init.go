@@ -4,7 +4,6 @@ import (
 	"embed"
 	"io/fs"
 	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/urfave/cli/v2"
@@ -34,7 +33,7 @@ func embedFilesRelease(projectName, basePath string) {
 		}
 	}
 	releaseDir = func(path string, dir fs.DirEntry) {
-		path = filepath.Join(path, dir.Name())
+		path = path + "/" + dir.Name()
 		dirs, err := embedFiles.ReadDir(path)
 		if err != nil {
 			logger.Log.Fatal("读取目录资源失败", zap.String("path", path), zap.Error(err))
@@ -43,7 +42,7 @@ func embedFilesRelease(projectName, basePath string) {
 		dispatchDirs(path, dirs)
 	}
 	releaseFile = func(path string, file fs.DirEntry) {
-		path = filepath.Join(path, file.Name())
+		path = path + "/" + file.Name()
 		bs, err := embedFiles.ReadFile(path)
 		if err != nil {
 			logger.Log.Fatal("读取文件资源失败", zap.String("path", path), zap.Error(err))
@@ -82,7 +81,7 @@ func CmdInit(context *cli.Context) error {
 		logger.Log.Fatal("进入工程目录", zap.String("projectName", projectName), zap.Error(err))
 	}
 
-	utils.MustMkdir("spiders")
 	embedFilesRelease(projectName, "embed_assets")
+	utils.MustMkdir("spiders")
 	return nil
 }

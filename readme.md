@@ -51,7 +51,6 @@ crawler.RegistrySpider(...)     # 服务注入spider
 package main
 
 import (
-	"fmt"
 	"github.com/zly-app/zapp"
 	"github.com/zly-app/crawler"
 	"github.com/zly-app/crawler/core"
@@ -74,7 +73,8 @@ func (s *Spider) SubmitInitialSeed() error {
 
 // 解析方法
 func (s *Spider) Parser(seed *core.Seed) error {
-	fmt.Println(string(seed.HttpResponseBody)) // 打印响应body
+	data := string(seed.HttpResponseBody) // 获取响应body
+	s.SaveResult(data)                    // 保存结果
 	return nil
 }
 

@@ -12,8 +12,9 @@ import (
 )
 
 type SpiderTool struct {
-	crawler core.ICrawler
-	key     string
+	crawler    core.ICrawler
+	spiderName string
+	setKey     string
 }
 
 func (s *SpiderTool) Crawler() core.ICrawler { return s.crawler }
@@ -34,6 +35,13 @@ func (s *SpiderTool) NewSeed(url string, parserMethod interface{}) *core.Seed {
 
 func (s *SpiderTool) SubmitSeed(seed *core.Seed) {
 	s.PutSeed(seed, config.Conf.Frame.SubmitSeedToQueueFront)
+}
+
+func (s *SpiderTool) SaveResult(data interface{}) {
+	err := s.crawler.Pipeline().Process(s.spiderName, data)
+	if err != nil {
+		panic(fmt.Errorf("保存结果失败: %v", err))
+	}
 }
 
 func (s *SpiderTool) PutSeed(seed *core.Seed, front bool) {
@@ -61,7 +69,7 @@ func (s *SpiderTool) PutErrorRawSeed(raw string, isParserError bool) {
 }
 
 func (s *SpiderTool) SetAdd(items ...string) int {
-	count, err := s.crawler.Set().Add(s.key, items...)
+	count, err := s.crawler.Set().Add(s.setKey, items...)
 	if err != nil {
 		panic(err)
 	}
@@ -69,7 +77,7 @@ func (s *SpiderTool) SetAdd(items ...string) int {
 }
 
 func (s *SpiderTool) SetHasItem(item string) bool {
-	b, err := s.crawler.Set().HasItem(s.key, item)
+	b, err := s.crawler.Set().HasItem(s.setKey, item)
 	if err != nil {
 		panic(err)
 	}
@@ -77,7 +85,7 @@ func (s *SpiderTool) SetHasItem(item string) bool {
 }
 
 func (s *SpiderTool) SetRemove(items ...string) int {
-	count, err := s.crawler.Set().Remove(s.key, items...)
+	count, err := s.crawler.Set().Remove(s.setKey, items...)
 	if err != nil {
 		panic(err)
 	}
@@ -85,7 +93,7 @@ func (s *SpiderTool) SetRemove(items ...string) int {
 }
 
 func (s *SpiderTool) GetSetSize() int {
-	size, err := s.crawler.Set().GetSetSize(s.key)
+	size, err := s.crawler.Set().GetSetSize(s.setKey)
 	if err != nil {
 		panic(err)
 	}
@@ -131,7 +139,8 @@ func (s *SpiderTool) GetJsonDom(seed *core.Seed) *dom.JsonDom {
 
 func NewSpiderTool(crawler core.ICrawler) core.ISpiderTool {
 	return &SpiderTool{
-		crawler: crawler,
-		key:     config.Conf.Spider.Name + config.Conf.Frame.SetSuffix,
+		crawler:    crawler,
+		spiderName: config.Conf.Spider.Name,
+		setKey:     config.Conf.Spider.Name + config.Conf.Frame.SetSuffix,
 	}
 }

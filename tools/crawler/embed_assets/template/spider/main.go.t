@@ -1,12 +1,11 @@
 package main
 
 import (
-	"fmt"
+	"github.com/zly-app/zapp"
+	zapp_config "github.com/zly-app/zapp/config"
 
 	"github.com/zly-app/crawler"
 	"github.com/zly-app/crawler/core"
-	"github.com/zly-app/zapp"
-	zapp_config "github.com/zly-app/zapp/config"
 
 	"{@project_name}/component"
 )
@@ -28,7 +27,7 @@ func (s *Spider) Init() error {
 
 // 提交初始化种子
 func (s *Spider) SubmitInitialSeed() error {
-	seed := s.NewSeed("https://www.baidu.com/", s.Parser) // 创建种子并指定解析方法
+	seed := s.NewSeed("https://www.sogou.com/", s.Parser) // 创建种子并指定解析方法
 	s.SubmitSeed(seed)                                    // 提交种子
 	return nil
 }
