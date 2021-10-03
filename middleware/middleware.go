@@ -23,7 +23,6 @@ var responseMiddlewares = []core.IResponseMiddleware{
 // 注册请求中间件
 func RegistryRequestMiddleware(m core.IRequestMiddleware) {
 	requestMiddlewares = append(requestMiddlewares, m)
-	requestMiddlewares = append(requestMiddlewares, m)
 }
 
 // 注册响应中间件
