@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/zly-app/zapp/logger"
+
 	"github.com/zly-app/crawler/config"
 	"github.com/zly-app/crawler/core"
 	"github.com/zly-app/crawler/core/dom"
@@ -42,6 +44,7 @@ func (s *SpiderTool) SaveResult(data interface{}) {
 	if err != nil {
 		panic(fmt.Errorf("保存结果失败: %v", err))
 	}
+	logger.Log.Info("保存1条结果")
 }
 
 func (s *SpiderTool) PutSeed(seed *core.Seed, front bool) {
