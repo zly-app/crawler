@@ -7,7 +7,7 @@ type IMiddleware interface {
 	// 响应处理
 	ResponseProcess(crawler ICrawler, seed *Seed) (*Seed, error)
 	// 关闭
-	Close() error
+	Close()
 }
 
 // 请求中间件

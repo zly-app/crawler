@@ -56,8 +56,18 @@ func (m *Middleware) ResponseProcess(crawler core.ICrawler, seed *core.Seed) (*c
 	return seed, nil
 }
 
-func (m *Middleware) Close() error {
-	return nil
+func (m *Middleware) Close() {
+	var err error
+	for _, middleware := range requestMiddlewares {
+		if err = middleware.Close(); err != nil {
+			logger.Log.Error("关闭请求中间件失败", zap.Error(err))
+		}
+	}
+	for _, middleware := range responseMiddlewares {
+		if err = middleware.Close(); err != nil {
+			logger.Log.Error("关闭响应中间件失败", zap.Error(err))
+		}
+	}
 }
 
 func NewMiddleware(app zapp_core.IApp) core.IMiddleware {

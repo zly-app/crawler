@@ -19,6 +19,8 @@ type ICrawler interface {
 	Queue() IQueue
 	// 获取集合
 	Set() ISet
+	// 获取管道
+	Pipeline() IPipeline
 	// 获取下载器
 	Downloader() IDownloader
 	// 代理

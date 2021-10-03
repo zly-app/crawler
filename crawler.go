@@ -14,6 +14,7 @@ import (
 	"github.com/zly-app/crawler/core"
 	"github.com/zly-app/crawler/downloader"
 	"github.com/zly-app/crawler/middleware"
+	"github.com/zly-app/crawler/pipeline"
 	"github.com/zly-app/crawler/proxy"
 	"github.com/zly-app/crawler/queue"
 	"github.com/zly-app/crawler/set"
@@ -34,6 +35,7 @@ type Crawler struct {
 	downloader core.IDownloader
 	proxy      core.IProxy
 	middleware core.IMiddleware
+	pipeline   core.IPipeline
 
 	cookieJar  http.CookieJar // 当前使用的cookieJar
 	nowRawSeed atomic.Value   // 当前的原始种子数据, 用于在程序退出之前回退到队列中
@@ -113,9 +115,7 @@ func (c *Crawler) Close() error {
 	if err = c.proxy.Close(); err != nil {
 		c.app.Error("关闭代理时出错", zap.Error(err))
 	}
-	if err = c.middleware.Close(); err != nil {
-		c.app.Error("关闭中间件时出错", zap.Error(err))
-	}
+	c.middleware.Close()
 	return nil
 }
 
@@ -140,6 +140,7 @@ func (c *Crawler) rollbackRawSeed() {
 func (c *Crawler) Spider() core.ISpider         { return c.spider }
 func (c *Crawler) SpiderTool() core.ISpiderTool { return c.spiderTool }
 func (c *Crawler) Queue() core.IQueue           { return c.queue }
+func (c *Crawler) Pipeline() core.IPipeline     { return c.pipeline }
 func (c *Crawler) Downloader() core.IDownloader { return c.downloader }
 func (c *Crawler) Proxy() core.IProxy           { return c.proxy }
 func (c *Crawler) Set() core.ISet               { return c.set }
@@ -167,6 +168,7 @@ func NewCrawler(app zapp_core.IApp) *Crawler {
 		downloader: downloader.NewDownloader(app),
 		proxy:      proxy.NewProxy(app, conf.Proxy.Type),
 		middleware: middleware.NewMiddleware(app),
+		pipeline:   pipeline.NewPipeline(app, conf.Pipeline.Type),
 	}
 	crawler.spiderTool = spider_tool.NewSpiderTool(crawler)
 	return crawler
