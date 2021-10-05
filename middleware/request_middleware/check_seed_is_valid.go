@@ -19,7 +19,7 @@ func (m *CheckSeedIsValid) Name() string { return "CheckSeedIsValid" }
 func (m *CheckSeedIsValid) Process(crawler core.ICrawler, seed *core.Seed) (*core.Seed, error) {
 	// 检查预期响应是可选的
 	if seed.CheckExpectMethod != "" {
-		_, ok := crawler.GetSpiderParserMethod(seed.CheckExpectMethod)
+		_, ok := crawler.GetSpiderCheckMethod(seed.CheckExpectMethod)
 		if !ok {
 			return nil, fmt.Errorf("未找到检查预期响应方法: %s", seed.CheckExpectMethod)
 		}

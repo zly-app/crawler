@@ -3,24 +3,33 @@ package crawler
 import (
 	"fmt"
 	"reflect"
+	"strings"
 
 	"github.com/zly-app/crawler/core"
 )
 
-// 检查处理程序, 反射获取spider中符合条件的方法
-func (c *Crawler) CheckSpiderParserMethod() {
+// 扫描爬虫方法, 反射获取spider中符合条件的方法
+func (c *Crawler) ScanSpiderMethod() {
 	aType := reflect.TypeOf(c.spider)
 	aValue := reflect.ValueOf(c.spider)
 
 	c.parserMethods = make(map[string]core.ParserMethod)
 	for i := 0; i < aType.NumMethod(); i++ {
-		method := aType.Method(i)
-		if method.PkgPath != "" {
+		methodType := aType.Method(i)
+		if methodType.PkgPath != "" {
 			continue
 		}
-		methodValue := aValue.Method(i)
-		if parserMethod, ok := methodValue.Interface().(core.ParserMethod); ok {
-			c.parserMethods[method.Name] = parserMethod
+
+		if strings.HasPrefix(methodType.Name, core.ParserMethodNamePrefix) {
+			methodValue := aValue.Method(i)
+			if method, ok := methodValue.Interface().(core.ParserMethod); ok {
+				c.parserMethods[methodType.Name] = method
+			}
+		} else if strings.HasPrefix(methodType.Name, core.CheckMethodNamePrefix) {
+			methodValue := aValue.Method(i)
+			if method, ok := methodValue.Interface().(core.CheckMethod); ok {
+				c.checkMethods[methodType.Name] = method
+			}
 		}
 	}
 
@@ -35,7 +44,7 @@ func (c *Crawler) CheckIsExpectResponse(seed *core.Seed) (*core.Seed, error) {
 		return seed, nil
 	}
 
-	checkMethod := c.parserMethods[seed.CheckExpectMethod]
+	checkMethod := c.checkMethods[seed.CheckExpectMethod]
 	if err := checkMethod(seed); err != nil {
 		return nil, fmt.Errorf("非预期的响应: %v", err)
 	}
@@ -51,5 +60,11 @@ func (c *Crawler) Parser(seed *core.Seed) error {
 // 获取解析方法
 func (c *Crawler) GetSpiderParserMethod(methodName string) (core.ParserMethod, bool) {
 	method, ok := c.parserMethods[methodName]
+	return method, ok
+}
+
+// 获取spider检查方法
+func (c *Crawler) GetSpiderCheckMethod(methodName string) (core.CheckMethod, bool) {
+	method, ok := c.checkMethods[methodName]
 	return method, ok
 }

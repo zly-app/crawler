@@ -59,4 +59,6 @@ type ICrawler interface {
 
 	// 获取spider解析方法
 	GetSpiderParserMethod(methodName string) (ParserMethod, bool)
+	// 获取spider检查方法
+	GetSpiderCheckMethod(methodName string) (CheckMethod, bool)
 }

@@ -4,7 +4,19 @@ import (
 	"github.com/zly-app/crawler/core/dom"
 )
 
-type ParserMethod = func(seed *Seed) error
+type (
+	// 解析方法
+	ParserMethod = func(seed *Seed) error
+	// 检查方法
+	CheckMethod = func(seed *Seed) error
+)
+
+const (
+	// 解析方法名前缀
+	ParserMethodNamePrefix = "Parser"
+	// 检查方法名前缀
+	CheckMethodNamePrefix = "Check"
+)
 
 type ISpider interface {
 	// 初始化

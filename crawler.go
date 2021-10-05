@@ -26,7 +26,8 @@ var typeOfISpiderTool = reflect.TypeOf((*core.ISpiderTool)(nil)).Elem()
 type Crawler struct {
 	app           zapp_core.IApp
 	conf          *config.ServiceConfig
-	parserMethods map[string]core.ParserMethod
+	parserMethods map[string]core.ParserMethod // 解析方法
+	checkMethods  map[string]core.CheckMethod  // 检查方法
 
 	spider     core.ISpider
 	spiderTool core.ISpiderTool
@@ -82,7 +83,7 @@ func (c *Crawler) Inject(a ...interface{}) {
 	field := reflect.ValueOf(a[0]).Elem().FieldByName("ISpiderTool")
 	field.Set(reflect.ValueOf(c.spiderTool))
 
-	c.CheckSpiderParserMethod()
+	c.ScanSpiderMethod()
 }
 
 func (c *Crawler) Start() error {
