@@ -16,7 +16,7 @@ func newProxyConfig() *ProxyConfig {
 
 func (conf *ProxyConfig) Check() error {
 	if conf.Address == "" {
-		return errors.New("http代理的address是空的")
+		return errors.New("代理的address是空的")
 	}
 	return nil
 }
