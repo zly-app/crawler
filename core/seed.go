@@ -18,7 +18,7 @@ type Seed struct {
 	Raw string `json:"-"`
 	// 请求时生成的请求体
 	HttpRequest *http.Request `json:"-"`
-	// 响应, 注意: 不能使用它的body, 而是应该使用 ResponseBody
+	// 响应
 	HttpResponse *http.Response `json:"-"`
 	// 响应数据
 	HttpResponseBody []byte `json:"-"`

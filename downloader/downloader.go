@@ -1,6 +1,7 @@
 package downloader
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"io/ioutil"
@@ -52,12 +53,13 @@ func (d *Downloader) Download(crawler core.ICrawler, seed *core.Seed, cookieJar 
 		Client.ChangeProxy(crawler, seed)
 		return nil, err
 	}
-	defer resp.Body.Close()
 
 	// 处理
 	seed.HttpRequest = req
 	seed.HttpResponse = resp
 	seed.HttpResponseBody, _ = ioutil.ReadAll(resp.Body)
+	_ = resp.Body.Close()
+	resp.Body = ioutil.NopCloser(bytes.NewReader(seed.HttpResponseBody))
 
 	// 编码转换
 	switch strings.ToLower(seed.Request.Encoding) {

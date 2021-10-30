@@ -26,7 +26,7 @@ func (s *Spider) SubmitInitialSeed() error {
 	return nil
 }
 
-// 解析方法
+// 解析方法, 必须以 Parser 开头
 func (s *Spider) Parser(seed *core.Seed) error {
 	fmt.Println(string(seed.HttpResponseBody)) // 打印响应body
 	return nil
