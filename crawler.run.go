@@ -134,7 +134,19 @@ func (c *Crawler) seedProcess(raw string) error {
 	}()
 
 	// 解析
-	return c.Parser(seedResult)
+	err = utils.Recover.WrapCall(func() error {
+		return c.Parser(seedResult)
+	})
+	if err == nil {
+		return nil
+	}
+
+	_, ok := utils.Recover.GetRecoverError(err)
+	if !ok {
+		return err
+	}
+	c.app.Error("解析时panic", zap.String("err", utils.Recover.GetRecoverErrorDetail(err)))
+	return core.ParserError
 }
 
 // 下载完善种子
