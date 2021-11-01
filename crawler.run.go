@@ -90,18 +90,6 @@ func (c *Crawler) runOnce() error {
 
 // 种子处理
 func (c *Crawler) seedProcess(raw string) error {
-	seed, err := seeds.MakeSeedOfRaw(raw)
-	if err != nil {
-		c.app.Error("构建种子失败")
-		return core.ParserError
-	}
-
-	// 请求处理
-	seed, err = c.middleware.RequestProcess(c, seed)
-	if err != nil {
-		return err
-	}
-
 	var seedResult *core.Seed
 	var cookieJar http.CookieJar
 	// 循环尝试下载
@@ -110,8 +98,19 @@ func (c *Crawler) seedProcess(raw string) error {
 		attempt++
 
 		// 每次重新生成seed, 因为每次处理可能会修改seed
-		seedCopy := *seed
-		seedResult, cookieJar, err = c.download(raw, &seedCopy)
+		seed, err := seeds.MakeSeedOfRaw(raw)
+		if err != nil {
+			c.app.Error("构建种子失败")
+			return core.ParserError
+		}
+
+		// 请求处理
+		seed, err = c.middleware.RequestProcess(c, seed)
+		if err != nil {
+			return err
+		}
+
+		seedResult, cookieJar, err = c.download(raw, seed)
 		if err == nil {
 			break
 		}
@@ -134,7 +133,7 @@ func (c *Crawler) seedProcess(raw string) error {
 	}()
 
 	// 解析
-	err = utils.Recover.WrapCall(func() error {
+	err := utils.Recover.WrapCall(func() error {
 		return c.Parser(seedResult)
 	})
 	if err == nil {
