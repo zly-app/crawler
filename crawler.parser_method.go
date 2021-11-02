@@ -1,7 +1,6 @@
 package crawler
 
 import (
-	"fmt"
 	"reflect"
 	"strings"
 
@@ -47,7 +46,7 @@ func (c *Crawler) CheckIsExpectResponse(seed *core.Seed) (*core.Seed, error) {
 
 	checkMethod := c.checkMethods[seed.CheckExpectMethod]
 	if err := checkMethod(seed); err != nil {
-		return nil, fmt.Errorf("非预期的响应: %v", err)
+		return nil, err
 	}
 	return seed, nil
 }
