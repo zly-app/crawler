@@ -14,6 +14,7 @@ func (c *Crawler) ScanSpiderMethod() {
 	aValue := reflect.ValueOf(c.spider)
 
 	c.parserMethods = make(map[string]core.ParserMethod)
+	c.checkMethods = make(map[string]core.CheckMethod)
 	for i := 0; i < aType.NumMethod(); i++ {
 		methodType := aType.Method(i)
 		if methodType.PkgPath != "" {
