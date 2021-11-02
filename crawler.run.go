@@ -140,11 +140,7 @@ func (c *Crawler) seedProcess(raw string) error {
 		return nil
 	}
 
-	_, ok := utils.Recover.GetRecoverError(err)
-	if !ok {
-		return err
-	}
-	c.app.Error("解析时panic", zap.String("err", utils.Recover.GetRecoverErrorDetail(err)))
+	c.app.Error("解析时出错", zap.String("err", utils.Recover.GetRecoverErrorDetail(err)))
 	return core.ParserError
 }
 
