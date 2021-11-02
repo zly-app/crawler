@@ -105,7 +105,7 @@ func (s *Seed) SetCheckExpectMethod(checkMethod interface{}) {
 	switch t := checkMethod.(type) {
 	case string:
 		s.CheckExpectMethod = t
-	case ParserMethod:
+	case CheckMethod:
 		s.CheckExpectMethod = s.getFuncName(t)
 	default:
 		panic(fmt.Errorf("无法获取方法名: [%T]%v", checkMethod, checkMethod))
