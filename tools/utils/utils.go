@@ -245,3 +245,8 @@ func MakeTemplateArgs(projectName string) map[string]interface{} {
 		"num_cpu":      numCpu,
 	}
 }
+
+// 必须获取指定路径的文件夹名
+func MustGetDirName(path string) string {
+	return filepath.Base(path)
+}

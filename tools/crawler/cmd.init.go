@@ -73,12 +73,21 @@ func CmdInit(context *cli.Context) error {
 		logger.Log.Fatal("必须也只能写入一个工程名")
 	}
 	projectName := context.Args().Get(0)
-	utils.MustNoExistPath(projectName)
 
-	utils.MustMkdir(projectName)
-	// 进入工程目录
-	if err := os.Chdir(projectName); err != nil {
-		logger.Log.Fatal("进入工程目录", zap.String("projectName", projectName), zap.Error(err))
+	if projectName == "." {
+		workdir := utils.MustGetWorkdir()
+		utils.DirMustEmpty(workdir)
+		projectName = utils.MustGetDirName(workdir)
+	} else {
+		if utils.CheckHasPath(projectName, true) {
+			utils.DirMustEmpty(projectName)
+		} else {
+			utils.MustMkdir(projectName)
+		}
+		// 进入工程目录
+		if err := os.Chdir(projectName); err != nil {
+			logger.Log.Fatal("进入工程目录", zap.String("projectName", projectName), zap.Error(err))
+		}
 	}
 
 	embedFilesRelease(projectName, "embed_assets")
