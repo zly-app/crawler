@@ -20,7 +20,7 @@ import (
 
 // 生成supervisor配置
 func CmdMakeSupervisorConfig(context *cli.Context) error {
-	projectName := utils.MustGetProjectName()
+	projectName := utils.MustEnterProject()
 
 	// 环境
 	configFile := "./configs/supervisor_programs.toml"

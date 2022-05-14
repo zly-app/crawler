@@ -124,7 +124,7 @@ func (s *Scheduler) SendSubmitInitialSeedSignal(ctx cron.IContext) error {
 }
 
 func main() {
-	utils.MustInProjectDir()
+	utils.MustEnterProject()
 
 	app := zapp.NewApp("crawler-scheduler",
 		cron.WithService(),

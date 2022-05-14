@@ -2,6 +2,7 @@ package utils
 
 import (
 	"embed"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -148,30 +149,52 @@ func MustNoExistPath(path string) {
 	logger.Log.Fatal("路径已存在", zap.String("path", path))
 }
 
-// 必须在项目目录中并获取项目名
-func MustGetProjectName() string {
-	if !CheckHasPath("go.mod", false) ||
-		!CheckHasPath("component", true) ||
-		!CheckHasPath("configs", true) ||
-		!CheckHasPath("spiders", true) {
-		logger.Log.Fatal("必须在项目中")
-	}
+// 必须在项目中, 依次向上查找并进入项目根目录, 返回项目名
+func MustEnterProject() string {
+	wd := MustGetWorkdir()
+	for {
+		pn := searchProjectName(wd)
+		if pn != "" {
+			// 进入工程目录
+			if err := os.Chdir(wd); err != nil {
+				logger.Log.Fatal("进入工程目录失败", zap.String("path", wd), zap.Error(err))
+			}
+			return pn
+		}
 
-	data, err := os.ReadFile("go.mod")
-	if err != nil {
-		logger.Log.Fatal("读取失败", zap.String("file", "go.mod"), zap.Error(err))
+		wd2 := filepath.Dir(wd)
+		if wd2 == wd { // 已经是根目录了
+			logger.Log.Fatal("无法读取项目名")
+		}
+		wd = wd2
 	}
-	projectName := ExtractMiddleText(string(data), "module ", "\n", "", false)
-	projectName = strings.TrimSuffix(projectName, "\r")
-	if projectName == "" {
-		logger.Log.Fatal("无法读取项目名")
-	}
-	return projectName
 }
 
-// 必须在项目目录中
-func MustInProjectDir() {
-	_ = MustGetProjectName()
+// 查找项目名
+func searchProjectName(path string) string {
+	file := MustDirJoin(path, ".crawler")
+	if !CheckHasPath(file, false) {
+		return ""
+	}
+
+	data, err := os.ReadFile(file)
+	if err != nil {
+		logger.Log.Fatal("读取项目文件失败", zap.String("file", file), zap.Error(err))
+	}
+	projectName := ExtractMiddleText(string(data), "project=", "\n", "", false)
+	if projectName == "" {
+		projectName = ExtractMiddleText(string(data), "project=", "\r\n", "", false)
+	}
+	if projectName == "" {
+		projectName = ExtractMiddleText(string(data), "project=", "\r", "", false)
+	}
+	if projectName == "" {
+		projectName = ExtractMiddleText(string(data), "project=", "", "", false)
+	}
+	if projectName == "" {
+		logger.Log.Fatal("读取项目文件失败", zap.String("file", file), zap.Error(fmt.Errorf("无法获取项目名")))
+	}
+	return projectName
 }
 
 /**提取中间文本

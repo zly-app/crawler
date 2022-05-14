@@ -16,7 +16,7 @@ func CmdCreateSpider(context *cli.Context) error {
 	if context.Args().Len() != 1 {
 		logger.Log.Fatal("必须也只能写入一个爬虫名")
 	}
-	projectName := utils.MustGetProjectName()
+	projectName := utils.MustEnterProject()
 	spiderName := context.Args().Get(0)
 
 	utils.MustMkdirAndIsCreate(fmt.Sprintf("spiders/%s", spiderName))
@@ -35,5 +35,6 @@ func CmdCreateSpider(context *cli.Context) error {
 	utils.MustMkdir(fmt.Sprintf("spiders/%s/configs", spiderName))
 	spiderDefaultConfigContent := zstr.Render(string(utils.MustReadFile("template/spider/configs/config.toml")), templateArgs)
 	utils.MustWriteFile(fmt.Sprintf("spiders/%s/configs/config.toml", spiderName), []byte(spiderDefaultConfigContent))
+	fmt.Println("创建成功")
 	return nil
 }

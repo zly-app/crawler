@@ -2,6 +2,7 @@ package main
 
 import (
 	"embed"
+	"fmt"
 	"io/fs"
 	"os"
 	"strings"
@@ -86,11 +87,12 @@ func CmdInit(context *cli.Context) error {
 		}
 		// 进入工程目录
 		if err := os.Chdir(projectName); err != nil {
-			logger.Log.Fatal("进入工程目录", zap.String("projectName", projectName), zap.Error(err))
+			logger.Log.Fatal("进入工程目录失败", zap.String("projectName", projectName), zap.Error(err))
 		}
 	}
 
 	embedFilesRelease(projectName, "embed_assets")
 	utils.MustMkdir("spiders")
+	fmt.Println("初始化成功")
 	return nil
 }

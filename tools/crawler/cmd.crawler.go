@@ -20,7 +20,7 @@ func makeCrawler(context *cli.Context) (core.IApp, *crawler.Crawler, string, err
 	if context.Args().Len() != 1 {
 		logger.Log.Fatal("必须也只能写入一个爬虫名")
 	}
-	utils.MustInProjectDir()
+	utils.MustEnterProject()
 	spiderName := context.Args().Get(0)
 
 	// 环境
