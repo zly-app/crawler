@@ -14,31 +14,6 @@ import (
 )
 
 // 创建一个爬虫
-func CmdCreateSpider2(context *cli.Context) error {
-	if context.Args().Len() != 1 {
-		logger.Log.Fatal("必须也只能写入一个爬虫名")
-	}
-	projectName := utils.MustEnterProject()
-	spiderName := context.Args().Get(0)
-
-	utils.MustMkdirAndIsCreate(fmt.Sprintf("spiders/%s", spiderName))
-
-	templateArgs := utils.MakeTemplateArgs(projectName, "dev")
-	templateArgs["spider_name"] = spiderName
-
-	// main.go
-	mainGoContent := string(utils.MustReadFile("template/spider/main.go.template"))
-	mainGoContent = utils.RenderTemplate(mainGoContent, templateArgs)
-	utils.MustWriteFile(fmt.Sprintf("spiders/%s/main.go", spiderName), []byte(mainGoContent))
-
-	// configs
-	utils.MustMkdir(fmt.Sprintf("spiders/%s/configs", spiderName))
-	spiderDefaultConfigContent := utils.RenderTemplate(string(utils.MustReadFile("template/spider/configs/config.toml")), templateArgs)
-	utils.MustWriteFile(fmt.Sprintf("spiders/%s/configs/config.toml", spiderName), []byte(spiderDefaultConfigContent))
-	fmt.Println("创建成功")
-	return nil
-}
-
 func CmdCreateSpider(context *cli.Context) error {
 	if context.Args().Len() != 1 {
 		logger.Log.Fatal("必须也只能写入一个爬虫名")
@@ -46,7 +21,7 @@ func CmdCreateSpider(context *cli.Context) error {
 	projectName := utils.MustEnterProject()
 	spiderName := context.Args().Get(0)
 	spiderBasePath := fmt.Sprintf("spiders/%s", spiderName)
-	utils.MustMkdirAndIsCreate(spiderBasePath)
+	utils.MustCreateDirOrDirIsEmpty(spiderBasePath, 666)
 
 	templateArgs := utils.MakeTemplateArgs(projectName, "dev")
 	templateArgs["spider_name"] = spiderName
@@ -71,8 +46,9 @@ func CmdCreateSpider(context *cli.Context) error {
 		if err != nil {
 			logger.Log.Fatal("读取目录资源失败", zap.String("path", path), zap.Error(err))
 		}
-		path = utils.MustDirJoin(spiderBasePath, strings.TrimPrefix(path, templateBasePath))
-		utils.MustMkdir(path, 666)
+		newPath := utils.MustDirJoin(spiderBasePath, strings.TrimPrefix(path, templateBasePath)[1:])
+		fmt.Printf("%s >> %s\n", path, newPath)
+		utils.MustCreateDirOrDirIsEmpty(newPath, 666)
 		dispatchDirs(path, dirs)
 	}
 	releaseFile = func(path string, file fs.DirEntry) {
@@ -81,7 +57,7 @@ func CmdCreateSpider(context *cli.Context) error {
 		if err != nil {
 			logger.Log.Fatal("读取文件资源失败", zap.String("path", path), zap.Error(err))
 		}
-		path = utils.MustDirJoin(spiderBasePath, strings.TrimPrefix(path, templateBasePath))
+		path = utils.MustDirJoin(spiderBasePath, strings.TrimPrefix(path, templateBasePath)[1:])
 
 		if strings.HasSuffix(path, ".file") {
 			path = strings.TrimSuffix(path, ".file")

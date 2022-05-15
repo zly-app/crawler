@@ -79,11 +79,7 @@ func CmdInit(context *cli.Context) error {
 		utils.DirMustEmpty(workdir)
 		projectName = utils.MustGetDirName(workdir)
 	} else {
-		if utils.CheckHasPath(projectName, true) {
-			utils.DirMustEmpty(projectName)
-		} else {
-			utils.MustMkdir(projectName)
-		}
+		utils.MustCreateDirOrDirIsEmpty(projectName, 666)
 		// 进入工程目录
 		if err := os.Chdir(projectName); err != nil {
 			logger.Log.Fatal("进入工程目录失败", zap.String("projectName", projectName), zap.Error(err))
@@ -91,7 +87,6 @@ func CmdInit(context *cli.Context) error {
 	}
 
 	embedFilesRelease(projectName, "embed_assets")
-	utils.MustMkdir("spiders")
 	fmt.Println("初始化成功")
 	return nil
 }

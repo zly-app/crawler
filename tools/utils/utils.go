@@ -39,6 +39,9 @@ func DirIsEmpty(path string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
+	if dir != nil {
+		defer dir.Close()
+	}
 	fs, err := dir.ReadDir(1)
 	if err == io.EOF {
 		return true, nil
@@ -69,13 +72,47 @@ func MustMkdir(name string, perm ...os.FileMode) {
 	}
 }
 
+// 必须创建文件夹或者文件夹为空
+func MustCreateDirOrDirIsEmpty(name string, perm ...os.FileMode) {
+	var p os.FileMode = 0666
+	if len(perm) > 0 {
+		p = perm[0]
+	}
+
+	dir, err := os.Open(name)
+	if dir != nil {
+		defer dir.Close()
+	}
+	if err == nil { // 文件夹已存在
+		_, err := dir.ReadDir(1)
+		if err == io.EOF {
+			return
+		}
+		if err != nil {
+			logger.Log.Fatal("判断为空文件夹失败", zap.String("path", name), zap.Error(err))
+		}
+		logger.Log.Fatal("文件夹不为空", zap.String("path", name))
+	}
+	if os.IsNotExist(err) { // 文件夹不存在
+		err = os.MkdirAll(name, p)
+		if err == nil {
+			return
+		}
+		logger.Log.Fatal("创建文件夹失败", zap.String("path", name), zap.Error(err))
+	}
+	logger.Log.Fatal("创建文件夹失败", zap.String("path", name), zap.Error(err))
+}
+
 // 必须创建文件夹并且是创建
 func MustMkdirAndIsCreate(name string, perm ...os.FileMode) {
 	var p os.FileMode = 0666
 	if len(perm) > 0 {
 		p = perm[0]
 	}
-	_, err := os.Open(name)
+	dir, err := os.Open(name)
+	if dir != nil {
+		defer dir.Close()
+	}
 	if err == nil {
 		logger.Log.Fatal("创建文件夹失败, 文件夹已存在", zap.String("path", name))
 	}
@@ -104,6 +141,9 @@ func MustWriteFile(name string, data []byte, perm ...os.FileMode) {
 // 检查是否存在路径并指定为文件夹或文件, 读取失败或者权限不足会fatal
 func CheckHasPath(path string, isDir bool) bool {
 	d, err := os.Open(path)
+	if d != nil {
+		defer d.Close()
+	}
 	if err != nil {
 		if os.IsNotExist(err) {
 			return false
@@ -120,6 +160,9 @@ func CheckHasPath(path string, isDir bool) bool {
 // 必须存在路径
 func MustHasPath(path string, isDir bool) {
 	d, err := os.Open(path)
+	if d != nil {
+		defer d.Close()
+	}
 	if err != nil {
 		if os.IsNotExist(err) {
 			logger.Log.Fatal("path不存在", zap.String("path", path))
@@ -140,7 +183,10 @@ func MustHasPath(path string, isDir bool) {
 
 // 必须不存在某个路径
 func MustNoExistPath(path string) {
-	_, err := os.Open(path)
+	dir, err := os.Open(path)
+	if dir != nil {
+		defer dir.Close()
+	}
 	if err != nil {
 		if os.IsNotExist(err) {
 			return
