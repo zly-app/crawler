@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/zly-app/zapp"
 
 	"github.com/zly-app/crawler"
@@ -21,14 +19,15 @@ func (s *Spider) Init() error {
 
 // 提交初始化种子
 func (s *Spider) SubmitInitialSeed() error {
-	seed := s.NewSeed("https://www.baidu.com/", s.Parser) // 创建种子并指定解析方法
+	seed := s.NewSeed("https://www.sogou.com/", s.Parser) // 创建种子并指定解析方法
 	s.SubmitSeed(seed)                                    // 提交种子
 	return nil
 }
 
 // 解析方法, 必须以 Parser 开头
 func (s *Spider) Parser(seed *core.Seed) error {
-	fmt.Println(string(seed.HttpResponseBody)) // 打印响应body
+	data := string(seed.HttpResponseBody) // 获取响应body
+	s.SaveResult(data)                    // 保存结果
 	return nil
 }
 

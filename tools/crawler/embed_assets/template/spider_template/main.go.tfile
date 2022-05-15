@@ -34,7 +34,8 @@ func (s *Spider) SubmitInitialSeed() error {
 
 // 解析方法
 func (s *Spider) Parser(seed *core.Seed) error {
-	s.SaveResult(seed.HttpResponseBody) // 保存数据
+	data := string(seed.HttpResponseBody) // 获取响应body
+	s.SaveResult(data)                    // 保存结果
 	return nil
 }
 
