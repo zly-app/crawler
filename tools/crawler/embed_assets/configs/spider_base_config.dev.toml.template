@@ -4,6 +4,8 @@
 
 # crawler 框架配置
 [services.crawler.frame]
+# 命名空间, 多项目可以用于区分项目
+Namespace = '{@project_name}'
 # 队列后缀, spider运行时按顺序在队列中取出种子
 #QueueSuffixes = [':vip', ':debug', ':seed', ':error']
 # 种子队列后缀名, 提交种子时会放在这个队列

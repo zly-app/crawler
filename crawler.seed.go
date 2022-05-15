@@ -12,7 +12,7 @@ import (
 // 弹出一个种子
 func (c *Crawler) PopARawSeed() (string, error) {
 	for _, suffix := range c.conf.Frame.QueueSuffixes {
-		queueName := c.conf.Spider.Name + suffix
+		queueName := c.conf.Frame.Namespace + c.conf.Spider.Name + suffix
 		raw, err := c.queue.Pop(queueName, true)
 		if err == core.EmptyQueueError { // 这个队列为空
 			continue
@@ -51,7 +51,7 @@ func (c *Crawler) PutSeed(seed *core.Seed, front bool) error {
  front 是否放在队列前面
 */
 func (c *Crawler) PutRawSeed(raw string, parserFuncName string, front bool) error {
-	queueName := c.conf.Spider.Name + c.conf.Frame.SeedQueueSuffix
+	queueName := c.conf.Frame.Namespace + c.conf.Spider.Name + c.conf.Frame.SeedQueueSuffix
 	size, err := c.queue.Put(queueName, raw, front)
 	if err != nil {
 		return fmt.Errorf("将seed放入队列失败: %v", err)
@@ -88,9 +88,9 @@ func (c *Crawler) PutErrorRawSeed(raw string, isParserError bool) error {
 	c.app.Warn("将出错seed放入error队列")
 	var queueName string
 	if isParserError {
-		queueName = c.conf.Spider.Name + c.conf.Frame.ParserErrorSeedQueueSuffix
+		queueName = c.conf.Frame.Namespace + c.conf.Spider.Name + c.conf.Frame.ParserErrorSeedQueueSuffix
 	} else {
-		queueName = c.conf.Spider.Name + c.conf.Frame.ErrorSeedQueueSuffix
+		queueName = c.conf.Frame.Namespace + c.conf.Spider.Name + c.conf.Frame.ErrorSeedQueueSuffix
 	}
 
 	_, err := c.queue.Put(queueName, raw, false)
@@ -112,7 +112,7 @@ func (c *Crawler) CheckQueueIsEmpty(spiderName string) (bool, error) {
 				continue
 			}
 		}
-		queueName := spiderName + suffix
+		queueName := c.conf.Frame.Namespace + spiderName + suffix
 		size, err := c.queue.QueueSize(queueName)
 		if err != nil {
 			return false, err

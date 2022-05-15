@@ -43,6 +43,7 @@ const (
 )
 
 type FrameConfig struct {
+	Namespace            string   // 命名空间, 多项目可以用于区分项目
 	QueueSuffixes        []string // 队列后缀, spider运行时按顺序在队列中取出种子
 	SeedQueueSuffix      string   // 种子队列后缀名, 提交种子时会放在这个队列
 	ErrorSeedQueueSuffix string   // 错误种子队列后缀名, 下载器错误和请求中间件拦截以及响应中间件拦截时会放入这个队列

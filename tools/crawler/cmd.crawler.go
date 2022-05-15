@@ -71,7 +71,7 @@ func CmdInitSeedSignal(context *cli.Context) error {
 	}
 
 	// 放入提交初始化种子信号到队列
-	queueName := spiderName + config.Conf.Frame.SeedQueueSuffix
+	queueName := config.Conf.Frame.Namespace + spiderName + config.Conf.Frame.SeedQueueSuffix
 	_, err = c.Queue().Put(queueName, crawler.SubmitInitialSeedSignal, true)
 	if err != nil {
 		logger.Log.Fatal("放入提交初始化种子信号到队列失败", zap.Error(err))
@@ -102,7 +102,7 @@ func CmdCleanSpiderQueue(context *cli.Context) error {
 	}, config.Conf.Frame.QueueSuffixes...)
 
 	for _, suffix := range suffixes {
-		queueName := spiderName + suffix
+		queueName := config.Conf.Frame.Namespace + spiderName + suffix
 		if err = c.Queue().Delete(queueName); err != nil {
 			logger.Log.Fatal("删除队列失败", zap.String("queueName", queueName), zap.Error(err))
 		}
@@ -124,7 +124,7 @@ func CmdCleanSpiderSet(context *cli.Context) error {
 		logger.Log.Fatal("使用memory集合是无意义的")
 	}
 
-	setName := spiderName + config.Conf.Frame.SetSuffix
+	setName := config.Conf.Frame.Namespace + spiderName + config.Conf.Frame.SetSuffix
 	if err = c.Set().DeleteSet(setName); err != nil {
 		logger.Log.Fatal("删除集合失败", zap.String("setName", setName), zap.Error(err))
 	}

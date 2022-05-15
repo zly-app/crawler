@@ -115,7 +115,7 @@ func (s *Scheduler) SendSubmitInitialSeedSignal(ctx cron.IContext) error {
 	}
 
 	// 放入提交初始化种子信号到队列
-	queueName := spiderName + config.Conf.Frame.SeedQueueSuffix
+	queueName := config.Conf.Frame.Namespace + spiderName + config.Conf.Frame.SeedQueueSuffix
 	_, err := s.cr.Queue().Put(queueName, crawler.SubmitInitialSeedSignal, true)
 	if err != nil {
 		return fmt.Errorf("提交初始化种子信号放入到队列失败, spiderName: %s, err: %v", spiderName, err)
