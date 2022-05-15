@@ -3,11 +3,11 @@ package main
 import (
 	"fmt"
 
-	"github.com/zly-app/zapp"
-	zapp_config "github.com/zly-app/zapp/config"
-
 	"github.com/zly-app/crawler"
 	"github.com/zly-app/crawler/core"
+	"github.com/zly-app/plugin/honey"
+	"github.com/zly-app/zapp"
+	zapp_config "github.com/zly-app/zapp/config"
 
 	"{@project_name}/{@spider_name}/component"
 )
