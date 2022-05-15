@@ -3,6 +3,7 @@ module github.com/zly-app/crawler
 go 1.16
 
 require (
+	github.com/andybalholm/brotli v1.0.4 // indirect
 	github.com/andybalholm/cascadia v1.2.0
 	github.com/antchfx/htmlquery v1.2.3
 	github.com/antchfx/jsonquery v1.1.4
@@ -16,7 +17,7 @@ require (
 	github.com/seefan/gossdb/v2 v2.0.0
 	github.com/spf13/viper v1.7.1
 	github.com/urfave/cli/v2 v2.3.0
-	github.com/zly-app/plugin/honey v0.0.0-20220514034212-690a012bf806
+	github.com/zly-app/plugin/honey v0.0.0-20220515060508-eedd35bb82a9
 	github.com/zly-app/service/cron v0.0.0-20210917022909-c4ea4eff6dad
 	github.com/zly-app/zapp v1.1.10
 	github.com/zlyuancn/zstr v0.0.0-20210820024718-ae79a4fc86c3

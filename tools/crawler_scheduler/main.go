@@ -132,14 +132,6 @@ func main() {
 		cron.WithService(),
 		honey.WithPlugin(),
 		zapp.WithConfigOption(zapp_config.WithFiles("./configs/scheduler_config.dev.toml")),
-		zapp.WithCustomEnablePlugin(func(app zapp_core.IApp, plugins map[zapp_core.PluginType]bool) {
-			var enabledHoney bool
-			err := app.GetConfig().Parse("crawler_scheduler.enabled_honey", &enabledHoney)
-			if err != nil {
-				app.Fatal("获取程序honey启用状态失败", zap.Error(err))
-			}
-			plugins["honey"] = enabledHoney
-		}),
 	)
 
 	s := &Scheduler{

@@ -1,8 +1,6 @@
 [crawler_scheduler]
 # 程序配置文件路径
 programs_config_file = './configs/supervisor_programs.dev.toml'
-# 是否启用honey收集日志
-enabled_honey = false
 
 # honey日志收集插件配置项
 [plugins.honey]
@@ -13,7 +11,7 @@ Env = 'dev'
 # 输出时标示的实例名, 如果为空则使用本地ip
 #Instance = ''
 # 停止原有的日志输出
-#StopLogOutput = true
+StopLogOutput = false
 # 日志批次大小, 累计达到这个大小立即输出一次日志, 不用等待时间
 #LogBatchSize = 10000
 # 自动旋转时间(秒), 如果没有达到累计输出批次大小, 在指定时间后也会立即输出
@@ -21,7 +19,7 @@ Env = 'dev'
 # 最大旋转线程数, 表示同时允许多少批次发送到输出设备
 #MaxRotateThreadNum = 10
 # 输出设备列表, 多个输出设备用半角逗号`,`分隔, 支持 std, honey-http, loki-http
-Outputs = 'std'
+Outputs = ''
 
 # honey-http输出设备配置项
 [plugins.honey.honey-http]
