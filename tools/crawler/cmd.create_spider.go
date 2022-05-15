@@ -2,11 +2,9 @@ package main
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/urfave/cli/v2"
 	"github.com/zly-app/zapp/logger"
-	"github.com/zlyuancn/zstr"
 
 	"github.com/zly-app/crawler/tools/utils"
 )
@@ -21,19 +19,17 @@ func CmdCreateSpider(context *cli.Context) error {
 
 	utils.MustMkdirAndIsCreate(fmt.Sprintf("spiders/%s", spiderName))
 
-	templateArgs := utils.MakeTemplateArgs(projectName)
+	templateArgs := utils.MakeTemplateArgs(projectName, "dev")
 	templateArgs["spider_name"] = spiderName
 
 	// main.go
 	mainGoContent := string(utils.MustReadFile("template/spider/main.go.template"))
-	for k, v := range templateArgs {
-		mainGoContent = strings.ReplaceAll(mainGoContent, "{@"+k+"}", zstr.GetString(v))
-	}
+	mainGoContent = utils.RenderTemplate(mainGoContent, templateArgs)
 	utils.MustWriteFile(fmt.Sprintf("spiders/%s/main.go", spiderName), []byte(mainGoContent))
 
 	// configs
 	utils.MustMkdir(fmt.Sprintf("spiders/%s/configs", spiderName))
-	spiderDefaultConfigContent := zstr.Render(string(utils.MustReadFile("template/spider/configs/config.toml")), templateArgs)
+	spiderDefaultConfigContent := utils.RenderTemplate(string(utils.MustReadFile("template/spider/configs/config.toml")), templateArgs)
 	utils.MustWriteFile(fmt.Sprintf("spiders/%s/configs/config.toml", spiderName), []byte(spiderDefaultConfigContent))
 	fmt.Println("创建成功")
 	return nil

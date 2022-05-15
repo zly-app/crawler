@@ -24,13 +24,12 @@ func makeCrawler(context *cli.Context) (core.IApp, *crawler.Crawler, string, err
 	spiderName := context.Args().Get(0)
 
 	// 环境
-	configFile := "./configs/crawler_config.toml"
-	spiderFile := fmt.Sprintf("./spiders/%s/configs/config.toml", spiderName)
 	env := context.String("env")
-	if env != "" {
-		configFile = fmt.Sprintf("./configs/crawler_config_%s.toml", env)
-		spiderFile = fmt.Sprintf("./spiders/%s/configs/config_%s.toml", spiderName, env)
+	if env == "" {
+		logger.Log.Fatal("env为空")
 	}
+	configFile := fmt.Sprintf("./configs/crawler_config.%s.toml", env)
+	spiderFile := fmt.Sprintf("./spiders/%s/configs/config.%s.toml", spiderName, env)
 
 	// 检查spider存在
 	if !utils.CheckHasPath(fmt.Sprintf("spiders/%s", spiderName), true) {

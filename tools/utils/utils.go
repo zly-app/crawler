@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/zly-app/zapp/logger"
+	"github.com/zlyuancn/zstr"
 	"go.uber.org/zap"
 )
 
@@ -254,7 +255,7 @@ func MustDirJoin(path1, path2 string) string {
 }
 
 // 构建模板参数
-func MakeTemplateArgs(projectName string) map[string]interface{} {
+func MakeTemplateArgs(projectName, env string) map[string]interface{} {
 	numCpu := runtime.NumCPU()
 	if numCpu < 1 {
 		numCpu = 1
@@ -262,11 +263,21 @@ func MakeTemplateArgs(projectName string) map[string]interface{} {
 	return map[string]interface{}{
 		"project_name": projectName,      // 项目名
 		"project_dir":  MustGetWorkdir(), // 项目路径
+		"env":          env,              // 环境名
 		"date":         time.Now().Format("2006-01-02"),
 		"time":         time.Now().Format("15:04:05"),
 		"date_time":    time.Now().Format("2006-01-02 15:04:05"),
 		"num_cpu":      numCpu,
 	}
+}
+
+// 渲染模板
+func RenderTemplate(template string, args map[string]interface{}) string {
+	out := template
+	for k, v := range args {
+		out = strings.ReplaceAll(out, "{@"+k+"}", zstr.GetString(v))
+	}
+	return out
 }
 
 // 必须获取指定路径的文件夹名

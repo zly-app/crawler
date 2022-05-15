@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/viper"
 	"github.com/zly-app/service/cron"
 	"github.com/zly-app/zapp"
+	zapp_config "github.com/zly-app/zapp/config"
 	zapp_core "github.com/zly-app/zapp/core"
 	"go.uber.org/zap"
 
@@ -107,7 +108,7 @@ func (s *Scheduler) SendSubmitInitialSeedSignal(ctx cron.IContext) error {
 			return fmt.Errorf("检查队列是否为空失败, spiderName: %s, err: %v", spiderName, err)
 		}
 		if !empty {
-			ctx.Info("队列非空忽略初始化种子提交, spiderName: %s", spiderName)
+			ctx.Info("队列非空忽略初始化种子提交", zap.String("spiderName", spiderName))
 			return nil
 		}
 	}
@@ -128,6 +129,7 @@ func main() {
 
 	app := zapp.NewApp("crawler-scheduler",
 		cron.WithService(),
+		zapp.WithConfigOption(zapp_config.WithFiles("./configs/crawler_config.dev.toml")),
 	)
 
 	s := &Scheduler{

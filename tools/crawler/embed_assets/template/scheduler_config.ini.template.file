@@ -1,0 +1,26 @@
+; 项目名(必须)
+[program:crawler_scheduler]
+; 执行路径, 进程会cd到这个目录
+directory = {@project_dir}
+; 命令, 如果你想执行该目录下的文件，建议使用绝对路径
+command = {@project_dir}/crawler_scheduler -c ./configs/crawler_config.{@env}.toml
+; 启动多少个进程
+numprocs = 1
+; 是否在supervisord启动后被自动启动
+autostart = true
+; 意外退出后自动重启
+autorestart = unexpected
+; 进程运行指定秒数后没有挂标记为启动成功
+startsecs = 5
+; 进程启动失败后, 最大尝试启动次数
+startretries = 3
+; 以哪个用户身份启动
+; user = root
+; 把 stderr 重定向到 stdout
+redirect_stderr = true
+; stdout 日志文件, 需要手动创建文件夹
+stdout_logfile = none
+; stdout 日志文件大小
+stdout_logfile_maxbytes = 100MB
+; stdout 日志文件备份数
+stdout_logfile_backups = 3

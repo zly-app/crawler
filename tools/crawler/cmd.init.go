@@ -9,7 +9,6 @@ import (
 
 	"github.com/urfave/cli/v2"
 	"github.com/zly-app/zapp/logger"
-	"github.com/zlyuancn/zstr"
 	"go.uber.org/zap"
 
 	"github.com/zly-app/crawler/tools/utils"
@@ -19,7 +18,7 @@ import (
 var embedFiles embed.FS
 
 func embedFilesRelease(projectName, basePath string) {
-	templateArgs := utils.MakeTemplateArgs(projectName)
+	templateArgs := utils.MakeTemplateArgs(projectName, "dev")
 
 	var dispatchDirs func(path string, dirs []fs.DirEntry)
 	var releaseDir func(path string, dir fs.DirEntry)
@@ -53,7 +52,7 @@ func embedFilesRelease(projectName, basePath string) {
 			path = strings.TrimSuffix(path, ".file")
 		} else if strings.HasSuffix(path, ".template") {
 			path = strings.TrimSuffix(path, ".template")
-			bs = []byte(zstr.Render(string(bs), templateArgs))
+			bs = []byte(utils.RenderTemplate(string(bs), templateArgs))
 		}
 
 		utils.MustWriteFile(strings.TrimPrefix(path, basePath)[1:], bs, 666)

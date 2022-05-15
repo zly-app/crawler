@@ -34,8 +34,9 @@ func main() {
 				Action:    CmdInitSeedSignal,
 				Flags: []cli.Flag{
 					&cli.StringFlag{
-						Name:  "env",
-						Usage: "环境, 设置后将会读取 configs/crawler_config_{@env}.toml, spiders/{@spider_name}/configs/config_{@env}.toml 文件",
+						Name:        "env",
+						DefaultText: "dev",
+						Usage:       "环境, 将会读取 configs/crawler_config.{@env}.toml, spiders/{@spider_name}/configs/config.{@env}.toml 文件",
 					},
 				},
 			},
@@ -47,8 +48,9 @@ func main() {
 				Action:    CmdCleanSpiderQueue,
 				Flags: []cli.Flag{
 					&cli.StringFlag{
-						Name:  "env",
-						Usage: "环境, 设置后将会读取 configs/crawler_config_{@env}.toml, spiders/{@spider_name}/configs/config_{@env}.toml 文件",
+						Name:        "env",
+						DefaultText: "dev",
+						Usage:       "环境, 将会读取 configs/crawler_config.{@env}.toml, spiders/{@spider_name}/configs/config.{@env}.toml 文件",
 					},
 				},
 			},
@@ -60,21 +62,23 @@ func main() {
 				Action:    CmdCleanSpiderSet,
 				Flags: []cli.Flag{
 					&cli.StringFlag{
-						Name:  "env",
-						Usage: "环境, 设置后将会读取 configs/crawler_config_{@env}.toml, spiders/{@spider_name}/configs/config_{@env}.toml 文件",
+						Name:        "env",
+						DefaultText: "dev",
+						Usage:       "环境, 将会读取 configs/crawler_config.{@env}.toml, spiders/{@spider_name}/configs/config.{@env}.toml 文件",
 					},
 				},
 			},
 			{
 				Name:      "make_supervisor",
 				Aliases:   []string{"make"},
-				Usage:     "删除supervisor配置后根据 configs/supervisor_programs.toml 重新生成supervisor配置, 生成的文件路径为 configs/supervisor/*.ini",
+				Usage:     "删除supervisor配置后根据模板文件 template/supervisor_programs.{@env}.ini 重新生成supervisor配置, 生成的文件路径为 supervisor_config/conf.d.{@env}/{@spider_name}.ini",
 				ArgsUsage: " ",
 				Action:    CmdMakeSupervisorConfig,
 				Flags: []cli.Flag{
 					&cli.StringFlag{
-						Name:  "env",
-						Usage: "环境, 设置后将会读取 configs/supervisor_programs_{@env}.toml, template/supervisor_programs_{@env}.ini 文件",
+						Name:        "env",
+						DefaultText: "dev",
+						Usage:       "环境, 将会读取 configs/supervisor_programs.{@env}.toml, template/supervisor_programs.{@env}.ini 文件",
 					},
 				},
 			},

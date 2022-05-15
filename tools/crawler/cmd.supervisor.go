@@ -11,7 +11,6 @@ import (
 	"github.com/spf13/viper"
 	"github.com/urfave/cli/v2"
 	"github.com/zly-app/zapp/logger"
-	"github.com/zlyuancn/zstr"
 	"go.uber.org/zap"
 
 	"github.com/zly-app/crawler"
@@ -23,13 +22,12 @@ func CmdMakeSupervisorConfig(context *cli.Context) error {
 	projectName := utils.MustEnterProject()
 
 	// 环境
-	configFile := "./configs/supervisor_programs.toml"
-	templateFile := "./template/supervisor_programs.ini"
 	env := context.String("env")
-	if env != "" {
-		configFile = fmt.Sprintf("./configs/supervisor_programs_%s.toml", env)
-		templateFile = fmt.Sprintf("./template/supervisor_programs_%s.ini", env)
+	if env == "" {
+		logger.Log.Fatal("env为空")
 	}
+	configFile := fmt.Sprintf("./configs/supervisor_programs.%s.toml", env)
+	templateFile := fmt.Sprintf("./template/supervisor_programs.%s.ini", env)
 
 	vi := viper.New()
 	vi.SetConfigFile(configFile)
@@ -55,13 +53,14 @@ func CmdMakeSupervisorConfig(context *cli.Context) error {
 programs = @spider_names`
 
 	// 删除目录
-	err = os.RemoveAll("supervisor_config/conf.d")
+	path := fmt.Sprintf("supervisor_config/conf.d.%s", env)
+	err = os.RemoveAll(path)
 	if err != nil {
 		logger.Log.Fatal("删除目录失败", zap.String("dir", "supervisor_config/conf.d"), zap.Error(err))
 	}
 
 	// 创建配置目录
-	utils.MustMkdir("supervisor_config/conf.d")
+	utils.MustMkdir(path)
 
 	for groupName, g := range groups {
 		var spiderConfigs []string
@@ -105,13 +104,13 @@ programs = @spider_names`
 			}
 
 			spiderNames = append(spiderNames, spiderName)
-			templateArgs := utils.MakeTemplateArgs(projectName)
+			templateArgs := utils.MakeTemplateArgs(projectName, env)
 			templateArgs["group_name"] = groupName                                  // 组名
 			templateArgs["spider_name"] = spiderName                                // 爬虫名
 			templateArgs["spider_dir"] = utils.MustDirJoin("./spiders", spiderName) // 爬虫目录
 			templateArgs["process_num"] = processNum                                // 进程数
 			templateArgs["seed_cron"] = confValue[1]                                // 初始化种子提交时机
-			text := zstr.Render(spiderConfigTemplate, templateArgs)
+			text := utils.RenderTemplate(spiderConfigTemplate, templateArgs)
 			spiderConfigs = append(spiderConfigs, text)
 		}
 
@@ -119,15 +118,30 @@ programs = @spider_names`
 			continue
 		}
 
-		templateArgs := utils.MakeTemplateArgs(projectName)
+		templateArgs := utils.MakeTemplateArgs(projectName, env)
 		templateArgs["group_name"] = groupName                        // 组名
 		templateArgs["spider_names"] = strings.Join(spiderNames, ",") // 爬虫列表
-		groupConfigData := zstr.Render(groupConfigTemplate, templateArgs)
+		groupConfigData := utils.RenderTemplate(groupConfigTemplate, templateArgs)
 		data := strings.Join(spiderConfigs, "\n\n") + "\n\n" + groupConfigData
-		err = os.WriteFile(fmt.Sprintf("supervisor_config/conf.d/%s.ini", groupName), []byte(data), 0666)
+		file := fmt.Sprintf("%s/%s.ini", path, groupName)
+		err = os.WriteFile(file, []byte(data), 0666)
 		if err != nil {
-			logger.Log.Fatal("写入supervisor配置失败", zap.String("file", fmt.Sprintf("supervisor_config/conf.d/%s.ini", groupName)), zap.Error(err))
+			logger.Log.Fatal("写入supervisor配置失败", zap.String("file", file), zap.Error(err))
 		}
+	}
+
+	// 调度器配置
+	templateFile = "template/scheduler_config.ini.template"
+	s, err = os.ReadFile(templateFile)
+	if err != nil {
+		logger.Log.Fatal("读取调度器程序配置文件模板失败", zap.String("template", templateFile), zap.Error(err))
+	}
+	templateArgs := utils.MakeTemplateArgs(projectName, env)
+	text := utils.RenderTemplate(string(s), templateArgs)
+	file := fmt.Sprintf("%s/crawler_scheduler.ini", path)
+	err = os.WriteFile(file, []byte(text), 0666)
+	if err != nil {
+		logger.Log.Fatal("写入调度器程序配置失败", zap.String("file", file), zap.Error(err))
 	}
 
 	logger.Log.Info("生成supervisor配置完毕")
