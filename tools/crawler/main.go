@@ -34,9 +34,9 @@ func main() {
 				Action:    CmdInitSeedSignal,
 				Flags: []cli.Flag{
 					&cli.StringFlag{
-						Name:        "env",
-						DefaultText: "dev",
-						Usage:       "环境, 将会读取 configs/crawler_config.{@env}.toml, spiders/{@spider_name}/configs/config.{@env}.toml 文件",
+						Name:  "env",
+						Value: "dev",
+						Usage: "环境, 将会读取 configs/crawler_config.{@env}.toml, spiders/{@spider_name}/configs/config.{@env}.toml 文件",
 					},
 				},
 			},
@@ -48,9 +48,9 @@ func main() {
 				Action:    CmdCleanSpiderQueue,
 				Flags: []cli.Flag{
 					&cli.StringFlag{
-						Name:        "env",
-						DefaultText: "dev",
-						Usage:       "环境, 将会读取 configs/crawler_config.{@env}.toml, spiders/{@spider_name}/configs/config.{@env}.toml 文件",
+						Name:  "env",
+						Value: "dev",
+						Usage: "环境, 将会读取 configs/crawler_config.{@env}.toml, spiders/{@spider_name}/configs/config.{@env}.toml 文件",
 					},
 				},
 			},
@@ -62,9 +62,9 @@ func main() {
 				Action:    CmdCleanSpiderSet,
 				Flags: []cli.Flag{
 					&cli.StringFlag{
-						Name:        "env",
-						DefaultText: "dev",
-						Usage:       "环境, 将会读取 configs/crawler_config.{@env}.toml, spiders/{@spider_name}/configs/config.{@env}.toml 文件",
+						Name:  "env",
+						Value: "dev",
+						Usage: "环境, 将会读取 configs/crawler_config.{@env}.toml, spiders/{@spider_name}/configs/config.{@env}.toml 文件",
 					},
 				},
 			},
@@ -76,9 +76,9 @@ func main() {
 				Action:    CmdMakeSupervisorConfig,
 				Flags: []cli.Flag{
 					&cli.StringFlag{
-						Name:        "env",
-						DefaultText: "dev",
-						Usage:       "环境, 将会读取 configs/supervisor_programs.{@env}.toml, template/supervisor_programs.{@env}.ini 文件",
+						Name:  "env",
+						Value: "dev",
+						Usage: "环境, 将会读取 configs/supervisor_programs.{@env}.toml, template/supervisor_programs.{@env}.ini 文件",
 					},
 				},
 			},
