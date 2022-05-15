@@ -7,13 +7,10 @@
 - [示例](#%E7%A4%BA%E4%BE%8B)
 - [配置](#%E9%85%8D%E7%BD%AE)
     - [配置参考](#%E9%85%8D%E7%BD%AE%E5%8F%82%E8%80%83)
-    - [持久化队列](#%E6%8C%81%E4%B9%85%E5%8C%96%E9%98%9F%E5%88%97)
-        - [使用redis作为队列](#%E4%BD%BF%E7%94%A8redis%E4%BD%9C%E4%B8%BA%E9%98%9F%E5%88%97)
-        - [使用ssdb作为队列](#%E4%BD%BF%E7%94%A8ssdb%E4%BD%9C%E4%B8%BA%E9%98%9F%E5%88%97)
-    - [使用持久化集合](#%E4%BD%BF%E7%94%A8%E6%8C%81%E4%B9%85%E5%8C%96%E9%9B%86%E5%90%88)
-        - [使用redis作为集合](#%E4%BD%BF%E7%94%A8redis%E4%BD%9C%E4%B8%BA%E9%9B%86%E5%90%88)
-        - [使用ssdb作为集合](#%E4%BD%BF%E7%94%A8ssdb%E4%BD%9C%E4%B8%BA%E9%9B%86%E5%90%88)
-    - [使用代理](#%E4%BD%BF%E7%94%A8%E4%BB%A3%E7%90%86)
+- [工程管理工具](#%E5%B7%A5%E7%A8%8B%E7%AE%A1%E7%90%86%E5%B7%A5%E5%85%B7)
+    - [快速开始](#%E5%BF%AB%E9%80%9F%E5%BC%80%E5%A7%8B)
+    - [命令说明](#%E5%91%BD%E4%BB%A4%E8%AF%B4%E6%98%8E)
+- [调度器工具](#%E8%B0%83%E5%BA%A6%E5%99%A8%E5%B7%A5%E5%85%B7)
 - [概念](#%E6%A6%82%E5%BF%B5)
     - [种子 seed](#%E7%A7%8D%E5%AD%90-seed)
     - [队列 queue](#%E9%98%9F%E5%88%97-queue)
@@ -29,10 +26,10 @@
 - [一些操作](#%E4%B8%80%E4%BA%9B%E6%93%8D%E4%BD%9C)
     - [这条数据我已经抓过了, 怎么让spider不再抓它了](#%E8%BF%99%E6%9D%A1%E6%95%B0%E6%8D%AE%E6%88%91%E5%B7%B2%E7%BB%8F%E6%8A%93%E8%BF%87%E4%BA%86-%E6%80%8E%E4%B9%88%E8%AE%A9spider%E4%B8%8D%E5%86%8D%E6%8A%93%E5%AE%83%E4%BA%86)
     - [非请求的seed](#%E9%9D%9E%E8%AF%B7%E6%B1%82%E7%9A%84seed)
-- [工程管理工具](#%E5%B7%A5%E7%A8%8B%E7%AE%A1%E7%90%86%E5%B7%A5%E5%85%B7)
-    - [快速开始](#%E5%BF%AB%E9%80%9F%E5%BC%80%E5%A7%8B)
-    - [命令](#%E5%91%BD%E4%BB%A4)
-- [调度器工具](#%E8%B0%83%E5%BA%A6%E5%99%A8%E5%B7%A5%E5%85%B7)
+    - [使用代理](#%E4%BD%BF%E7%94%A8%E4%BB%A3%E7%90%86)
+- [分布式 spider](#%E5%88%86%E5%B8%83%E5%BC%8F-spider)
+    - [使用分布式队列](#%E4%BD%BF%E7%94%A8%E5%88%86%E5%B8%83%E5%BC%8F%E9%98%9F%E5%88%97)
+    - [使用分布式集合](#%E4%BD%BF%E7%94%A8%E5%88%86%E5%B8%83%E5%BC%8F%E9%9B%86%E5%90%88)
 
 <!-- /TOC -->
 
@@ -84,7 +81,7 @@ func main() {
 # 配置
 
 + 不需要任何配置文件就可以运行
-+ 默认服务类型为 `crawler`, 完整配置说明参考 [Config](./config)
++ 默认服务类型为 `crawler`, 完整配置说明请阅读 [Config](./config/config.go)
 
 ## 配置参考
 
@@ -106,63 +103,109 @@ RequestTimeout = 20000
 RequestMaxAttemptCount = 5
 ```
 
-## 持久化队列
+---
 
-### 使用redis作为队列
+# 工程管理工具
 
-```toml
-[services.crawler.queue]
-type = 'redis'      # 使用redis作为队列, 默认是memory
-Address = '127.0.0.1:6379' # 地址
-UserName = ''       # 用户名, 可选
-Password = ''       # 密码, 可选
-DB = 0              # db, 只有非集群有效, 可选, 默认0
-IsCluster = false   # 是否为集群, 可选, 默认false
-```
+工程管理工具能帮助你快速搭建和管理你的项目
 
-### 使用ssdb作为队列
+1. 安装
+   `go install github.com/zly-app/crawler/tools/crawler@latest`
+2. 使用说明
+   `crawler help`
 
-```toml
-[services.crawler.queue]
-type = 'ssdb'       # 使用ssdb作为队列, 默认是memory
-Address = '127.0.0.1:8888' # 地址
-Password = ''       # 密码, 可选
-```
+## 快速开始
 
-## 使用持久化集合
+1. 初始化一个项目
 
-> 没错, 和队列的配置内容相似
+   `crawler init mycrawler && cd mycrawler`
 
-### 使用redis作为集合
+2. 创建一个spider
 
-```toml
-[services.crawler.set]
-type = 'redis'      # 使用redis作为集合, 默认是memory
-Address = '127.0.0.1:6379' # 地址
-UserName = ''       # 用户名, 可选
-Password = ''       # 密码, 可选
-DB = 0              # db, 只有非集群有效, 可选, 默认0
-IsCluster = false   # 是否为集群, 可选, 默认false
-```
+   `crawler create myspider && cd spiders/myspider`
 
-### 使用ssdb作为集合
+3. 运行
 
-```toml
-[services.crawler.set]
-type = 'ssdb'       # 使用ssdb作为集合, 默认是memory
-Address = '127.0.0.1:8888' # 地址
-Password = ''       # 密码, 可选
-```
+   `go run .`
 
-## 使用代理
+## 命令说明
 
-```toml
-[services.crawler.proxy]
-type = 'static'     # 静态代理, 支持 http, https, socks5, socks5h
-address = 'socks5://127.0.0.1:1080'  # 代理地址
-User = ''           # 用户名, 可选
-Password = ''       # 密码, 可选
-```
++ `init` 初始化一个项目
+   
+   `crawler init <project_name>` 命令创建一个项目, 文件夹存在时该文件夹必须是空目录.
+
+   `crawler init .` 命令在当前目录创建项目, 当前目录必须是空目录, 项目名为当前文件夹名.
+
++ `create` 创建一个 spider, alias `cs`
+
+   `crawler create <spider_name>` 命令在 spiders 目录下创建一个 spider, 如果 spider 文件夹存在且不是空目录时会报错.
+
+   spider 的数据是根据工程下 template/spider_template 目录下的模板生成的.
+
+   如果模板文件后缀名为 `.file`, 则会去除这个后缀
+   如果模板文件后缀名为 `.template`, 则会去除这个后缀, 并将模板变量渲染为模板变量的值.
+   模板变量以 `{@变量名}` 定义.
+   模板变量包含如下数据
+
+   | 模板变量     | 说明                                | 值                  |
+   | ------------ | ----------------------------------- | ------------------- |
+   | project_name | 项目名                              | <项目名>            |
+   | project_dir  | 项目绝对路径                        | <项目绝对路径>      |
+   | spider_name  | spider名                            | <spider名>          |
+   | spider_dir   | spider绝对路径                      | <spider绝对路径>    |
+   | env          | 环境名                              | <环境名>            |
+   | date         | 日期. 示例: 2006-01-02              | <当前日期>          |
+   | time         | 时间. 示例: 15:04:05                | <当前时间>          |
+   | date_time    | 日期时间. 示例: 2006-01-02 15:04:05 | <当前日期时间>      |
+   | num_cpu      | cpu逻辑处理器数量                   | <cpu逻辑处理器数量> |
+
++ `start` 立即提交初始化种子. alias `ss`
+
+   `crawler start [-env <env>] <spider_name>` 命令为spider提交初始化种子信号到指定环境. 执行顺序如下:
+
+   1. 加载 `configs/spider_base_config.<env>.toml` 和 `spiders/<spider_name>/configs/config.<env>.toml` 配置文件.
+   2. 根据配置文件得到分布式队列配置.
+   3. 在分布式队列中提交spider的初始化种子信号.
+
++ `clean` 清空spider所有队列. **慎用**. 执行顺序如下:
+
+   `crawler clean [-env <env>] <spider_name>` 命令清空spider指定环境的所有队列, 也会清空错误队列.
+
+   1. 加载 `configs/spider_base_config.<env>.toml` 和 `spiders/<spider_name>/configs/config.<env>.toml` 配置文件.
+   2. 根据配置文件得到分布式队列配置.
+   3. 在分布式队列中清空spider所有队列.
+
++ `clean_set` 清空spider集合数据. **慎用**. 执行顺序如下:
+
+   `crawler clean_set [-env <env>] <spider_name>` 命令清空spider指定环境的所有集合数据.
+
+   1. 加载 `configs/spider_base_config.<env>.toml` 和 `spiders/<spider_name>/configs/config.<env>.toml` 配置文件.
+   2. 根据配置文件得到分布式集合配置.
+   3. 在分布式集合中清空spider集合数据.
+
++ `make_supervisor` 生成`supervisor`配置. alias `make`. 点 [这里](http://supervisord.org/) 了解`supervisor`
+
+   `crawler make_supervisor [-env <env>]` 命令生成 `supervisor` 配置到 `supervisor_config/conf.d.<env>` 目录下. 生成配置之前会删除这个目录. 执行顺序如下:
+
+   1. 删除 `supervisor_config/conf.d.<env>` 目录并重新创建该目录.
+   2. 加载 `configs/supervisor_programs.<env>.toml` 文件, 记录配置的spider组和spider配置. 
+   3. 加载 `template/supervisor_programs.<env>.ini.template` 文件, 这个文件作为spider配置模板.
+   4. 遍历要配置的spider组和spider, 根据模板变量渲染spider配置模板后写入spider配置和spider组配置到 `supervisor_config/conf.d.<env>/<group_name>.ini` 文件
+   5. 加载 `template/scheduler_config.ini.<env>.template` 文件作为调度器配置模板, 根据模板变量渲染后写入到 `supervisor_config/conf.d.<env>/crawler_scheduler.ini` 文件
+
+# 调度器工具
+
+调度器管理工具为分布式spider提供统一的初始化种子信号管理工具.
+
+1. cd 到项目目录下
+2. 安装
+   `go install github.com/zly-app/crawler/tools/crawler_scheduler@latest && mv ${GOPATH}/bin/crawler_scheduler .`
+
+调度器工具默认加载crawler项目下 `configs/scheduler_config.dev.toml` 和 `configs/spider_base_config.dev.toml` 配置文件.
+
+可以通过 `-c` 命令指定配置文件, 也可以在 `supervisor` 配置中的`command`指定.
+
+---
 
 # 概念
 
@@ -230,6 +273,8 @@ Password = ''       # 密码, 可选
 
 通过 `supervisor` 进行进程管理. 也可以自行管理.
 
+---
+
 # 一些操作
 
 ## 这条数据我已经抓过了, 怎么让spider不再抓它了
@@ -244,98 +289,70 @@ Password = ''       # 密码, 可选
 
 1. 一个`seed`可能不需要请求, 但是`seed`必须要有处理程序
 
-# 工程管理工具
+## 使用代理
 
-1. 安装
-   `go install github.com/zly-app/crawler/tools/crawler@latest`
-2. 使用说明
-   `crawler help`
+一些数据可能需要代理才能正常抓取, 无需更改spider代码, 在配置中加入代理配置即可使用代理.
 
-## 快速开始
+```toml
+[services.crawler.proxy]
+type = 'static'     # 静态代理, 支持 http, https, socks5, socks5h
+address = 'socks5://127.0.0.1:1080'  # 代理地址
+User = ''           # 用户名, 可选
+Password = ''       # 密码, 可选
+```
 
-1. 初始化一个项目
+---
 
-   `crawler init mycrawler && cd mycrawler`
+# 分布式 spider
 
-2. 创建一个spider
+分布式 spider 必须使用分布式队列和分布式集合. 万幸的是你不需要更改你的spider代码, 只需要在配置中将队列配置和集合配置改为分布式类型既可以享用.
 
-   `crawler create myspider && cd spiders/myspider`
+你无需在开发时关心它是分布式的还是单机的, 由于接入了队列, 你直接以单进程spider开发的思路去编写你的代码, 通过更改配置使用分布式队列和分布式集合即可以让单进程的spider在多机器上运行.
 
-3. 运行
+## 使用分布式队列
 
-   `go run .`
++ 使用redis作为队列
 
-## 命令
+```toml
+[services.crawler.queue]
+type = 'redis'      # 使用redis作为队列, 默认是memory
+Address = '127.0.0.1:6379' # 地址
+UserName = ''       # 用户名, 可选
+Password = ''       # 密码, 可选
+DB = 0              # db, 只有非集群有效, 可选, 默认0
+IsCluster = false   # 是否为集群, 可选, 默认false
+```
 
-+ `init` 初始化一个项目
-   
-   `crawler init <project_name>` 命令创建一个项目, 文件夹存在时该文件夹必须是空目录.
++ 使用ssdb作为队列
 
-   `crawler init .` 命令在当前目录创建项目, 当前目录必须是空目录, 项目名为当前文件夹名.
+```toml
+[services.crawler.queue]
+type = 'ssdb'       # 使用ssdb作为队列, 默认是memory
+Address = '127.0.0.1:8888' # 地址
+Password = ''       # 密码, 可选
+```
 
-+ `create` 创建一个 spider, alias `cs`
+## 使用分布式集合
 
-   `crawler create <spider_name>` 命令在 spiders 目录下创建一个 spider, 如果 spider 文件夹存在且不是空目录时会报错.
+> 没错, 和队列的配置相似
 
-   spider 的数据是根据工程下 template/spider_template 目录下的模板生成的.
++ 使用redis作为集合
 
-   如果模板文件后缀名为 `.file`, 则会去除这个后缀
-   如果模板文件后缀名为 `.template`, 则会去除这个后缀, 并将模板变量渲染为模板变量的值.
-   模板变量以 `{@变量名}` 定义.
-   模板变量包含如下数据
+```toml
+[services.crawler.set]
+type = 'redis'      # 使用redis作为集合, 默认是memory
+Address = '127.0.0.1:6379' # 地址
+UserName = ''       # 用户名, 可选
+Password = ''       # 密码, 可选
+DB = 0              # db, 只有非集群有效, 可选, 默认0
+IsCluster = false   # 是否为集群, 可选, 默认false
+```
 
-   | 模板变量     | 说明                                | 值                  |
-   | ------------ | ----------------------------------- | ------------------- |
-   | project_name | 项目名                              | <项目名>            |
-   | project_dir  | 项目绝对路径                        | <项目绝对路径>      |
-   | spider_name  | spider名                            | <spider名>          |
-   | spider_dir   | spider绝对路径                      | <spider绝对路径>    |
-   | env          | 环境名                              | <环境名>            |
-   | date         | 日期. 示例: 2006-01-02              | <当前日期>          |
-   | time         | 时间. 示例: 15:04:05                | <当前时间>          |
-   | date_time    | 日期时间. 示例: 2006-01-02 15:04:05 | <当前日期时间>      |
-   | num_cpu      | cpu逻辑处理器数量                   | <cpu逻辑处理器数量> |
++ 使用ssdb作为集合
 
-+ `start` 立即提交初始化种子. alias `ss`
-
-   `crawler start [-env <env>] <spider_name>` 命令为spider提交初始化种子信号到指定环境. 执行顺序如下:
-
-   1. 加载 `configs/spider_base_config.<env>.toml` 和 `spiders/<spider_name>/configs/config.<env>.toml` 配置文件.
-   2. 根据配置文件得到分布式队列配置.
-   3. 在分布式队列中提交spider的初始化种子信号.
-
-+ `clean` 清空spider所有队列. **慎用**. 执行顺序如下:
-
-   `crawler clean [-env <env>] <spider_name>` 命令清空spider指定环境的所有队列, 也会清空错误队列.
-
-   1. 加载 `configs/spider_base_config.<env>.toml` 和 `spiders/<spider_name>/configs/config.<env>.toml` 配置文件.
-   2. 根据配置文件得到分布式队列配置.
-   3. 在分布式队列中清空spider所有队列.
-
-+ `clean_set` 清空spider集合数据. **慎用**. 执行顺序如下:
-
-   `crawler clean_set [-env <env>] <spider_name>` 命令清空spider指定环境的所有集合数据.
-
-   1. 加载 `configs/spider_base_config.<env>.toml` 和 `spiders/<spider_name>/configs/config.<env>.toml` 配置文件.
-   2. 根据配置文件得到分布式集合配置.
-   3. 在分布式集合中清空spider集合数据.
-
-+ `make_supervisor` 生成`supervisor`配置. alias `make`. 点 [这里](http://supervisord.org/) 了解`supervisor`
-
-   `crawler make_supervisor [-env <env>]` 命令生成 `supervisor` 配置到 `supervisor_config/conf.d.<env>` 目录下. 生成配置之前会删除这个目录. 执行顺序如下:
-
-   1. 删除 `supervisor_config/conf.d.<env>` 目录并重新创建该目录.
-   2. 加载 `configs/supervisor_programs.<env>.toml` 文件, 记录配置的spider组和spider配置. 
-   3. 加载 `template/supervisor_programs.<env>.ini.template` 文件, 这个文件作为spider配置模板.
-   4. 遍历要配置的spider组和spider, 根据模板变量渲染spider配置模板后写入spider配置和spider组配置到 `supervisor_config/conf.d.<env>/<group_name>.ini` 文件
-   5. 加载 `template/scheduler_config.ini.<env>.template` 文件作为调度器配置模板, 根据模板变量渲染后写入到 `supervisor_config/conf.d.<env>/crawler_scheduler.ini` 文件
-
-# 调度器工具
-
-1. cd 到项目目录下
-2. 安装
-   `go install github.com/zly-app/crawler/tools/crawler_scheduler@latest && mv ${GOPATH}/bin/crawler_scheduler .`
-
-调度器工具默认加载crawler项目下 `configs/scheduler_config.dev.toml` 和 `configs/spider_base_config.dev.toml` 配置文件.
-
-可以通过 `-c` 命令指定配置文件, 也可以在 `supervisor` 配置中的`command`指定.
+```toml
+[services.crawler.set]
+type = 'ssdb'       # 使用ssdb作为集合, 默认是memory
+Address = '127.0.0.1:8888' # 地址
+Password = ''       # 密码, 可选
+```
