@@ -182,15 +182,12 @@ func searchProjectName(path string) string {
 	if err != nil {
 		logger.Log.Fatal("读取项目文件失败", zap.String("file", file), zap.Error(err))
 	}
-	projectName := ExtractMiddleText(string(data), "project=", "\n", "", false)
-	if projectName == "" {
-		projectName = ExtractMiddleText(string(data), "project=", "\r\n", "", false)
-	}
-	if projectName == "" {
-		projectName = ExtractMiddleText(string(data), "project=", "\r", "", false)
-	}
-	if projectName == "" {
-		projectName = ExtractMiddleText(string(data), "project=", "", "", false)
+	var projectName string
+	for _, suf := range []string{"\n", "\r\n", "\r", ""} {
+		projectName = ExtractMiddleText(string(data), "project=", suf, "", false)
+		if projectName != "" {
+			return projectName
+		}
 	}
 	if projectName == "" {
 		logger.Log.Fatal("读取项目文件失败", zap.String("file", file), zap.Error(fmt.Errorf("无法获取项目名")))
