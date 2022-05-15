@@ -26,6 +26,7 @@ func CmdCreateSpider(context *cli.Context) error {
 
 	templateArgs := utils.MakeTemplateArgs(projectName, "dev")
 	templateArgs["spider_name"] = spiderName
+	templateArgs["spider_dir"] = utils.MustDirJoin("./spiders", spiderName) // 爬虫目录
 
 	templateBasePath := "template/spider_template"
 

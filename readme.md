@@ -2,12 +2,10 @@
 
 > 提供用于 https://github.com/zly-app/zapp 的服务
 
-
 <!-- TOC -->
 
 - [分布式爬虫框架服务](#%E5%88%86%E5%B8%83%E5%BC%8F%E7%88%AC%E8%99%AB%E6%A1%86%E6%9E%B6%E6%9C%8D%E5%8A%A1)
-- [说明](#%E8%AF%B4%E6%98%8E)
-    - [示例](#%E7%A4%BA%E4%BE%8B)
+- [示例](#%E7%A4%BA%E4%BE%8B)
 - [配置](#%E9%85%8D%E7%BD%AE)
     - [配置参考](#%E9%85%8D%E7%BD%AE%E5%8F%82%E8%80%83)
     - [持久化队列](#%E6%8C%81%E4%B9%85%E5%8C%96%E9%98%9F%E5%88%97)
@@ -38,14 +36,9 @@
 
 <!-- /TOC -->
 
-# 说明
+---
 
-```text
-crawler.WithService()           # 启用服务
-crawler.RegistrySpider(...)     # 服务注入spider
-```
-
-## 示例
+# 示例
 
 ```go
 package main
@@ -66,7 +59,7 @@ func (s *Spider) Init() error { return nil }
 
 // 提交初始化种子
 func (s *Spider) SubmitInitialSeed() error {
-	seed := s.NewSeed("https://www.baidu.com/", s.Parser) // 创建种子并指定解析方法
+	seed := s.NewSeed("https://www.sogou.com/", s.Parser) // 创建种子并指定解析方法
 	s.SubmitSeed(seed)                                    // 提交种子
 	return nil
 }
@@ -96,9 +89,9 @@ func main() {
 ## 配置参考
 
 ```toml
-# 爬虫配置
+# spider配置
 [services.crawler.spider]
-# 爬虫名
+# spider名
 Name = 'a_spider'
 # 提交初始化种子的时机
 SubmitInitialSeedOpportunity = 'start'
@@ -125,11 +118,6 @@ UserName = ''       # 用户名, 可选
 Password = ''       # 密码, 可选
 DB = 0              # db, 只有非集群有效, 可选, 默认0
 IsCluster = false   # 是否为集群, 可选, 默认false
-MinIdleConns = 1    # 最小空闲连接数, 可选, 默认1
-PoolSize = 1        # 客户端池大小, 可选, 默认1
-ReadTimeout = 5000  # 读取超时(毫秒, 可选, 默认5000
-WriteTimeout = 5000 # 写入超时(毫秒, 可选, 默认5000
-DialTimeout = 5000  # 连接超时(毫秒, 可选, 默认5000
 ```
 
 ### 使用ssdb作为队列
@@ -139,11 +127,6 @@ DialTimeout = 5000  # 连接超时(毫秒, 可选, 默认5000
 type = 'ssdb'       # 使用ssdb作为队列, 默认是memory
 Address = '127.0.0.1:8888' # 地址
 Password = ''       # 密码, 可选
-MinIdleConns = 1    # 最小空闲连接数, 可选, 默认1
-PoolSize = 1        # 客户端池大小, 可选, 默认1
-ReadTimeout = 5000  # 读取超时(毫秒, 可选, 默认5000
-WriteTimeout = 5000 # 写入超时(毫秒, 可选, 默认5000
-DialTimeout = 5000  # 连接超时(毫秒, 可选, 默认5000
 ```
 
 ## 使用持久化集合
@@ -160,11 +143,6 @@ UserName = ''       # 用户名, 可选
 Password = ''       # 密码, 可选
 DB = 0              # db, 只有非集群有效, 可选, 默认0
 IsCluster = false   # 是否为集群, 可选, 默认false
-MinIdleConns = 1    # 最小空闲连接数, 可选, 默认1
-PoolSize = 1        # 客户端池大小, 可选, 默认1
-ReadTimeout = 5000  # 读取超时(毫秒, 可选, 默认5000
-WriteTimeout = 5000 # 写入超时(毫秒, 可选, 默认5000
-DialTimeout = 5000  # 连接超时(毫秒, 可选, 默认5000
 ```
 
 ### 使用ssdb作为集合
@@ -174,11 +152,6 @@ DialTimeout = 5000  # 连接超时(毫秒, 可选, 默认5000
 type = 'ssdb'       # 使用ssdb作为集合, 默认是memory
 Address = '127.0.0.1:8888' # 地址
 Password = ''       # 密码, 可选
-MinIdleConns = 1    # 最小空闲连接数, 可选, 默认1
-PoolSize = 1        # 客户端池大小, 可选, 默认1
-ReadTimeout = 5000  # 读取超时(毫秒, 可选, 默认5000
-WriteTimeout = 5000 # 写入超时(毫秒, 可选, 默认5000
-DialTimeout = 5000  # 连接超时(毫秒, 可选, 默认5000
 ```
 
 ## 使用代理
@@ -225,10 +198,10 @@ Password = ''       # 密码, 可选
 
 ## 进程独立
 
-1. 在`crawler`的基础设计里, 爬虫运行的最小单元为一个进程, 一个爬虫可能有多进程, 每个进程可以在任何机器上运行.
+1. 在`crawler`的基础设计里, `spider`运行的最小单元为一个进程, 一个`spider`可能有多进程, 每个进程可以在任何机器上运行.
 2. 每个进程同一时间只会处理一个`seed`, 每个进程具有独立的db连接, 独立的`downloader`等, 进程之间互不影响.
 3. 你无需关心多进程之间是怎么协调的, 在开发的时候按照单进程开发然后运行时启动多个进程就行了.
-4. 多进程需要队列服务支持, 比如`redis`, `ssdb`. 使用`memory`队列开启多进程运行爬虫可能产生意外的结果.
+4. 多进程需要分布式队列服务支持, 比如`redis`, `ssdb`. 使用`memory`队列开启多进程运行`spider`可能产生意外的结果.
 
 ## 请求独立
 
@@ -241,7 +214,8 @@ Password = ''       # 密码, 可选
 2. 下载器`downloader`会根据`seed`自动将网站数据下载并写入`seed`中.
 3. 下载完成后`seed`会经过`响应中间件`进行检查.
 4. 将`seed`交给处理程序, 使用者决定如何对数据进行抽取.
-5. 注: 种子抓取过程中如果收到结束信号会将种子放回队列防止种子丢失
+
+种子抓取过程中如果进程收到结束信号会将种子放回队列防止种子丢失
 
 ## 配置化
 
@@ -249,20 +223,22 @@ Password = ''       # 密码, 可选
 
 ## 模块化
 
-1. 将爬虫的请求, 队列, 代理, 下载器, 配置管理等抽象为单独的模块, 各司其职, 得以解耦合, 方便后期升级维护
+1. 将`spider`的请求, 队列, 代理, 下载器, 配置管理等抽象为单独的模块, 各司其职, 得以解耦合, 方便后期升级维护
 2. 使用者也可以根据自己的需求重新设计自己的逻辑替换一些模块.
 
 ## 进程管理
 
-开发中...
+通过 `supervisor` 进行进程管理. 也可以自行管理.
 
 # 一些操作
 
-## 这条数据我已经抓过了, 怎么让爬虫不再抓它了
+## 这条数据我已经抓过了, 怎么让spider不再抓它了
 
 1. 将处理完毕(想要拿到的数据已经持久化)的`seed`的唯一标志(一般是url)存入集合.
 2. 提交新的`seed`之前检查集合中是否已存在这个唯一标志, 就这么简单
-3. 注: 这种方式仍然可能会再次抓取相同的数据, 因为你可能在这个`seed`处理完毕之前又提交了相同唯一标志的`seed`
+
+注: 这种方式仍然可能会再次抓取相同的数据, 因为你可能在这个`seed`处理完毕之前又提交了相同唯一标志的`seed`
+问: 为什么不在处理前存入`seed`的唯一标志. 答: 在抓取过程中一旦程序出现问题, 这条数据将永远不会再抓取了.
 
 ## 非请求的`seed`
 
@@ -275,21 +251,84 @@ Password = ''       # 密码, 可选
 2. 使用说明
    `crawler help`
 
-## 命令
+## 快速开始
 
 1. 初始化一个项目
-   `crawler init <project_name> && cd <project_name>`
-2. 创建一个爬虫
-   `crawler create <spider>`
-3. 提交初始化种子
-   `crawler start [-env env] <spider>`
-4. 清空爬虫所有队列
-   `crawler clean [-env env] <spider>`
-5. 清空爬虫集合数据
-   `crawler clean_set [-env env] <spider>`
-6. 生成 `supervisor` 配置, 点 [这里](http://supervisord.org/) 进入supervisor官网
-    1. `crawler make [-env env]` 会根据文件 `configs/supervisor_programs.toml` 在 `supervisor_config/conf.d` 目录下生成一些 `ini` 文件
-    2. 将 `supervisor` 的配置修改包含文件 `<project_dir>/supervisor_config/conf.d.dev/*.ini`
+
+   `crawler init mycrawler && cd mycrawler`
+
+2. 创建一个spider
+
+   `crawler create myspider && cd spiders/myspider`
+
+3. 运行
+
+   `go run .`
+
+## 命令
+
++ `init` 初始化一个项目
+   
+   `crawler init <project_name>` 命令创建一个项目, 文件夹存在时该文件夹必须是空目录.
+
+   `crawler init .` 命令在当前目录创建项目, 当前目录必须是空目录, 项目名为当前文件夹名.
+
++ `create` 创建一个 spider, alias `cs`
+
+   `crawler create <spider_name>` 命令在 spiders 目录下创建一个 spider, 如果 spider 文件夹存在且不是空目录时会报错.
+
+   spider 的数据是根据工程下 template/spider_template 目录下的模板生成的.
+
+   如果模板文件后缀名为 `.file`, 则会去除这个后缀
+   如果模板文件后缀名为 `.template`, 则会去除这个后缀, 并将模板变量渲染为模板变量的值.
+   模板变量以 `{@变量名}` 定义.
+   模板变量包含如下数据
+
+   | 模板变量     | 说明                                | 值                  |
+   | ------------ | ----------------------------------- | ------------------- |
+   | project_name | 项目名                              | <项目名>            |
+   | project_dir  | 项目绝对路径                        | <项目绝对路径>      |
+   | spider_name  | spider名                            | <spider名>          |
+   | spider_dir   | spider绝对路径                      | <spider绝对路径>    |
+   | env          | 环境名                              | <环境名>            |
+   | date         | 日期. 示例: 2006-01-02              | <当前日期>          |
+   | time         | 时间. 示例: 15:04:05                | <当前时间>          |
+   | date_time    | 日期时间. 示例: 2006-01-02 15:04:05 | <当前日期时间>      |
+   | num_cpu      | cpu逻辑处理器数量                   | <cpu逻辑处理器数量> |
+
++ `start` 立即提交初始化种子. alias `ss`
+
+   `crawler start [-env <env>] <spider_name>` 命令为spider提交初始化种子信号到指定环境. 执行顺序如下:
+
+   1. 加载 `configs/spider_base_config.<env>.toml` 和 `spiders/<spider_name>/configs/config.<env>.toml` 配置文件.
+   2. 根据配置文件得到分布式队列配置.
+   3. 在分布式队列中提交spider的初始化种子信号.
+
++ `clean` 清空spider所有队列. **慎用**. 执行顺序如下:
+
+   `crawler clean [-env <env>] <spider_name>` 命令清空spider指定环境的所有队列, 也会清空错误队列.
+
+   1. 加载 `configs/spider_base_config.<env>.toml` 和 `spiders/<spider_name>/configs/config.<env>.toml` 配置文件.
+   2. 根据配置文件得到分布式队列配置.
+   3. 在分布式队列中清空spider所有队列.
+
++ `clean_set` 清空spider集合数据. **慎用**. 执行顺序如下:
+
+   `crawler clean_set [-env <env>] <spider_name>` 命令清空spider指定环境的所有集合数据.
+
+   1. 加载 `configs/spider_base_config.<env>.toml` 和 `spiders/<spider_name>/configs/config.<env>.toml` 配置文件.
+   2. 根据配置文件得到分布式集合配置.
+   3. 在分布式集合中清空spider集合数据.
+
++ `make_supervisor` 生成`supervisor`配置. alias `make`. 点 [这里](http://supervisord.org/) 了解`supervisor`
+
+   `crawler make_supervisor [-env <env>]` 命令生成 `supervisor` 配置到 `supervisor_config/conf.d.<env>` 目录下. 生成配置之前会删除这个目录. 执行顺序如下:
+
+   1. 删除 `supervisor_config/conf.d.<env>` 目录并重新创建该目录.
+   2. 加载 `configs/supervisor_programs.<env>.toml` 文件, 记录配置的spider组和spider配置. 
+   3. 加载 `template/supervisor_programs.<env>.ini.template` 文件, 这个文件作为spider配置模板.
+   4. 遍历要配置的spider组和spider, 根据模板变量渲染spider配置模板后写入spider配置和spider组配置到 `supervisor_config/conf.d.<env>/<group_name>.ini` 文件
+   5. 加载 `template/scheduler_config.ini.<env>.template` 文件作为调度器配置模板, 根据模板变量渲染后写入到 `supervisor_config/conf.d.<env>/crawler_scheduler.ini` 文件
 
 # 调度器工具
 
@@ -297,3 +336,6 @@ Password = ''       # 密码, 可选
 2. 安装
    `go install github.com/zly-app/crawler/tools/crawler_scheduler@latest && mv ${GOPATH}/bin/crawler_scheduler .`
 
+调度器工具默认加载crawler项目下 `configs/scheduler_config.dev.toml` 和 `configs/spider_base_config.dev.toml` 配置文件.
+
+可以通过 `-c` 命令指定配置文件, 也可以在 `supervisor` 配置中的`command`指定.

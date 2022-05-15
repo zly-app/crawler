@@ -49,14 +49,16 @@ func CmdMakeSupervisorConfig(context *cli.Context) error {
 
 	// supervisor组配置文件模板
 	const groupConfigTemplate = `
-[group:@group_name]
-programs = @spider_names`
+; 分组
+[group:{@group_name}]
+; 分组的 spider 列表
+programs = {@spider_names}`
 
 	// 删除目录
 	path := fmt.Sprintf("supervisor_config/conf.d.%s", env)
 	err = os.RemoveAll(path)
 	if err != nil {
-		logger.Log.Fatal("删除目录失败", zap.String("dir", "supervisor_config/conf.d"), zap.Error(err))
+		logger.Log.Fatal("删除目录失败", zap.String("dir", path), zap.Error(err))
 	}
 
 	// 创建配置目录
@@ -81,13 +83,14 @@ programs = @spider_names`
 			if err != nil {
 				logger.Log.Fatal("spider的配置错误, 无法获取到进程数", zap.String("spiderName", spiderName), zap.Error(err))
 			}
+			seedCron := confValue[1]
 
 			// 检查进程数
 			if processNum < 1 {
 				continue
 			}
 			if processNum > 99 {
-				logger.Log.Fatal("spider的process太多, 超过99通常是无意义的", zap.String("spiderName", spiderName), zap.Int("processNum", processNum))
+				logger.Log.Warn("spider的process太多, 超过99通常是无意义的", zap.String("spiderName", spiderName), zap.Int("processNum", processNum))
 			}
 			// 检查提交初始化种子的时机
 			expression := confValue[1]
@@ -109,7 +112,7 @@ programs = @spider_names`
 			templateArgs["spider_name"] = spiderName                                // 爬虫名
 			templateArgs["spider_dir"] = utils.MustDirJoin("./spiders", spiderName) // 爬虫目录
 			templateArgs["process_num"] = processNum                                // 进程数
-			templateArgs["seed_cron"] = confValue[1]                                // 初始化种子提交时机
+			templateArgs["seed_cron"] = seedCron                                    // 初始化种子提交时机
 			text := utils.RenderTemplate(spiderConfigTemplate, templateArgs)
 			spiderConfigs = append(spiderConfigs, text)
 		}
@@ -122,7 +125,7 @@ programs = @spider_names`
 		templateArgs["group_name"] = groupName                        // 组名
 		templateArgs["spider_names"] = strings.Join(spiderNames, ",") // 爬虫列表
 		groupConfigData := utils.RenderTemplate(groupConfigTemplate, templateArgs)
-		data := strings.Join(spiderConfigs, "\n\n") + "\n\n" + groupConfigData
+		data := strings.Join(spiderConfigs, "\n\n") + "\n\n" + groupConfigData + "\n\n"
 		file := fmt.Sprintf("%s/%s.ini", path, groupName)
 		err = os.WriteFile(file, []byte(data), 0666)
 		if err != nil {
@@ -131,7 +134,7 @@ programs = @spider_names`
 	}
 
 	// 调度器配置
-	templateFile = "template/scheduler_config.ini.template"
+	templateFile = fmt.Sprintf("template/scheduler_config.ini.%s.template", env)
 	s, err = os.ReadFile(templateFile)
 	if err != nil {
 		logger.Log.Fatal("读取调度器程序配置文件模板失败", zap.String("template", templateFile), zap.Error(err))
