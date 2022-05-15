@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/spf13/viper"
+	"github.com/zly-app/plugin/honey"
 	"github.com/zly-app/service/cron"
 	"github.com/zly-app/zapp"
 	zapp_config "github.com/zly-app/zapp/config"
@@ -30,21 +31,21 @@ func (s *Scheduler) Start() {
 		s.app.Fatal("使用memory队列是无意义的")
 	}
 
-	var configFile string
-	err := s.app.GetConfig().Parse("crawler_scheduler.programs_config_file", &configFile)
+	var programsConfigFile string
+	err := s.app.GetConfig().Parse("crawler_scheduler.programs_config_file", &programsConfigFile)
 	if err != nil {
 		s.app.Fatal("获取程序配置文件路径失败", zap.Error(err))
 	}
 
 	vi := viper.New()
-	vi.SetConfigFile(configFile)
+	vi.SetConfigFile(programsConfigFile)
 	if err := vi.MergeInConfig(); err != nil {
-		s.app.Fatal("读取程序配置文件失败", zap.String("configFile", configFile), zap.Error(err))
+		s.app.Fatal("读取程序配置文件失败", zap.String("programsConfigFile", programsConfigFile), zap.Error(err))
 	}
 
 	var groups map[string]map[string]string
 	if err := vi.Unmarshal(&groups); err != nil {
-		s.app.Fatal("解析程序配置文件失败", zap.String("configFile", configFile), zap.Error(err))
+		s.app.Fatal("解析程序配置文件失败", zap.String("programsConfigFile", programsConfigFile), zap.Error(err))
 	}
 
 	for _, g := range groups {
@@ -129,7 +130,16 @@ func main() {
 
 	app := zapp.NewApp("crawler-scheduler",
 		cron.WithService(),
+		honey.WithPlugin(),
 		zapp.WithConfigOption(zapp_config.WithFiles("./configs/scheduler_config.dev.toml")),
+		zapp.WithCustomEnablePlugin(func(app zapp_core.IApp, plugins map[zapp_core.PluginType]bool) {
+			var enabledHoney bool
+			err := app.GetConfig().Parse("crawler_scheduler.enabled_honey", &enabledHoney)
+			if err != nil {
+				app.Fatal("获取程序honey启用状态失败", zap.Error(err))
+			}
+			plugins["honey"] = enabledHoney
+		}),
 	)
 
 	s := &Scheduler{

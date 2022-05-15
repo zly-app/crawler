@@ -293,7 +293,8 @@ Password = ''       # 密码, 可选
 
 # 调度器工具
 
-1. 安装
-   `go build github.com/zly-app/crawler/tools/crawler_scheduler`
-2. 将 `supervisor` 的配置修改包含以下文件
+1. cd 到项目目录下
+2. 安装
+   `go install github.com/zly-app/crawler/tools/crawler_scheduler@latest && mv ${GOPATH}/bin/crawler_scheduler .`
+3. 将 `supervisor` 的配置修改包含以下文件
    `<project_dir>/supervisor_config/scheduler_config.ini`
