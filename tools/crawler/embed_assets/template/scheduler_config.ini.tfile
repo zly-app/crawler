@@ -3,7 +3,7 @@
 ; 执行路径, 进程会cd到这个目录
 directory = {@project_dir}
 ; 命令, 如果你想执行该目录下的文件，建议使用绝对路径
-command = {@project_dir}/crawler_scheduler -c ./configs/crawler_config.{@env}.toml
+command = {@project_dir}/crawler_scheduler -c ./configs/scheduler_config.{@env}.toml
 ; 启动多少个进程
 numprocs = 1
 ; 是否在supervisord启动后被自动启动
