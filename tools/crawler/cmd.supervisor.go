@@ -27,7 +27,7 @@ func CmdMakeSupervisorConfig(context *cli.Context) error {
 		logger.Log.Fatal("env为空")
 	}
 	configFile := fmt.Sprintf("./configs/supervisor_programs.%s.toml", env)
-	templateFile := fmt.Sprintf("./template/supervisor_programs.%s.ini", env)
+	templateFile := fmt.Sprintf("./template/supervisor_programs.%s.ini.template", env)
 
 	vi := viper.New()
 	vi.SetConfigFile(configFile)

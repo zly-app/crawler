@@ -50,6 +50,8 @@ func embedFilesRelease(projectName, basePath string) {
 
 		if strings.HasSuffix(path, ".file") {
 			path = strings.TrimSuffix(path, ".file")
+		} else if strings.HasSuffix(path, ".tfile") {
+			path = strings.TrimSuffix(path, ".tfile") + ".template"
 		} else if strings.HasSuffix(path, ".template") {
 			path = strings.TrimSuffix(path, ".template")
 			bs = []byte(utils.RenderTemplate(string(bs), templateArgs))
