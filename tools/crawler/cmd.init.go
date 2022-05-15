@@ -54,8 +54,6 @@ func embedFilesRelease(projectName, basePath string) {
 		} else if strings.HasSuffix(path, ".template") {
 			path = strings.TrimSuffix(path, ".template")
 			bs = []byte(zstr.Render(string(bs), templateArgs))
-		} else if strings.HasSuffix(path, ".t") {
-			path += "emplate"
 		}
 
 		utils.MustWriteFile(strings.TrimPrefix(path, basePath)[1:], bs, 666)
