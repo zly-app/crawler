@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/zly-app/crawler"
 	"github.com/zly-app/crawler/core"
 	"github.com/zly-app/plugin/honey"
@@ -36,7 +34,7 @@ func (s *Spider) SubmitInitialSeed() error {
 
 // 解析方法
 func (s *Spider) Parser(seed *core.Seed) error {
-	fmt.Println(string(seed.HttpResponseBody)) // 打印响应body
+	s.SaveResult(seed.HttpResponseBody) // 保存数据
 	return nil
 }
 
@@ -46,6 +44,7 @@ func (s *Spider) Close() error { return nil }
 func main() {
 	app := zapp.NewApp("{@spider_name}",
 		crawler.WithService(), // 启用crawler服务
+		honey.WithPlugin(),
 		zapp.WithCustomComponent(component.CustomComponentCreator), // 使用自定义组件
 		zapp.WithConfigOption(zapp_config.WithFiles("../../configs/spider_base_config.{@env}.toml", "./configs/config.{@env}.toml")),
 	)
