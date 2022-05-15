@@ -80,10 +80,12 @@ func (c *Crawler) runOnce() error {
 		if err := c.PutErrorRawSeed(raw, true); err != nil {
 			c.app.Error("将出错seed放入error队列失败", zap.Error(err))
 		}
+		c.app.Info("已将出错seed原始数据放入error队列")
 	default:
 		if err := c.PutErrorRawSeed(raw, false); err != nil {
 			c.app.Error("将出错seed放入error队列失败", zap.Error(err))
 		}
+		c.app.Info("已将出错seed原始数据放入error队列")
 	}
 	return err
 }
@@ -141,6 +143,13 @@ func (c *Crawler) seedProcess(raw string) error {
 	}
 
 	c.app.Error("解析时出错", zap.String("err", utils.Recover.GetRecoverErrorDetail(err)))
+	// 尝试将body保存到队列
+	if err := c.trySaveParserErrorSeed(raw, seedResult.HttpResponseBody); err != nil {
+		c.app.Error("尝试保存解析错误的seed失败, 只能放入原始数据", zap.String("err", utils.Recover.GetRecoverErrorDetail(err)))
+	} else {
+		return core.InterceptError // 既然保存成功则拦截处理
+	}
+
 	return core.ParserError
 }
 
@@ -169,4 +178,15 @@ func (c *Crawler) download(raw string, seed *core.Seed) (*core.Seed, http.Cookie
 	}
 
 	return seed, cookieJar, nil
+}
+
+// 尝试保存解析错误的seed
+func (c *Crawler) trySaveParserErrorSeed(raw string, body []byte) error {
+	seed, err := seeds.MakeSeedOfRaw(raw)
+	if err != nil {
+		return fmt.Errorf("构建种子失败: %v", err)
+	}
+	seed.HttpResponseBody = body
+	err = c.PutErrorSeed(seed, true)
+	return err
 }
