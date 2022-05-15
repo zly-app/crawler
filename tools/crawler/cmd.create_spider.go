@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
+	"os/exec"
 	"strings"
 
 	"github.com/urfave/cli/v2"
@@ -47,7 +48,7 @@ func CmdCreateSpider(context *cli.Context) error {
 			logger.Log.Fatal("读取目录资源失败", zap.String("path", path), zap.Error(err))
 		}
 		newPath := utils.MustDirJoin(spiderBasePath, strings.TrimPrefix(path, templateBasePath)[1:])
-		fmt.Printf("%s >> %s\n", path, newPath)
+		fmt.Printf("dir %s >> %s\n", path, newPath)
 		utils.MustCreateDirOrDirIsEmpty(newPath, 666)
 		dispatchDirs(path, dirs)
 	}
@@ -57,22 +58,33 @@ func CmdCreateSpider(context *cli.Context) error {
 		if err != nil {
 			logger.Log.Fatal("读取文件资源失败", zap.String("path", path), zap.Error(err))
 		}
-		path = utils.MustDirJoin(spiderBasePath, strings.TrimPrefix(path, templateBasePath)[1:])
+		newPath := utils.MustDirJoin(spiderBasePath, strings.TrimPrefix(path, templateBasePath)[1:])
 
-		if strings.HasSuffix(path, ".file") {
-			path = strings.TrimSuffix(path, ".file")
-		} else if strings.HasSuffix(path, ".template") {
-			path = strings.TrimSuffix(path, ".template")
+		if strings.HasSuffix(newPath, ".file") {
+			newPath = strings.TrimSuffix(newPath, ".file")
+		} else if strings.HasSuffix(newPath, ".template") {
+			newPath = strings.TrimSuffix(newPath, ".template")
 			bs = []byte(utils.RenderTemplate(string(bs), templateArgs))
 		}
 
-		utils.MustWriteFile(path, bs, 666)
+		fmt.Printf("file %s >> %s\n", path, newPath)
+		utils.MustWriteFile(newPath, bs, 666)
 	}
 	dirs, err := os.ReadDir(templateBasePath)
 	if err != nil {
 		logger.Log.Fatal("读取模板资源失败", zap.String("path", templateBasePath), zap.Error(err))
 	}
 	dispatchDirs(templateBasePath, dirs)
+
+	// go mod tidy
+	// 进入spider目录
+	if err = os.Chdir(spiderBasePath); err != nil {
+		logger.Log.Fatal("go mod tidy 失败, 进入工程目录失败", zap.String("path", spiderBasePath), zap.Error(err))
+	}
+	if err = exec.Command("go", "mod", "tidy").Run(); err != nil {
+		logger.Log.Fatal("go mod tidy 失败", zap.String("path", spiderBasePath), zap.Error(err))
+	}
+
 	fmt.Println("创建成功")
 	return nil
 }
