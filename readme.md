@@ -289,12 +289,11 @@ Password = ''       # 密码, 可选
    `crawler clean_set [-env env] <spider>`
 6. 生成 `supervisor` 配置, 点 [这里](http://supervisord.org/) 进入supervisor官网
     1. `crawler make [-env env]` 会根据文件 `configs/supervisor_programs.toml` 在 `supervisor_config/conf.d` 目录下生成一些 `ini` 文件
-    2. 将 `supervisor` 的配置修改包含文件 `<project_dir>/supervisor_config/conf.d/*.ini`
+    2. 将 `supervisor` 的配置修改包含文件 `<project_dir>/supervisor_config/conf.d.dev/*.ini`
 
 # 调度器工具
 
 1. cd 到项目目录下
 2. 安装
    `go install github.com/zly-app/crawler/tools/crawler_scheduler@latest && mv ${GOPATH}/bin/crawler_scheduler .`
-3. 将 `supervisor` 的配置修改包含以下文件
-   `<project_dir>/supervisor_config/scheduler_config.ini`
+
