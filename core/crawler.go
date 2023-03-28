@@ -3,6 +3,8 @@ package core
 import (
 	"errors"
 	"net/http"
+
+	"golang.org/x/net/context"
 )
 
 var (
@@ -33,29 +35,29 @@ type ICrawler interface {
 	    seed 种子
 	    front 是否放在队列前面
 	*/
-	PutSeed(seed *Seed, front bool) error
+	PutSeed(ctx context.Context, seed *Seed, front bool) error
 	/*
 	   **放入种子原始数据
 	    raw 种子原始数据
 	    parserFuncName 解析函数名
 	    front 是否放在队列前面
 	*/
-	PutRawSeed(raw string, parserFuncName string, front bool) error
+	PutRawSeed(ctx context.Context, raw string, parserFuncName string, front bool) error
 	/*
 	   **放入错误种子
 	    seed 种子
 	    isParserError 是否为解析错误
 	*/
-	PutErrorSeed(seed *Seed, isParserError bool) error
+	PutErrorSeed(ctx context.Context, seed *Seed, isParserError bool) error
 	/*
 	   **放入错误种子原始数据
 	    raw 种子原始数据
 	    isParserError 是否为解析错误
 	*/
-	PutErrorRawSeed(raw string, isParserError bool) error
+	PutErrorRawSeed(ctx context.Context, raw string, isParserError bool) error
 
 	// 检查队列是否为空, 如果spiderName为空则取默认值
-	CheckQueueIsEmpty(spiderName string) (bool, error)
+	CheckQueueIsEmpty(ctx context.Context, spiderName string) (bool, error)
 
 	// 获取spider解析方法
 	GetSpiderParserMethod(methodName string) (ParserMethod, bool)

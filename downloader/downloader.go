@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 	"time"
@@ -20,13 +20,13 @@ type Downloader struct {
 	app zapp_core.IApp
 }
 
-func (d *Downloader) Download(crawler core.ICrawler, seed *core.Seed, cookieJar http.CookieJar) (*core.Seed, error) {
+func (d *Downloader) Download(ctx context.Context, crawler core.ICrawler, seed *core.Seed, cookieJar http.CookieJar) (*core.Seed, error) {
 	if seed.Request.Url == "" {
 		return seed, nil
 	}
 
 	// 超时
-	ctx, cancel := context.WithTimeout(d.app.BaseContext(), time.Duration(seed.Request.Timeout)*time.Millisecond)
+	ctx, cancel := context.WithTimeout(ctx, time.Duration(seed.Request.Timeout)*time.Millisecond)
 	defer cancel()
 
 	// 构建req
@@ -57,9 +57,9 @@ func (d *Downloader) Download(crawler core.ICrawler, seed *core.Seed, cookieJar 
 	// 处理
 	seed.HttpRequest = req
 	seed.HttpResponse = resp
-	seed.HttpResponseBody, _ = ioutil.ReadAll(resp.Body)
+	seed.HttpResponseBody, _ = io.ReadAll(resp.Body)
 	_ = resp.Body.Close()
-	resp.Body = ioutil.NopCloser(bytes.NewReader(seed.HttpResponseBody))
+	resp.Body = io.NopCloser(bytes.NewReader(seed.HttpResponseBody))
 
 	// 编码转换
 	switch strings.ToLower(seed.Request.Encoding) {

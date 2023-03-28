@@ -8,13 +8,11 @@ import (
 	"github.com/zly-app/crawler/core"
 	"github.com/zly-app/crawler/queue/memory"
 	"github.com/zly-app/crawler/queue/redis"
-	"github.com/zly-app/crawler/queue/ssdb"
 )
 
 var queueCreator = map[string]func(app zapp_core.IApp) core.IQueue{
 	"memory": memory.NewMemoryQueue,
 	"redis":  redis.NewRedisQueue,
-	"ssdb":   ssdb.NewSsdbQueue,
 }
 
 func NewQueue(app zapp_core.IApp, queryType string) core.IQueue {

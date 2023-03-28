@@ -1,6 +1,7 @@
 package crawler
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"time"
@@ -15,7 +16,7 @@ import (
 
 func (c *Crawler) Run() {
 	// 运行前提交初始化种子
-	c.CheckSubmitInitialSeed()
+	c.CheckSubmitInitialSeed(c.app.BaseContext())
 
 	for {
 		select {
@@ -40,8 +41,11 @@ func (c *Crawler) Run() {
 
 // 开始一次任务
 func (c *Crawler) runOnce() error {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(c.conf.Frame.SeedProcessTimeout)*time.Millisecond)
+	defer cancel()
+
 	// 获取种子原始数据
-	raw, err := c.PopARawSeed()
+	raw, err := c.PopARawSeed(ctx)
 	if err == core.EmptyQueueError {
 		c.app.Info("空队列, 休眠后重试", zap.Int64("waitTime", c.conf.Frame.EmptyQueueWaitTime/1000))
 		time.Sleep(time.Duration(c.conf.Frame.EmptyQueueWaitTime) * time.Millisecond)
@@ -55,7 +59,7 @@ func (c *Crawler) runOnce() error {
 
 	// 提交初始化种子信号
 	if raw == SubmitInitialSeedSignal {
-		if err = c.SubmitInitialSeed(); err != nil {
+		if err = c.SubmitInitialSeed(c.app.BaseContext()); err != nil {
 			return fmt.Errorf("提交初始化种子失败: %v", err)
 		}
 		return nil
@@ -67,7 +71,7 @@ func (c *Crawler) runOnce() error {
 
 	// 开始处理
 	err = utils.Recover.WrapCall(func() error {
-		return c.seedProcess(raw)
+		return c.seedProcess(ctx, raw)
 	})
 	if err == nil {
 		return nil
@@ -77,12 +81,12 @@ func (c *Crawler) runOnce() error {
 	case core.InterceptError: // 拦截, 应该立即结束本次任务
 		return nil
 	case core.ParserError: // 解析错误
-		if err := c.PutErrorRawSeed(raw, true); err != nil {
+		if err := c.PutErrorRawSeed(context.Background(), raw, true); err != nil {
 			c.app.Error("将出错seed放入error队列失败", zap.Error(err))
 		}
 		c.app.Info("已将出错seed原始数据放入error队列")
 	default:
-		if err := c.PutErrorRawSeed(raw, false); err != nil {
+		if err := c.PutErrorRawSeed(context.Background(), raw, false); err != nil {
 			c.app.Error("将出错seed放入error队列失败", zap.Error(err))
 		}
 		c.app.Info("已将出错seed原始数据放入error队列")
@@ -91,7 +95,7 @@ func (c *Crawler) runOnce() error {
 }
 
 // 种子处理
-func (c *Crawler) seedProcess(raw string) error {
+func (c *Crawler) seedProcess(ctx context.Context, raw string) error {
 	var seedResult *core.Seed
 	var cookieJar http.CookieJar
 	// 循环尝试下载
@@ -107,12 +111,12 @@ func (c *Crawler) seedProcess(raw string) error {
 		}
 
 		// 请求处理
-		seed, err = c.middleware.RequestProcess(c, seed)
+		seed, err = c.middleware.RequestProcess(ctx, c, seed)
 		if err != nil {
 			return err
 		}
 
-		seedResult, cookieJar, err = c.download(raw, seed)
+		seedResult, cookieJar, err = c.download(ctx, raw, seed)
 		if err == nil {
 			break
 		}
@@ -136,7 +140,7 @@ func (c *Crawler) seedProcess(raw string) error {
 
 	// 解析
 	err := utils.Recover.WrapCall(func() error {
-		return c.Parser(seedResult)
+		return c.Parser(ctx, seedResult)
 	})
 	if err == nil {
 		return nil
@@ -144,7 +148,7 @@ func (c *Crawler) seedProcess(raw string) error {
 
 	c.app.Error("解析时出错", zap.String("err", utils.Recover.GetRecoverErrorDetail(err)))
 	// 尝试将body保存到队列
-	if err := c.trySaveParserErrorSeed(raw, seedResult.HttpResponseBody); err != nil {
+	if err := c.trySaveParserErrorSeed(context.Background(), raw, seedResult.HttpResponseBody); err != nil {
 		c.app.Error("尝试保存解析错误的seed失败, 只能放入原始数据", zap.String("err", utils.Recover.GetRecoverErrorDetail(err)))
 	} else {
 		return core.InterceptError // 既然保存成功则拦截处理
@@ -154,25 +158,25 @@ func (c *Crawler) seedProcess(raw string) error {
 }
 
 // 下载完善种子
-func (c *Crawler) download(raw string, seed *core.Seed) (*core.Seed, http.CookieJar, error) {
+func (c *Crawler) download(ctx context.Context, raw string, seed *core.Seed) (*core.Seed, http.CookieJar, error) {
 	cookieJar, _ := cookiejar.New(nil)
 
 	// 下载
-	seed, err := c.downloader.Download(c, seed, cookieJar)
+	seed, err := c.downloader.Download(ctx, c, seed, cookieJar)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	// 响应处理
 	seed.Raw = raw
-	seed, err = c.middleware.ResponseProcess(c, seed)
+	seed, err = c.middleware.ResponseProcess(ctx, c, seed)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	// 检查是符合期望的响应
 	seed.Raw = raw
-	seed, err = c.CheckIsExpectResponse(seed)
+	seed, err = c.CheckIsExpectResponse(ctx, seed)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -181,12 +185,12 @@ func (c *Crawler) download(raw string, seed *core.Seed) (*core.Seed, http.Cookie
 }
 
 // 尝试保存解析错误的seed
-func (c *Crawler) trySaveParserErrorSeed(raw string, body []byte) error {
+func (c *Crawler) trySaveParserErrorSeed(ctx context.Context, raw string, body []byte) error {
 	seed, err := seeds.MakeSeedOfRaw(raw)
 	if err != nil {
 		return fmt.Errorf("构建种子失败: %v", err)
 	}
 	seed.HttpResponseBody = body
-	err = c.PutErrorSeed(seed, true)
+	err = c.PutErrorSeed(ctx, seed, true)
 	return err
 }

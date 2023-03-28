@@ -57,8 +57,10 @@ func (d *Dom) InnerText() string {
 	return htmlquery.InnerText(d.node)
 }
 
-/*将node转为html
-  self 表示是否输入自己
+/*
+将node转为html
+
+	self 表示是否输入自己
 */
 func (d *Dom) OutputHTML(self bool) string {
 	return htmlquery.OutputHTML(d.node, self)

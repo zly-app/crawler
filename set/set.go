@@ -8,13 +8,11 @@ import (
 	"github.com/zly-app/crawler/core"
 	"github.com/zly-app/crawler/set/memory"
 	"github.com/zly-app/crawler/set/redis"
-	"github.com/zly-app/crawler/set/ssdb"
 )
 
 var setCreator = map[string]func(app zapp_core.IApp) core.ISet{
 	"memory": memory.NewMemorySet,
 	"redis":  redis.NewRedisSet,
-	"ssdb":   ssdb.NewSsdbSet,
 }
 
 func NewSet(app zapp_core.IApp, setType string) core.ISet {

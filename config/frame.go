@@ -30,6 +30,7 @@ const (
 
 	// 默认请求超时
 	DefaultFrameRequestTimeout = 20000
+	defSeedProcessTimeout      = 60000
 	// 默认下一个种子等待时间
 	defaultFrameNextSeedWaitTime = 0
 	// 默认spider错误后等待时间
@@ -60,6 +61,7 @@ type FrameConfig struct {
 	SubmitSeedToQueueFront bool
 
 	RequestTimeout         int64 // 请求超时, 单位毫秒
+	SeedProcessTimeout     int64 // 一个种子处理超时, 单位毫秒
 	NextSeedWaitTime       int64 // 下一个seed等待时间, 单位毫秒
 	SpiderErrWaitTime      int64 // spider错误后等待时间, 单位毫秒
 	EmptyQueueWaitTime     int64 // 空队列等待时间, 单位毫秒
@@ -93,6 +95,9 @@ func (conf *FrameConfig) Check() error {
 
 	if conf.RequestTimeout <= 0 {
 		conf.RequestTimeout = DefaultFrameRequestTimeout
+	}
+	if conf.SeedProcessTimeout < 1 {
+		conf.SeedProcessTimeout = defSeedProcessTimeout
 	}
 	if conf.SpiderErrWaitTime <= 0 {
 		conf.SpiderErrWaitTime = defaultFrameSpiderErrWaitTime

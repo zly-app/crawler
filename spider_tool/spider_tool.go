@@ -1,6 +1,7 @@
 package spider_tool
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strings"
@@ -35,68 +36,68 @@ func (s *SpiderTool) NewSeed(url string, parserMethod interface{}) *core.Seed {
 	return seed
 }
 
-func (s *SpiderTool) SubmitSeed(seed *core.Seed) {
-	s.PutSeed(seed, config.Conf.Frame.SubmitSeedToQueueFront)
+func (s *SpiderTool) SubmitSeed(ctx context.Context, seed *core.Seed) {
+	s.PutSeed(ctx, seed, config.Conf.Frame.SubmitSeedToQueueFront)
 }
 
-func (s *SpiderTool) SaveResult(data interface{}) {
-	err := s.crawler.Pipeline().Process(s.spiderName, data)
+func (s *SpiderTool) SaveResult(ctx context.Context, data interface{}) {
+	err := s.crawler.Pipeline().Process(ctx, s.spiderName, data)
 	if err != nil {
 		panic(fmt.Errorf("保存结果失败: %v", err))
 	}
 	logger.Log.Info("保存1条结果")
 }
 
-func (s *SpiderTool) PutSeed(seed *core.Seed, front bool) {
-	if err := s.crawler.PutSeed(seed, front); err != nil {
+func (s *SpiderTool) PutSeed(ctx context.Context, seed *core.Seed, front bool) {
+	if err := s.crawler.PutSeed(ctx, seed, front); err != nil {
 		panic(err)
 	}
 }
 
-func (s *SpiderTool) PutRawSeed(raw string, parserFuncName string, front bool) {
-	if err := s.crawler.PutRawSeed(raw, parserFuncName, front); err != nil {
+func (s *SpiderTool) PutRawSeed(ctx context.Context, raw string, parserFuncName string, front bool) {
+	if err := s.crawler.PutRawSeed(ctx, raw, parserFuncName, front); err != nil {
 		panic(err)
 	}
 }
 
-func (s *SpiderTool) PutErrorSeed(seed *core.Seed, isParserError bool) {
-	if err := s.crawler.PutErrorSeed(seed, isParserError); err != nil {
+func (s *SpiderTool) PutErrorSeed(ctx context.Context, seed *core.Seed, isParserError bool) {
+	if err := s.crawler.PutErrorSeed(ctx, seed, isParserError); err != nil {
 		panic(err)
 	}
 }
 
-func (s *SpiderTool) PutErrorRawSeed(raw string, isParserError bool) {
-	if err := s.crawler.PutErrorRawSeed(raw, isParserError); err != nil {
+func (s *SpiderTool) PutErrorRawSeed(ctx context.Context, raw string, isParserError bool) {
+	if err := s.crawler.PutErrorRawSeed(ctx, raw, isParserError); err != nil {
 		panic(err)
 	}
 }
 
-func (s *SpiderTool) SetAdd(items ...string) int {
-	count, err := s.crawler.Set().Add(s.setKey, items...)
+func (s *SpiderTool) SetAdd(ctx context.Context, items ...string) int {
+	count, err := s.crawler.Set().Add(ctx, s.setKey, items...)
 	if err != nil {
 		panic(err)
 	}
 	return count
 }
 
-func (s *SpiderTool) SetHasItem(item string) bool {
-	b, err := s.crawler.Set().HasItem(s.setKey, item)
+func (s *SpiderTool) SetHasItem(ctx context.Context, item string) bool {
+	b, err := s.crawler.Set().HasItem(ctx, s.setKey, item)
 	if err != nil {
 		panic(err)
 	}
 	return b
 }
 
-func (s *SpiderTool) SetRemove(items ...string) int {
-	count, err := s.crawler.Set().Remove(s.setKey, items...)
+func (s *SpiderTool) SetRemove(ctx context.Context, items ...string) int {
+	count, err := s.crawler.Set().Remove(ctx, s.setKey, items...)
 	if err != nil {
 		panic(err)
 	}
 	return count
 }
 
-func (s *SpiderTool) GetSetSize() int {
-	size, err := s.crawler.Set().GetSetSize(s.setKey)
+func (s *SpiderTool) GetSetSize(ctx context.Context) int {
+	size, err := s.crawler.Set().GetSetSize(ctx, s.setKey)
 	if err != nil {
 		panic(err)
 	}

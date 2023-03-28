@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -16,15 +17,15 @@ import (
 	"github.com/zly-app/crawler/tools/utils"
 )
 
-func makeCrawler(context *cli.Context) (core.IApp, *crawler.Crawler, string, error) {
-	if context.Args().Len() != 1 {
+func makeCrawler(cl *cli.Context) (core.IApp, *crawler.Crawler, string, error) {
+	if cl.Args().Len() != 1 {
 		logger.Log.Fatal("必须也只能写入一个爬虫名")
 	}
 	utils.MustEnterProject()
-	spiderName := context.Args().Get(0)
+	spiderName := cl.Args().Get(0)
 
 	// 环境
-	env := context.String("env")
+	env := cl.String("env")
 	if env == "" {
 		logger.Log.Fatal("env为空")
 	}
@@ -46,8 +47,8 @@ func makeCrawler(context *cli.Context) (core.IApp, *crawler.Crawler, string, err
 }
 
 // 发送提交初始化种子信号
-func CmdInitSeedSignal(context *cli.Context) error {
-	app, c, spiderName, err := makeCrawler(context)
+func CmdInitSeedSignal(cl *cli.Context) error {
+	app, c, spiderName, err := makeCrawler(cl)
 	if err != nil {
 		return err
 	}
@@ -60,7 +61,7 @@ func CmdInitSeedSignal(context *cli.Context) error {
 
 	// 检查非空队列不提交初始化种子
 	if config.Conf.Frame.StopSubmitInitialSeedIfNotEmptyQueue {
-		empty, err := c.CheckQueueIsEmpty(spiderName)
+		empty, err := c.CheckQueueIsEmpty(context.Background(), spiderName)
 		if err != nil {
 			logger.Log.Fatal("检查队列是否为空失败", zap.Error(err))
 		}
@@ -72,7 +73,7 @@ func CmdInitSeedSignal(context *cli.Context) error {
 
 	// 放入提交初始化种子信号到队列
 	queueName := config.Conf.Frame.Namespace + spiderName + config.Conf.Frame.SeedQueueSuffix
-	_, err = c.Queue().Put(queueName, crawler.SubmitInitialSeedSignal, true)
+	_, err = c.Queue().Put(context.Background(), queueName, crawler.SubmitInitialSeedSignal, true)
 	if err != nil {
 		logger.Log.Fatal("放入提交初始化种子信号到队列失败", zap.Error(err))
 	}
@@ -82,8 +83,8 @@ func CmdInitSeedSignal(context *cli.Context) error {
 }
 
 // 清空爬虫所有队列
-func CmdCleanSpiderQueue(context *cli.Context) error {
-	app, c, spiderName, err := makeCrawler(context)
+func CmdCleanSpiderQueue(cl *cli.Context) error {
+	app, c, spiderName, err := makeCrawler(cl)
 	if err != nil {
 		return err
 	}
@@ -103,7 +104,7 @@ func CmdCleanSpiderQueue(context *cli.Context) error {
 
 	for _, suffix := range suffixes {
 		queueName := config.Conf.Frame.Namespace + spiderName + suffix
-		if err = c.Queue().Delete(queueName); err != nil {
+		if err = c.Queue().Delete(context.Background(), queueName); err != nil {
 			logger.Log.Fatal("删除队列失败", zap.String("queueName", queueName), zap.Error(err))
 		}
 	}
@@ -112,8 +113,8 @@ func CmdCleanSpiderQueue(context *cli.Context) error {
 }
 
 // 清空爬虫集合数据
-func CmdCleanSpiderSet(context *cli.Context) error {
-	app, c, spiderName, err := makeCrawler(context)
+func CmdCleanSpiderSet(cl *cli.Context) error {
+	app, c, spiderName, err := makeCrawler(cl)
 	if err != nil {
 		return err
 	}
@@ -125,7 +126,7 @@ func CmdCleanSpiderSet(context *cli.Context) error {
 	}
 
 	setName := config.Conf.Frame.Namespace + spiderName + config.Conf.Frame.SetSuffix
-	if err = c.Set().DeleteSet(setName); err != nil {
+	if err = c.Set().DeleteSet(context.Background(), setName); err != nil {
 		logger.Log.Fatal("删除集合失败", zap.String("setName", setName), zap.Error(err))
 	}
 	logger.Log.Info("清空爬虫集合数据成功", zap.String("spiderName", spiderName))

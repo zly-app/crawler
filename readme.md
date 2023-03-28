@@ -41,7 +41,10 @@
 package main
 
 import (
+	"context"
+
 	"github.com/zly-app/zapp"
+
 	"github.com/zly-app/crawler"
 	"github.com/zly-app/crawler/core"
 )
@@ -52,24 +55,26 @@ type Spider struct {
 }
 
 // 初始化
-func (s *Spider) Init() error { return nil }
+func (s *Spider) Init(ctx context.Context) error {
+	return nil
+}
 
 // 提交初始化种子
-func (s *Spider) SubmitInitialSeed() error {
+func (s *Spider) SubmitInitialSeed(ctx context.Context) error {
 	seed := s.NewSeed("https://www.sogou.com/", s.Parser) // 创建种子并指定解析方法
-	s.SubmitSeed(seed)                                    // 提交种子
+	s.SubmitSeed(ctx, seed)                               // 提交种子
 	return nil
 }
 
 // 解析方法, 必须以 Parser 开头
-func (s *Spider) Parser(seed *core.Seed) error {
+func (s *Spider) Parser(ctx context.Context, seed *core.Seed) error {
 	data := string(seed.HttpResponseBody) // 获取响应body
-	s.SaveResult(data)                    // 保存结果
+	s.SaveResult(ctx, data)               // 保存结果
 	return nil
 }
 
 // 关闭
-func (s *Spider) Close() error { return nil }
+func (s *Spider) Close(ctx context.Context) error { return nil }
 
 func main() {
 	app := zapp.NewApp("a_spider", crawler.WithService()) // 启用crawler服务
@@ -85,22 +90,24 @@ func main() {
 
 ## 配置参考
 
-```toml
+```yaml
 # spider配置
-[services.crawler.spider]
-# spider名
-Name = 'a_spider'
-# 提交初始化种子的时机
-SubmitInitialSeedOpportunity = 'start'
-# 是否自动管理cookie
-AutoCookie = false
+services:
+  crawler:
+    spider:
+      # spider名
+      Name: 'a_spider'
+      # 提交初始化种子的时机
+      SubmitInitialSeedOpportunity: 'start'
+      # 是否自动管理cookie
+      AutoCookie: false
 
-# 框架配置
-[services.crawler.frame]
-# 请求超时, 毫秒
-RequestTimeout = 20000
-# 最大尝试请求次数
-RequestMaxAttemptCount = 5
+    # 框架配置
+    frame:
+      # 请求超时, 毫秒
+      RequestTimeout: 20000
+      # 最大尝试请求次数
+      RequestMaxAttemptCount: 5
 ```
 
 ---
@@ -244,7 +251,7 @@ RequestMaxAttemptCount = 5
 1. 在`crawler`的基础设计里, `spider`运行的最小单元为一个进程, 一个`spider`可能有多进程, 每个进程可以在任何机器上运行.
 2. 每个进程同一时间只会处理一个`seed`, 每个进程具有独立的db连接, 独立的`downloader`等, 进程之间互不影响.
 3. 你无需关心多进程之间是怎么协调的, 在开发的时候按照单进程开发然后运行时启动多个进程就行了.
-4. 多进程需要分布式队列服务支持, 比如`redis`, `ssdb`. 使用`memory`队列开启多进程运行`spider`可能产生意外的结果.
+4. 多进程需要分布式队列服务支持, 比如`redis`. 使用`memory`队列开启多进程运行`spider`可能产生意外的结果.
 
 ## 请求独立
 
@@ -293,12 +300,14 @@ RequestMaxAttemptCount = 5
 
 一些数据可能需要代理才能正常抓取, 无需更改spider代码, 在配置中加入代理配置即可使用代理.
 
-```toml
-[services.crawler.proxy]
-type = 'static'     # 静态代理, 支持 http, https, socks5, socks5h
-address = 'socks5://127.0.0.1:1080'  # 代理地址
-User = ''           # 用户名, 可选
-Password = ''       # 密码, 可选
+```yaml
+services:
+  crawler:
+    proxy:
+      type: 'static'     # 静态代理, 支持 http, https, socks5, socks5h
+      address: 'socks5://127.0.0.1:1080'  # 代理地址
+      User: ''           # 用户名, 可选
+      Password: ''       # 密码, 可选
 ```
 
 ---
@@ -313,23 +322,26 @@ Password = ''       # 密码, 可选
 
 + 使用redis作为队列
 
-```toml
-[services.crawler.queue]
-type = 'redis'      # 使用redis作为队列, 默认是memory
-Address = '127.0.0.1:6379' # 地址
-UserName = ''       # 用户名, 可选
-Password = ''       # 密码, 可选
-DB = 0              # db, 只有非集群有效, 可选, 默认0
-IsCluster = false   # 是否为集群, 可选, 默认false
-```
+```yaml
+services:
+  crawler:
+    queue:
+      Address: localhost:6379 # 地址: host1:port1,host2:port2
+      UserName: "" # 用户名                     
+      Password: "" # 密码
+      DB: 0 # db, 只有非集群有效
 
-+ 使用ssdb作为队列
+      MinIdle: 2 # 最小闲置连接数
+      MaxIdle: 4 # 最大闲置连接数
+      PoolSize: 10 # 客户端池大小
+      IdleTimeout: 3600 # 空闲链接超时时间, 单位秒, 如果一个连接长时间未使用将被视为连接无效, 小于1表示永不超时
+      WaitTimeout: 5 # 等待获取连接的超时时间, 单位秒
+      ConnectTimeout: 5 # 连接超时, 单位秒
+      MaxConnLifetime: 3600 # 一个连接最大存活时间, 单位秒, 小于1表示不限制
 
-```toml
-[services.crawler.queue]
-type = 'ssdb'       # 使用ssdb作为队列, 默认是memory
-Address = '127.0.0.1:8888' # 地址
-Password = ''       # 密码, 可选
+      MaxRetries: 0 # 操作尝试次数, <1 表示不重试
+      ReadTimeoutSec: 5 # 超时, 秒
+      WriteTimeoutSec: 5 # 超时, 秒
 ```
 
 ## 使用分布式集合
@@ -338,21 +350,24 @@ Password = ''       # 密码, 可选
 
 + 使用redis作为集合
 
-```toml
-[services.crawler.set]
-type = 'redis'      # 使用redis作为集合, 默认是memory
-Address = '127.0.0.1:6379' # 地址
-UserName = ''       # 用户名, 可选
-Password = ''       # 密码, 可选
-DB = 0              # db, 只有非集群有效, 可选, 默认0
-IsCluster = false   # 是否为集群, 可选, 默认false
-```
+```yaml
+services:
+  crawler:
+    set:
+      Address: localhost:6379 # 地址: host1:port1,host2:port2
+      UserName: "" # 用户名                     
+      Password: "" # 密码
+      DB: 0 # db, 只有非集群有效
 
-+ 使用ssdb作为集合
+      MinIdle: 2 # 最小闲置连接数
+      MaxIdle: 4 # 最大闲置连接数
+      PoolSize: 10 # 客户端池大小
+      IdleTimeout: 3600 # 空闲链接超时时间, 单位秒, 如果一个连接长时间未使用将被视为连接无效, 小于1表示永不超时
+      WaitTimeout: 5 # 等待获取连接的超时时间, 单位秒
+      ConnectTimeout: 5 # 连接超时, 单位秒
+      MaxConnLifetime: 3600 # 一个连接最大存活时间, 单位秒, 小于1表示不限制
 
-```toml
-[services.crawler.set]
-type = 'ssdb'       # 使用ssdb作为集合, 默认是memory
-Address = '127.0.0.1:8888' # 地址
-Password = ''       # 密码, 可选
+      MaxRetries: 0 # 操作尝试次数, <1 表示不重试
+      ReadTimeoutSec: 5 # 超时, 秒
+      WriteTimeoutSec: 5 # 超时, 秒
 ```

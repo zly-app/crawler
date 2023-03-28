@@ -1,6 +1,8 @@
 package crawler
 
 import (
+	"golang.org/x/net/context"
+
 	"github.com/zly-app/crawler/core"
 )
 
@@ -10,14 +12,14 @@ type Spider struct {
 	core.ISpiderTool
 }
 
-func (s *Spider) Init() error {
+func (s *Spider) Init(ctx context.Context) error {
 	return nil
 }
 
-func (s *Spider) SubmitInitialSeed() error {
+func (s *Spider) SubmitInitialSeed(ctx context.Context) error {
 	return nil
 }
 
-func (s *Spider) Close() error {
+func (s *Spider) Close(ctx context.Context) error {
 	return nil
 }

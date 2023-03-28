@@ -1,6 +1,7 @@
 package memory
 
 import (
+	"context"
 	"sync"
 
 	zapp_core "github.com/zly-app/zapp/core"
@@ -13,7 +14,7 @@ type MemorySet struct {
 	mx   sync.Mutex
 }
 
-func (m *MemorySet) Add(key string, items ...string) (int, error) {
+func (m *MemorySet) Add(ctx context.Context, key string, items ...string) (int, error) {
 	m.mx.Lock()
 	defer m.mx.Unlock()
 
@@ -36,7 +37,7 @@ func (m *MemorySet) Add(key string, items ...string) (int, error) {
 	return count, nil
 }
 
-func (m *MemorySet) HasItem(key, item string) (bool, error) {
+func (m *MemorySet) HasItem(ctx context.Context, key, item string) (bool, error) {
 	m.mx.Lock()
 	defer m.mx.Unlock()
 
@@ -47,7 +48,7 @@ func (m *MemorySet) HasItem(key, item string) (bool, error) {
 	return ok, nil
 }
 
-func (m *MemorySet) Remove(key string, items ...string) (int, error) {
+func (m *MemorySet) Remove(ctx context.Context, key string, items ...string) (int, error) {
 	m.mx.Lock()
 	defer m.mx.Unlock()
 
@@ -81,7 +82,7 @@ func (m *MemorySet) Remove(key string, items ...string) (int, error) {
 	return count, nil
 }
 
-func (m *MemorySet) DeleteSet(key string) error {
+func (m *MemorySet) DeleteSet(ctx context.Context, key string) error {
 	m.mx.Lock()
 	defer m.mx.Unlock()
 
@@ -89,7 +90,7 @@ func (m *MemorySet) DeleteSet(key string) error {
 	return nil
 }
 
-func (m *MemorySet) GetSetSize(key string) (int, error) {
+func (m *MemorySet) GetSetSize(ctx context.Context, key string) (int, error) {
 	m.mx.Lock()
 	defer m.mx.Unlock()
 
@@ -101,7 +102,7 @@ func (m *MemorySet) GetSetSize(key string) (int, error) {
 	return len(set), nil
 }
 
-func (m *MemorySet) Close() error { return nil }
+func (m *MemorySet) Close(ctx context.Context) error { return nil }
 
 func NewMemorySet(app zapp_core.IApp) core.ISet {
 	return &MemorySet{

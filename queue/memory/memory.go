@@ -2,6 +2,7 @@ package memory
 
 import (
 	"container/list"
+	"context"
 	"sync"
 
 	zapp_core "github.com/zly-app/zapp/core"
@@ -14,7 +15,7 @@ type MemoryQueue struct {
 	mx     sync.Mutex
 }
 
-func (m *MemoryQueue) Put(queueName string, raw string, front bool) (int, error) {
+func (m *MemoryQueue) Put(ctx context.Context, queueName string, raw string, front bool) (int, error) {
 	m.mx.Lock()
 	defer m.mx.Unlock()
 
@@ -33,7 +34,7 @@ func (m *MemoryQueue) Put(queueName string, raw string, front bool) (int, error)
 	return queue.Len(), nil
 }
 
-func (m *MemoryQueue) Pop(queueName string, front bool) (string, error) {
+func (m *MemoryQueue) Pop(ctx context.Context, queueName string, front bool) (string, error) {
 	m.mx.Lock()
 	defer m.mx.Unlock()
 
@@ -53,7 +54,7 @@ func (m *MemoryQueue) Pop(queueName string, front bool) (string, error) {
 	return raw, nil
 }
 
-func (m *MemoryQueue) QueueSize(queueName string) (int, error) {
+func (m *MemoryQueue) QueueSize(ctx context.Context, queueName string) (int, error) {
 	m.mx.Lock()
 	defer m.mx.Unlock()
 
@@ -65,7 +66,7 @@ func (m *MemoryQueue) QueueSize(queueName string) (int, error) {
 	return queue.Len(), nil
 }
 
-func (m *MemoryQueue) Delete(queueName string) error {
+func (m *MemoryQueue) Delete(ctx context.Context, queueName string) error {
 	m.mx.Lock()
 	defer m.mx.Unlock()
 
@@ -73,7 +74,7 @@ func (m *MemoryQueue) Delete(queueName string) error {
 	return nil
 }
 
-func (m *MemoryQueue) Close() error { return nil }
+func (m *MemoryQueue) Close(ctx context.Context) error { return nil }
 
 func NewMemoryQueue(app zapp_core.IApp) core.IQueue {
 	return &MemoryQueue{

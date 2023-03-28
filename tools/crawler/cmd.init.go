@@ -68,11 +68,11 @@ func embedFilesRelease(projectName, basePath string) {
 }
 
 // 初始化工程
-func CmdInit(context *cli.Context) error {
-	if context.Args().Len() != 1 {
+func CmdInit(cl *cli.Context) error {
+	if cl.Args().Len() != 1 {
 		logger.Log.Fatal("必须也只能写入一个工程名")
 	}
-	projectName := context.Args().Get(0)
+	projectName := cl.Args().Get(0)
 
 	if projectName == "." {
 		workdir := utils.MustGetWorkdir()

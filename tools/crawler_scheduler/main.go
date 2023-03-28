@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"strings"
@@ -104,7 +105,7 @@ func (s *Scheduler) SendSubmitInitialSeedSignal(ctx cron.IContext) error {
 
 	// 检查非空队列不提交初始化种子
 	if config.Conf.Frame.StopSubmitInitialSeedIfNotEmptyQueue {
-		empty, err := s.cr.CheckQueueIsEmpty(spiderName)
+		empty, err := s.cr.CheckQueueIsEmpty(context.Background(), spiderName)
 		if err != nil {
 			return fmt.Errorf("检查队列是否为空失败, spiderName: %s, err: %v", spiderName, err)
 		}
@@ -116,7 +117,7 @@ func (s *Scheduler) SendSubmitInitialSeedSignal(ctx cron.IContext) error {
 
 	// 放入提交初始化种子信号到队列
 	queueName := config.Conf.Frame.Namespace + spiderName + config.Conf.Frame.SeedQueueSuffix
-	_, err := s.cr.Queue().Put(queueName, crawler.SubmitInitialSeedSignal, true)
+	_, err := s.cr.Queue().Put(context.Background(), queueName, crawler.SubmitInitialSeedSignal, true)
 	if err != nil {
 		return fmt.Errorf("提交初始化种子信号放入到队列失败, spiderName: %s, err: %v", spiderName, err)
 	}

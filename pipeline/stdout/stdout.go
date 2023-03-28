@@ -1,6 +1,7 @@
 package stdout
 
 import (
+	"context"
 	"fmt"
 
 	jsoniter "github.com/json-iterator/go"
@@ -15,7 +16,7 @@ const PipelineName = "stdout"
 
 type Stdout struct{}
 
-func (s *Stdout) Process(spiderName string, data interface{}) (err error) {
+func (s *Stdout) Process(ctx context.Context, spiderName string, data interface{}) (err error) {
 	var text string
 	switch t := data.(type) {
 	case nil:
@@ -34,7 +35,7 @@ func (s *Stdout) Process(spiderName string, data interface{}) (err error) {
 	return nil
 }
 
-func (s *Stdout) Close() error { return nil }
+func (s *Stdout) Close(ctx context.Context) error { return nil }
 
 func NewStdoutPipeline(app zapp_core.IApp) core.IPipeline {
 	return new(Stdout)

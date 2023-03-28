@@ -3,7 +3,7 @@ module {@project_name}/{@spider_name}
 go 1.16
 
 require (
-	github.com/zly-app/crawler v0.1.1
+	github.com/zly-app/crawler v0.1.2
 	github.com/zly-app/plugin/honey v0.0.0-20220515060508-eedd35bb82a9
 	github.com/zly-app/zapp v1.1.10
 )

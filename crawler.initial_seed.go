@@ -1,6 +1,7 @@
 package crawler
 
 import (
+	"context"
 	"time"
 
 	"github.com/robfig/cron/v3"
@@ -15,13 +16,13 @@ const SubmitInitialSeedSignal = "SubmitInitialSeed"
 const OnceTriggerTimeLayout = "2006-01-02 15:04:05"
 
 // 检查提交初始化种子
-func (c *Crawler) CheckSubmitInitialSeed() {
+func (c *Crawler) CheckSubmitInitialSeed(ctx context.Context) {
 	expression := c.conf.Spider.SubmitInitialSeedOpportunity
 	switch expression {
 	case "", "none":
 		return
 	case "start":
-		c.SendSubmitInitialSeedSignal()
+		c.SendSubmitInitialSeedSignal(ctx)
 		return
 	}
 
@@ -40,7 +41,7 @@ func (c *Crawler) CheckSubmitInitialSeed() {
 			select {
 			case <-c.app.BaseContext().Done():
 			case <-timer.C:
-				c.SendSubmitInitialSeedSignal()
+				c.SendSubmitInitialSeedSignal(ctx)
 			}
 		}()
 		return
@@ -68,19 +69,19 @@ func (c *Crawler) CheckSubmitInitialSeed() {
 				timer.Stop()
 				return
 			case <-timer.C:
-				c.SendSubmitInitialSeedSignal()
+				c.SendSubmitInitialSeedSignal(ctx)
 			}
 		}
 	}()
 }
 
 // 检查是否允许提交初始化种子
-func (c *Crawler) checkAllowSubmitInitialSeed() bool {
+func (c *Crawler) checkAllowSubmitInitialSeed(ctx context.Context) bool {
 	if !c.conf.Frame.StopSubmitInitialSeedIfNotEmptyQueue {
 		return true
 	}
 
-	empty, err := c.CheckQueueIsEmpty(c.conf.Spider.Name)
+	empty, err := c.CheckQueueIsEmpty(ctx, c.conf.Spider.Name)
 	if err != nil {
 		c.app.Error("检查队列是否为空失败", zap.Error(err))
 		return false
@@ -94,12 +95,12 @@ func (c *Crawler) checkAllowSubmitInitialSeed() bool {
 }
 
 // 发送提交初始化种子信号
-func (c *Crawler) SendSubmitInitialSeedSignal() {
-	if !c.checkAllowSubmitInitialSeed() {
+func (c *Crawler) SendSubmitInitialSeedSignal(ctx context.Context) {
+	if !c.checkAllowSubmitInitialSeed(ctx) {
 		return
 	}
 
-	err := c.PutRawSeed(SubmitInitialSeedSignal, "", true)
+	err := c.PutRawSeed(ctx, SubmitInitialSeedSignal, "", true)
 	if err != nil {
 		c.app.Error("发送提交初始化种子信号失败", zap.Error(err))
 		return
@@ -109,13 +110,15 @@ func (c *Crawler) SendSubmitInitialSeedSignal() {
 }
 
 // 提交种子
-func (c *Crawler) SubmitInitialSeed() error {
-	if !c.checkAllowSubmitInitialSeed() {
+func (c *Crawler) SubmitInitialSeed(ctx context.Context) error {
+	if !c.checkAllowSubmitInitialSeed(ctx) {
 		return nil
 	}
 
 	c.app.Info("开始提交初始化种子")
-	if err := utils.Recover.WrapCall(c.spider.SubmitInitialSeed); err != nil {
+	if err := utils.Recover.WrapCall(func() error {
+		return c.spider.SubmitInitialSeed(ctx)
+	}); err != nil {
 		return err
 	}
 	c.app.Info("初始化种子提交完成")

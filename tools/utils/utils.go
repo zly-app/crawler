@@ -241,12 +241,14 @@ func searchProjectName(path string) string {
 	return projectName
 }
 
-/**提取中间文本
-  s 原始文本
-  pre 提取数据的前面的数据, 如果为空则从最开头提取
-  suf 提取数据的后面的数据, 如果为空则提取到结尾
-  def 找不到时返回的默认数据
-  greedy 贪婪的, 默认从开头开始查找suf, 如果是贪婪的则从结尾开始查找suf
+/*
+*提取中间文本
+
+	s 原始文本
+	pre 提取数据的前面的数据, 如果为空则从最开头提取
+	suf 提取数据的后面的数据, 如果为空则提取到结尾
+	def 找不到时返回的默认数据
+	greedy 贪婪的, 默认从开头开始查找suf, 如果是贪婪的则从结尾开始查找suf
 */
 func ExtractMiddleText(s, pre, suf, def string, greedy bool) string {
 	var start int  // 开始位置

@@ -2,12 +2,14 @@ package core
 
 import (
 	"net/http"
+
+	"golang.org/x/net/context"
 )
 
 // 下载器
 type IDownloader interface {
 	// 下载
-	Download(crawler ICrawler, seed *Seed, cookieJar http.CookieJar) (*Seed, error)
+	Download(ctx context.Context, crawler ICrawler, seed *Seed, cookieJar http.CookieJar) (*Seed, error)
 	// 关闭
 	Close() error
 }

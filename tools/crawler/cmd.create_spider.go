@@ -15,12 +15,12 @@ import (
 )
 
 // 创建一个爬虫
-func CmdCreateSpider(context *cli.Context) error {
-	if context.Args().Len() != 1 {
+func CmdCreateSpider(cl *cli.Context) error {
+	if cl.Args().Len() != 1 {
 		logger.Log.Fatal("必须也只能写入一个爬虫名")
 	}
 	projectName := utils.MustEnterProject()
-	spiderName := context.Args().Get(0)
+	spiderName := cl.Args().Get(0)
 	spiderBasePath := fmt.Sprintf("spiders/%s", spiderName)
 	utils.MustCreateDirOrDirIsEmpty(spiderBasePath, 666)
 

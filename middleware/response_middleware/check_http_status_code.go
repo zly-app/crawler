@@ -1,6 +1,7 @@
 package response_middleware
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/zly-app/crawler/config"
@@ -16,7 +17,7 @@ func NewCheckSeedIsValidMiddleware() core.IRequestMiddleware {
 }
 
 func (m *CheckHttpStatusCode) Name() string { return "CheckHttpStatusCode" }
-func (m *CheckHttpStatusCode) Process(crawler core.ICrawler, seed *core.Seed) (*core.Seed, error) {
+func (m *CheckHttpStatusCode) Process(ctx context.Context, crawler core.ICrawler, seed *core.Seed) (*core.Seed, error) {
 	if seed.HttpResponse == nil {
 		return seed, nil
 	}

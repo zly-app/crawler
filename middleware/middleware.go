@@ -1,6 +1,8 @@
 package middleware
 
 import (
+	"context"
+
 	zapp_core "github.com/zly-app/zapp/core"
 	"github.com/zly-app/zapp/logger"
 	"go.uber.org/zap"
@@ -32,10 +34,10 @@ func RegistryResponseMiddleware(m core.IResponseMiddleware) {
 
 type Middleware struct{}
 
-func (m *Middleware) RequestProcess(crawler core.ICrawler, seed *core.Seed) (*core.Seed, error) {
+func (m *Middleware) RequestProcess(ctx context.Context, crawler core.ICrawler, seed *core.Seed) (*core.Seed, error) {
 	var err error
 	for _, middleware := range requestMiddlewares {
-		seed, err = middleware.Process(crawler, seed)
+		seed, err = middleware.Process(ctx, crawler, seed)
 		if err != nil {
 			logger.Log.Error("请求中间件检查不通过", zap.String("middleware", middleware.Name()), zap.Error(err))
 			return nil, err
@@ -44,10 +46,10 @@ func (m *Middleware) RequestProcess(crawler core.ICrawler, seed *core.Seed) (*co
 	return seed, nil
 }
 
-func (m *Middleware) ResponseProcess(crawler core.ICrawler, seed *core.Seed) (*core.Seed, error) {
+func (m *Middleware) ResponseProcess(ctx context.Context, crawler core.ICrawler, seed *core.Seed) (*core.Seed, error) {
 	var err error
 	for _, middleware := range responseMiddlewares {
-		seed, err = middleware.Process(crawler, seed)
+		seed, err = middleware.Process(ctx, crawler, seed)
 		if err != nil {
 			logger.Log.Error("响应中间件检查不通过", zap.String("middleware", middleware.Name()), zap.Error(err))
 			return nil, err

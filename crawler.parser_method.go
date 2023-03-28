@@ -1,6 +1,7 @@
 package crawler
 
 import (
+	"context"
 	"reflect"
 	"strings"
 
@@ -39,22 +40,22 @@ func (c *Crawler) ScanSpiderMethod() {
 }
 
 // 检查是否为期望的响应
-func (c *Crawler) CheckIsExpectResponse(seed *core.Seed) (*core.Seed, error) {
+func (c *Crawler) CheckIsExpectResponse(ctx context.Context, seed *core.Seed) (*core.Seed, error) {
 	if seed.CheckExpectMethod == "" {
 		return seed, nil
 	}
 
 	checkMethod := c.checkMethods[seed.CheckExpectMethod]
-	if err := checkMethod(seed); err != nil {
+	if err := checkMethod(ctx, seed); err != nil {
 		return nil, err
 	}
 	return seed, nil
 }
 
 // 解析
-func (c *Crawler) Parser(seed *core.Seed) error {
+func (c *Crawler) Parser(ctx context.Context, seed *core.Seed) error {
 	parserMethod := c.parserMethods[seed.ParserMethod] // 解析方法一定存在, 请求中间件已经检查了
-	return parserMethod(seed)
+	return parserMethod(ctx, seed)
 }
 
 // 获取解析方法

@@ -1,6 +1,7 @@
 package crawler
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"reflect"
@@ -87,7 +88,7 @@ func (c *Crawler) Inject(a ...interface{}) {
 }
 
 func (c *Crawler) Start() error {
-	err := c.spider.Init()
+	err := c.spider.Init(c.app.BaseContext())
 	if err != nil {
 		return fmt.Errorf("spider初始化失败: %v", err)
 	}
@@ -97,17 +98,18 @@ func (c *Crawler) Start() error {
 }
 
 func (c *Crawler) Close() error {
-	c.rollbackRawSeed() // 回退原始种子数据
+	ctx := context.Background()
+	c.rollbackRawSeed(ctx) // 回退原始种子数据
 
-	err := c.spider.Close()
+	err := c.spider.Close(ctx)
 	if err != nil {
 		c.app.Error("spider关闭时出错", zap.Error(err))
 	}
 
-	if err = c.queue.Close(); err != nil {
+	if err = c.queue.Close(ctx); err != nil {
 		c.app.Error("关闭队列时出错误", zap.Error(err))
 	}
-	if err = c.set.Close(); err != nil {
+	if err = c.set.Close(ctx); err != nil {
 		c.app.Error("关闭集合时出错", zap.Error(err))
 	}
 	if err = c.downloader.Close(); err != nil {
@@ -121,7 +123,7 @@ func (c *Crawler) Close() error {
 }
 
 // 回退原始种子数据
-func (c *Crawler) rollbackRawSeed() {
+func (c *Crawler) rollbackRawSeed(ctx context.Context) {
 	rawData := c.nowRawSeed.Load()
 	if rawData == nil {
 		return
@@ -132,7 +134,7 @@ func (c *Crawler) rollbackRawSeed() {
 		return
 	}
 
-	err := c.PutRawSeed(raw, "", true)
+	err := c.PutRawSeed(ctx, raw, "", true)
 	if err != nil {
 		c.app.Error("回退原始种子数据失败", zap.String("raw", raw), zap.Error(err))
 	}

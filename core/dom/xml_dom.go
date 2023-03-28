@@ -43,8 +43,10 @@ func (d *XmlDom) InnerText() string {
 	return d.node.InnerText()
 }
 
-/*将node转为xml
-  self 表示是否输入自己
+/*
+将node转为xml
+
+	self 表示是否输入自己
 */
 func (d *XmlDom) OutputXML(self bool) string {
 	return d.node.OutputXML(self)
