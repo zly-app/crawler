@@ -25,7 +25,7 @@ func (c *Crawler) PopARawSeed(ctx context.Context) (string, error) {
 		if raw == SubmitInitialSeedSignal {
 			return raw, nil
 		}
-		c.app.Info("从队列取出一个种子", zap.String("queueName", queueName))
+		c.app.Info(ctx, "从队列取出一个种子", zap.String("queueName", queueName))
 		return raw, nil
 	}
 	return "", core.EmptyQueueError
@@ -64,7 +64,7 @@ func (c *Crawler) PutRawSeed(ctx context.Context, raw string, parserFuncName str
 		return nil
 	}
 
-	c.app.Info("将seed放入队列", zap.String("parserFuncName", parserFuncName), zap.Int("queueSize", size))
+	c.app.Info(ctx, "将seed放入队列", zap.String("parserFuncName", parserFuncName), zap.Int("queueSize", size))
 	return nil
 }
 
@@ -90,7 +90,7 @@ func (c *Crawler) PutErrorSeed(ctx context.Context, seed *core.Seed, isParserErr
 	isParserError 是否为解析错误
 */
 func (c *Crawler) PutErrorRawSeed(ctx context.Context, raw string, isParserError bool) error {
-	c.app.Warn("将出错seed放入error队列")
+	c.app.Warn(ctx, "将出错seed放入error队列")
 	var queueName string
 	if isParserError {
 		queueName = c.conf.Frame.Namespace + c.conf.Spider.Name + c.conf.Frame.ParserErrorSeedQueueSuffix

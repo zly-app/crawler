@@ -25,13 +25,20 @@ func (c *Crawler) Run() {
 		default:
 		}
 
-		err := utils.Recover.WrapCall(c.runOnce)
+		ctx, span := utils.Otel.StartSpan(context.Background(), "runOnceSeed")
+		err := utils.Recover.WrapCall(func() error {
+			return c.runOnce(ctx)
+		})
 		if err != nil {
-			c.app.Error("运行出错, 稍后继续", zap.Int64("waitTime", c.conf.Frame.SpiderErrWaitTime/1000),
+			utils.Otel.AddSpanEvent(span, "runOnceSeedErr", utils.OtelSpanKey("err.detail").String(err.Error()))
+			utils.Otel.MarkSpanAnError(span, true)
+			utils.Otel.EndSpan(span)
+			c.app.Error(ctx, "运行出错, 稍后继续", zap.Int64("waitTime", c.conf.Frame.SpiderErrWaitTime/1000),
 				zap.String("error", utils.Recover.GetRecoverErrorDetail(err)))
 			time.Sleep(time.Duration(c.conf.Frame.SpiderErrWaitTime) * time.Millisecond)
 			continue
 		}
+		utils.Otel.EndSpan(span)
 
 		if c.conf.Frame.NextSeedWaitTime > 0 {
 			time.Sleep(time.Duration(c.conf.Frame.NextSeedWaitTime) * time.Millisecond)
@@ -40,7 +47,7 @@ func (c *Crawler) Run() {
 }
 
 // 开始一次任务
-func (c *Crawler) runOnce() error {
+func (c *Crawler) runOnce(ctx context.Context) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(c.conf.Frame.SeedProcessTimeout)*time.Millisecond)
 	defer cancel()
 
