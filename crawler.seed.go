@@ -8,26 +8,38 @@ import (
 
 	"github.com/zly-app/crawler/core"
 	"github.com/zly-app/crawler/seeds"
+	"github.com/zly-app/crawler/utils"
 )
 
 // 弹出一个种子
 func (c *Crawler) PopARawSeed(ctx context.Context) (string, error) {
+	ctx = utils.Trace.TraceStart(ctx, "PopARawSeed")
+	defer utils.Trace.TraceEnd(ctx)
+
 	for _, suffix := range c.conf.Frame.QueueSuffixes {
 		queueName := c.conf.Frame.Namespace + c.conf.Spider.Name + suffix
+
+		utils.Trace.TraceEvent(ctx, "Pop", utils.Trace.AttrKey("queueName").String(queueName))
 		raw, err := c.queue.Pop(ctx, queueName, true)
 		if err == core.EmptyQueueError { // 这个队列为空
+			utils.Trace.TraceEvent(ctx, "Pop", utils.Trace.AttrKey("queueName").String(queueName),
+				utils.Trace.AttrKey("empty").Bool(true))
 			continue
 		}
 		if err != nil {
+			utils.Trace.TraceErrEvent(ctx, "Pop", err, utils.Trace.AttrKey("queueName").String(queueName))
 			return "", err
 		}
 
+		utils.Trace.TraceEvent(ctx, "PopOk", utils.Trace.AttrKey("queueName").String(queueName),
+			utils.Trace.AttrKey("raw").String(raw))
 		if raw == SubmitInitialSeedSignal {
 			return raw, nil
 		}
 		c.app.Info(ctx, "从队列取出一个种子", zap.String("queueName", queueName))
 		return raw, nil
 	}
+	utils.Trace.TraceErrEvent(ctx, "Pop", core.EmptyQueueError)
 	return "", core.EmptyQueueError
 }
 
@@ -55,8 +67,18 @@ func (c *Crawler) PutSeed(ctx context.Context, seed *core.Seed, front bool) erro
 */
 func (c *Crawler) PutRawSeed(ctx context.Context, raw string, parserFuncName string, front bool) error {
 	queueName := c.conf.Frame.Namespace + c.conf.Spider.Name + c.conf.Frame.SeedQueueSuffix
+
+	ctx = utils.Trace.TraceStart(ctx, "PutRawSeed",
+		utils.Trace.AttrKey("queueName").String(queueName),
+		utils.Trace.AttrKey("raw").String(raw),
+		utils.Trace.AttrKey("parserFuncName").String(parserFuncName),
+		utils.Trace.AttrKey("front").Bool(front),
+	)
+	defer utils.Trace.TraceEnd(ctx)
+
 	size, err := c.queue.Put(ctx, queueName, raw, front)
 	if err != nil {
+		utils.Trace.TraceErrEvent(ctx, "Put", err)
 		return fmt.Errorf("将seed放入队列失败: %v", err)
 	}
 
@@ -98,8 +120,17 @@ func (c *Crawler) PutErrorRawSeed(ctx context.Context, raw string, isParserError
 		queueName = c.conf.Frame.Namespace + c.conf.Spider.Name + c.conf.Frame.ErrorSeedQueueSuffix
 	}
 
+	ctx = utils.Trace.TraceStart(ctx, "PutErrorRawSeed",
+		utils.Trace.AttrKey("queueName").String(queueName),
+		utils.Trace.AttrKey("raw").String(raw),
+		utils.Trace.AttrKey("isParserError").Bool(isParserError),
+		utils.Trace.AttrKey("front").Bool(false),
+	)
+	defer utils.Trace.TraceEnd(ctx)
+
 	_, err := c.queue.Put(ctx, queueName, raw, false)
 	if err != nil {
+		utils.Trace.TraceErrEvent(ctx, "Put", err)
 		return err
 	}
 	return nil
@@ -111,6 +142,9 @@ func (c *Crawler) CheckQueueIsEmpty(ctx context.Context, spiderName string) (boo
 		spiderName = c.conf.Spider.Name
 	}
 
+	ctx = utils.Trace.TraceStart(ctx, "CheckQueueIsEmpty", utils.Trace.AttrKey("spiderName").String(spiderName))
+	defer utils.Trace.TraceEnd(ctx)
+
 	for _, suffix := range c.conf.Frame.QueueSuffixes {
 		if c.conf.Frame.CheckEmptyQueueIgnoreErrorQueue {
 			if suffix == c.conf.Frame.ErrorSeedQueueSuffix || suffix == c.conf.Frame.ParserErrorSeedQueueSuffix {
@@ -118,10 +152,14 @@ func (c *Crawler) CheckQueueIsEmpty(ctx context.Context, spiderName string) (boo
 			}
 		}
 		queueName := c.conf.Frame.Namespace + spiderName + suffix
+
+		utils.Trace.TraceEvent(ctx, "QueueSize", utils.Trace.AttrKey("queueName").String(queueName))
 		size, err := c.queue.QueueSize(ctx, queueName)
 		if err != nil {
+			utils.Trace.TraceErrEvent(ctx, "QueueSize", err)
 			return false, err
 		}
+		utils.Trace.TraceEvent(ctx, "QueueSizeOk", utils.Trace.AttrKey("size").Int(size))
 		if size > 0 {
 			return false, nil
 		}

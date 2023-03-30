@@ -5,8 +5,10 @@ import (
 	"time"
 
 	"github.com/robfig/cron/v3"
-	"github.com/zly-app/zapp/pkg/utils"
+	zapputils "github.com/zly-app/zapp/pkg/utils"
 	"go.uber.org/zap"
+
+	"github.com/zly-app/crawler/utils"
 )
 
 // 提交初始化种子信号
@@ -19,19 +21,19 @@ const OnceTriggerTimeLayout = "2006-01-02 15:04:05"
 func (c *Crawler) CheckSubmitInitialSeed(ctx context.Context) {
 	expression := c.conf.Spider.SubmitInitialSeedOpportunity
 
-	ctx, span := utils.Otel.StartSpan(ctx, "CheckSubmitInitialSeed",
-		utils.OtelSpanKey("expression").String(expression))
+	startCtx := utils.Trace.TraceStart(ctx, "CheckSubmitInitialSeed", utils.Trace.AttrKey("expression").String(expression))
 	c.app.Info(ctx, "检查提交初始化种子", zap.String("expression", expression))
 
 	switch expression {
 	case "", "none":
-		utils.Otel.EndSpan(span)
+		utils.Trace.TraceEnd(startCtx)
 		return
 	case "start":
-		utils.Otel.EndSpan(span)
-		c.SendSubmitInitialSeedSignal(ctx)
+		c.SendSubmitInitialSeedSignal(startCtx)
+		utils.Trace.TraceEnd(startCtx)
 		return
 	}
+	utils.Trace.TraceEnd(startCtx)
 
 	// 一次性触发器
 	targetTime, err := time.ParseInLocation(OnceTriggerTimeLayout, expression, time.Local)
@@ -84,20 +86,23 @@ func (c *Crawler) CheckSubmitInitialSeed(ctx context.Context) {
 
 // 检查是否允许提交初始化种子
 func (c *Crawler) checkAllowSubmitInitialSeed(ctx context.Context) bool {
+	ctx = utils.Trace.TraceStart(ctx, "checkAllowSubmitInitialSeed",
+		utils.Trace.AttrKey("StopSubmitInitialSeedIfNotEmptyQueue").Bool(c.conf.Frame.StopSubmitInitialSeedIfNotEmptyQueue))
+	defer utils.Trace.TraceEnd(ctx)
+
 	if !c.conf.Frame.StopSubmitInitialSeedIfNotEmptyQueue {
 		return true
 	}
 
+	utils.Trace.TraceEvent(ctx, "CheckQueueIsEmpty", utils.Trace.AttrKey("spiderName").String(c.conf.Spider.Name))
 	empty, err := c.CheckQueueIsEmpty(ctx, c.conf.Spider.Name)
 	if err != nil {
-		utils.Otel.AddSpanEvent(utils.Otel.GetSpan(ctx), "CheckQueueIsEmptyErr",
-			utils.OtelSpanKey("err.detail").String(err.Error()))
+		utils.Trace.TraceErrEvent(ctx, "CheckQueueIsEmpty", err)
 		c.app.Error(ctx, "检查队列是否为空失败", zap.Error(err))
 		return false
 	}
 
-	utils.Otel.AddSpanEvent(utils.Otel.GetSpan(ctx), "CheckQueueIsEmptyDone",
-		utils.OtelSpanKey("empty").Bool(empty))
+	utils.Trace.TraceEvent(ctx, "CheckQueueIsEmptyDone", utils.Trace.AttrKey("empty").Bool(empty))
 	if !empty {
 		c.app.Debug(ctx, "队列非空忽略初始化种子提交")
 		return false
@@ -107,48 +112,41 @@ func (c *Crawler) checkAllowSubmitInitialSeed(ctx context.Context) bool {
 
 // 发送提交初始化种子信号
 func (c *Crawler) SendSubmitInitialSeedSignal(ctx context.Context) {
-	ctx, span := utils.Otel.StartSpan(ctx, "SendSubmitInitialSeedSignal",
-		utils.OtelSpanKey("StopSubmitInitialSeedIfNotEmptyQueue").Bool(c.conf.Frame.StopSubmitInitialSeedIfNotEmptyQueue))
-	defer utils.Otel.EndSpan(span)
+	ctx = utils.Trace.TraceStart(ctx, "SendSubmitInitialSeedSignal")
+	defer utils.Trace.TraceEnd(ctx)
 
 	if !c.checkAllowSubmitInitialSeed(ctx) {
-		utils.Otel.AddSpanEvent(span, "notAllowSubmitSignal")
 		return
 	}
 
-	utils.Otel.AddSpanEvent(span, "StartSubmitSignal")
+	utils.Trace.TraceEvent(ctx, "SubmitInitialSeedSignal", utils.Trace.AttrKey("front").Bool(true))
 	err := c.PutRawSeed(ctx, SubmitInitialSeedSignal, "", true)
 	if err != nil {
-		utils.Otel.AddSpanEvent(span, "SubmitSignalErr", utils.OtelSpanKey("err.detail").String(err.Error()))
-		utils.Otel.MarkSpanAnError(span, true)
+		utils.Trace.TraceErrEvent(ctx, "SubmitInitialSeedSignal", err)
 		c.app.Error(ctx, "发送提交初始化种子信号失败", zap.Error(err))
 		return
 	}
 
-	utils.Otel.AddSpanEvent(span, "SubmitSignalOk")
 	c.app.Info(ctx, "发送提交初始化种子信号成功")
 }
 
 // 提交种子
 func (c *Crawler) SubmitInitialSeed(ctx context.Context) error {
-	ctx, span := utils.Otel.StartSpan(ctx, "SubmitInitialSeed")
-	defer utils.Otel.EndSpan(span)
+	ctx = utils.Trace.TraceStart(ctx, "SubmitInitialSeed")
+	defer utils.Trace.TraceEnd(ctx)
 
 	if !c.checkAllowSubmitInitialSeed(ctx) {
-		utils.Otel.AddSpanEvent(span, "notAllowSubmit")
 		return nil
 	}
 
-	utils.Otel.AddSpanEvent(span, "StartSubmit")
+	utils.Trace.TraceEvent(ctx, "StartSubmit")
 	c.app.Info(ctx, "开始提交初始化种子")
-	if err := utils.Recover.WrapCall(func() error {
+	if err := zapputils.Recover.WrapCall(func() error {
 		return c.spider.SubmitInitialSeed(ctx)
 	}); err != nil {
-		utils.Otel.AddSpanEvent(span, "SubmitErr", utils.OtelSpanKey("err.detail").String(err.Error()))
-		utils.Otel.MarkSpanAnError(span, true)
+		utils.Trace.TraceErrEvent(ctx, "StartSubmit", err)
 		return err
 	}
-	utils.Otel.AddSpanEvent(span, "SubmitOk")
 	c.app.Info(ctx, "初始化种子提交完成")
 	return nil
 }

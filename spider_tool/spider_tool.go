@@ -6,12 +6,14 @@ import (
 	"net/http"
 	"strings"
 
+	jsoniter "github.com/json-iterator/go"
 	"github.com/zly-app/zapp/logger"
 
 	"github.com/zly-app/crawler/config"
 	"github.com/zly-app/crawler/core"
 	"github.com/zly-app/crawler/core/dom"
 	"github.com/zly-app/crawler/seeds"
+	"github.com/zly-app/crawler/utils"
 )
 
 type SpiderTool struct {
@@ -37,12 +39,16 @@ func (s *SpiderTool) NewSeed(url string, parserMethod interface{}) *core.Seed {
 }
 
 func (s *SpiderTool) SubmitSeed(ctx context.Context, seed *core.Seed) {
+	utils.Trace.TraceEvent(ctx, "SubmitSeed")
 	s.PutSeed(ctx, seed, config.Conf.Frame.SubmitSeedToQueueFront)
 }
 
 func (s *SpiderTool) SaveResult(ctx context.Context, data interface{}) {
+	dataText, _ := jsoniter.MarshalToString(data)
+	utils.Trace.TraceEvent(ctx, "SaveResult", utils.Trace.AttrKey("data").String(dataText))
 	err := s.crawler.Pipeline().Process(ctx, s.spiderName, data)
 	if err != nil {
+		utils.Trace.TraceErrEvent(ctx, "SaveResultErr", err)
 		panic(fmt.Errorf("保存结果失败: %v", err))
 	}
 	logger.Log.Info("保存1条结果")
@@ -73,34 +79,46 @@ func (s *SpiderTool) PutErrorRawSeed(ctx context.Context, raw string, isParserEr
 }
 
 func (s *SpiderTool) SetAdd(ctx context.Context, items ...string) int {
+	utils.Trace.TraceEvent(ctx, "SetAdd", utils.Trace.AttrKey("items").StringSlice(items))
 	count, err := s.crawler.Set().Add(ctx, s.setKey, items...)
 	if err != nil {
+		utils.Trace.TraceErrEvent(ctx, "SetAdd", err)
 		panic(err)
 	}
+	utils.Trace.TraceEvent(ctx, "SetAddOk", utils.Trace.AttrKey("count").Int(count))
 	return count
 }
 
 func (s *SpiderTool) SetHasItem(ctx context.Context, item string) bool {
+	utils.Trace.TraceEvent(ctx, "SetHasItem", utils.Trace.AttrKey("item").String(item))
 	b, err := s.crawler.Set().HasItem(ctx, s.setKey, item)
 	if err != nil {
+		utils.Trace.TraceErrEvent(ctx, "SetHasItem", err)
 		panic(err)
 	}
+	utils.Trace.TraceEvent(ctx, "SetHasItemOk", utils.Trace.AttrKey("result").Bool(b))
 	return b
 }
 
 func (s *SpiderTool) SetRemove(ctx context.Context, items ...string) int {
+	utils.Trace.TraceEvent(ctx, "SetRemove", utils.Trace.AttrKey("items").StringSlice(items))
 	count, err := s.crawler.Set().Remove(ctx, s.setKey, items...)
 	if err != nil {
+		utils.Trace.TraceErrEvent(ctx, "SetRemove", err)
 		panic(err)
 	}
+	utils.Trace.TraceEvent(ctx, "SetRemoveOk", utils.Trace.AttrKey("count").Int(count))
 	return count
 }
 
 func (s *SpiderTool) GetSetSize(ctx context.Context) int {
+	utils.Trace.TraceEvent(ctx, "GetSetSize")
 	size, err := s.crawler.Set().GetSetSize(ctx, s.setKey)
 	if err != nil {
+		utils.Trace.TraceErrEvent(ctx, "GetSetSize", err)
 		panic(err)
 	}
+	utils.Trace.TraceEvent(ctx, "GetSetSize", utils.Trace.AttrKey("size").Int(size))
 	return size
 }
 

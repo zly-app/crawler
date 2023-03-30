@@ -6,8 +6,10 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/zly-app/zapp/pkg/utils"
+	zapputils "github.com/zly-app/zapp/pkg/utils"
 	"go.uber.org/zap"
+
+	"github.com/zly-app/crawler/utils"
 
 	"github.com/zly-app/crawler/cookiejar"
 	"github.com/zly-app/crawler/core"
@@ -25,20 +27,15 @@ func (c *Crawler) Run() {
 		default:
 		}
 
-		ctx, span := utils.Otel.StartSpan(context.Background(), "runOnceSeed")
-		err := utils.Recover.WrapCall(func() error {
-			return c.runOnce(ctx)
+		err := zapputils.Recover.WrapCall(func() error {
+			return c.runOnce(context.Background())
 		})
 		if err != nil {
-			utils.Otel.AddSpanEvent(span, "runOnceSeedErr", utils.OtelSpanKey("err.detail").String(err.Error()))
-			utils.Otel.MarkSpanAnError(span, true)
-			utils.Otel.EndSpan(span)
-			c.app.Error(ctx, "运行出错, 稍后继续", zap.Int64("waitTime", c.conf.Frame.SpiderErrWaitTime/1000),
-				zap.String("error", utils.Recover.GetRecoverErrorDetail(err)))
+			c.app.Error("运行出错, 稍后继续", zap.Int64("waitTime", c.conf.Frame.SpiderErrWaitTime/1000),
+				zap.String("error", zapputils.Recover.GetRecoverErrorDetail(err)))
 			time.Sleep(time.Duration(c.conf.Frame.SpiderErrWaitTime) * time.Millisecond)
 			continue
 		}
-		utils.Otel.EndSpan(span)
 
 		if c.conf.Frame.NextSeedWaitTime > 0 {
 			time.Sleep(time.Duration(c.conf.Frame.NextSeedWaitTime) * time.Millisecond)
@@ -48,25 +45,31 @@ func (c *Crawler) Run() {
 
 // 开始一次任务
 func (c *Crawler) runOnce(ctx context.Context) error {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(c.conf.Frame.SeedProcessTimeout)*time.Millisecond)
+	ctx = utils.Trace.TraceStart(context.Background(), "runOnceSeed")
+	defer utils.Trace.TraceEnd(ctx)
+
+	timeCtx, cancel := context.WithTimeout(ctx, time.Duration(c.conf.Frame.SeedProcessTimeout)*time.Millisecond)
 	defer cancel()
 
 	// 获取种子原始数据
-	raw, err := c.PopARawSeed(ctx)
+	utils.Trace.TraceEvent(timeCtx, "PopARawSeed")
+	raw, err := c.PopARawSeed(timeCtx)
 	if err == core.EmptyQueueError {
-		c.app.Info("空队列, 休眠后重试", zap.Int64("waitTime", c.conf.Frame.EmptyQueueWaitTime/1000))
+		utils.Trace.TraceEvent(timeCtx, "emptyQueue")
+		c.app.Info(timeCtx, "空队列, 休眠后重试", zap.Int64("waitTime", c.conf.Frame.EmptyQueueWaitTime/1000))
 		time.Sleep(time.Duration(c.conf.Frame.EmptyQueueWaitTime) * time.Millisecond)
 		return nil
 	}
 	if err != nil {
-		c.app.Error("从队列获取种子失败, 休眠后重试", zap.Int64("waitTime", c.conf.Frame.EmptyQueueWaitTime), zap.Error(err))
+		utils.Trace.TraceErrEvent(timeCtx, "PopARawSeed", err)
+		c.app.Error(timeCtx, "从队列获取种子失败, 休眠后重试", zap.Int64("waitTime", c.conf.Frame.EmptyQueueWaitTime), zap.Error(err))
 		time.Sleep(time.Duration(c.conf.Frame.EmptyQueueWaitTime) * time.Millisecond)
 		return nil
 	}
 
 	// 提交初始化种子信号
 	if raw == SubmitInitialSeedSignal {
-		if err = c.SubmitInitialSeed(c.app.BaseContext()); err != nil {
+		if err = c.SubmitInitialSeed(ctx); err != nil {
 			return fmt.Errorf("提交初始化种子失败: %v", err)
 		}
 		return nil
@@ -77,32 +80,37 @@ func (c *Crawler) runOnce(ctx context.Context) error {
 	defer c.nowRawSeed.Store("")
 
 	// 开始处理
-	err = utils.Recover.WrapCall(func() error {
-		return c.seedProcess(ctx, raw)
+	err = zapputils.Recover.WrapCall(func() error {
+		return c.seedProcess(timeCtx, raw)
 	})
 	if err == nil {
 		return nil
 	}
 
+	utils.Trace.TraceErrEvent(ctx, "seedProcess", err)
+
 	switch err {
 	case core.InterceptError: // 拦截, 应该立即结束本次任务
 		return nil
-	case core.ParserError: // 解析错误
-		if err := c.PutErrorRawSeed(context.Background(), raw, true); err != nil {
-			c.app.Error("将出错seed放入error队列失败", zap.Error(err))
-		}
-		c.app.Info("已将出错seed原始数据放入error队列")
 	default:
-		if err := c.PutErrorRawSeed(context.Background(), raw, false); err != nil {
-			c.app.Error("将出错seed放入error队列失败", zap.Error(err))
+		utils.Trace.TraceEvent(ctx, "PutErrorRawSeed", utils.Trace.AttrKey("isParserErr").Bool(err == core.ParserError))
+		c.app.Warn(ctx, "将出错seed放入error队列", zap.Bool("isParserErr", err == core.ParserError))
+		if err := c.PutErrorRawSeed(ctx, raw, err == core.ParserError); err != nil {
+			utils.Trace.TraceErrEvent(ctx, "PutErrorRawSeed", err)
+			c.app.Error(ctx, "将出错seed放入error队列失败", zap.Error(err))
+		} else {
+			utils.Trace.TraceEvent(ctx, "PutErrorRawSeedOk")
+			c.app.Info(ctx, "已将出错seed原始数据放入error队列")
 		}
-		c.app.Info("已将出错seed原始数据放入error队列")
 	}
 	return err
 }
 
 // 种子处理
 func (c *Crawler) seedProcess(ctx context.Context, raw string) error {
+	ctx = utils.Trace.TraceStart(ctx, "seedProcess")
+	defer utils.Trace.TraceEnd(ctx)
+
 	var seedResult *core.Seed
 	var cookieJar http.CookieJar
 	// 循环尝试下载
@@ -113,28 +121,41 @@ func (c *Crawler) seedProcess(ctx context.Context, raw string) error {
 		// 每次重新生成seed, 因为每次处理可能会修改seed
 		seed, err := seeds.MakeSeedOfRaw(raw)
 		if err != nil {
+			utils.Trace.TraceErrEvent(ctx, "MakeSeedOfRaw", err)
 			c.app.Error("构建种子失败")
 			return core.ParserError
 		}
 
+		tCtx := utils.Trace.TraceStart(ctx, "download", utils.Trace.AttrKey("attempt").Int(attempt))
+
 		// 请求处理
-		seed, err = c.middleware.RequestProcess(ctx, c, seed)
+		utils.Trace.TraceEvent(tCtx, "middleware.RequestProcess")
+		seed, err = c.middleware.RequestProcess(tCtx, c, seed)
 		if err != nil {
+			utils.Trace.TraceErrEvent(tCtx, "middleware.RequestProcess", err)
+			utils.Trace.TraceEnd(tCtx)
 			return err
 		}
 
-		seedResult, cookieJar, err = c.download(ctx, raw, seed)
+		utils.Trace.TraceEvent(tCtx, "download")
+		seedResult, cookieJar, err = c.download(tCtx, raw, seed)
 		if err == nil {
+			utils.Trace.TraceEnd(tCtx)
 			break
 		}
 
+		utils.Trace.TraceErrEvent(tCtx, "download", err)
+		utils.Trace.TraceEnd(tCtx)
+
 		if err == core.InterceptError || err == core.ParserError {
+			utils.Trace.TraceErrEvent(ctx, "download", err)
 			return err
 		}
 		if attempt >= c.conf.Frame.RequestMaxAttemptCount {
+			utils.Trace.TraceErrEvent(ctx, "download", err)
 			return fmt.Errorf("尝试下载失败, 超过最大尝试次数: %v", err)
 		}
-		c.app.Error("尝试下载失败, 等待重试", zap.Int64("waitTime", c.conf.Frame.EmptyQueueWaitTime),
+		c.app.Error(tCtx, "尝试下载失败, 等待重试", zap.Int64("waitTime", c.conf.Frame.EmptyQueueWaitTime),
 			zap.String("attempt", fmt.Sprintf("%d/%d", attempt, c.conf.Frame.RequestMaxAttemptCount)), zap.Error(err))
 		time.Sleep(time.Duration(c.conf.Frame.RequestRetryWaitTime) * time.Millisecond)
 	}
@@ -146,17 +167,22 @@ func (c *Crawler) seedProcess(ctx context.Context, raw string) error {
 	}()
 
 	// 解析
-	err := utils.Recover.WrapCall(func() error {
+	utils.Trace.TraceEvent(ctx, "Parser")
+	err := zapputils.Recover.WrapCall(func() error {
 		return c.Parser(ctx, seedResult)
 	})
 	if err == nil {
 		return nil
 	}
 
-	c.app.Error("解析时出错", zap.String("err", utils.Recover.GetRecoverErrorDetail(err)))
+	utils.Trace.TraceErrEvent(ctx, "Parser", err)
+	c.app.Error("解析时出错", zap.String("err", zapputils.Recover.GetRecoverErrorDetail(err)))
+
 	// 尝试将body保存到队列
+	utils.Trace.TraceEvent(ctx, "trySaveParserErrorSeed")
 	if err := c.trySaveParserErrorSeed(context.Background(), raw, seedResult.HttpResponseBody); err != nil {
-		c.app.Error("尝试保存解析错误的seed失败, 只能放入原始数据", zap.String("err", utils.Recover.GetRecoverErrorDetail(err)))
+		utils.Trace.TraceErrEvent(ctx, "trySaveParserErrorSeed", err)
+		c.app.Error("尝试保存解析错误的seed失败, 只能放入原始数据", zap.String("err", zapputils.Recover.GetRecoverErrorDetail(err)))
 	} else {
 		return core.InterceptError // 既然保存成功则拦截处理
 	}
@@ -166,18 +192,24 @@ func (c *Crawler) seedProcess(ctx context.Context, raw string) error {
 
 // 下载完善种子
 func (c *Crawler) download(ctx context.Context, raw string, seed *core.Seed) (*core.Seed, http.CookieJar, error) {
+	ctx = utils.Trace.TraceStart(ctx, "download")
+	defer utils.Trace.TraceEnd(ctx)
+
 	cookieJar, _ := cookiejar.New(nil)
 
 	// 下载
 	seed, err := c.downloader.Download(ctx, c, seed, cookieJar)
 	if err != nil {
+		utils.Trace.TraceErrEvent(ctx, "download", err)
 		return nil, nil, err
 	}
 
 	// 响应处理
 	seed.Raw = raw
+	utils.Trace.TraceEvent(ctx, "middleware.ResponseProcess")
 	seed, err = c.middleware.ResponseProcess(ctx, c, seed)
 	if err != nil {
+		utils.Trace.TraceErrEvent(ctx, "middleware.ResponseProcess", err)
 		return nil, nil, err
 	}
 
@@ -185,6 +217,7 @@ func (c *Crawler) download(ctx context.Context, raw string, seed *core.Seed) (*c
 	seed.Raw = raw
 	seed, err = c.CheckIsExpectResponse(ctx, seed)
 	if err != nil {
+		utils.Trace.TraceErrEvent(ctx, "CheckIsExpectResponse", err)
 		return nil, nil, err
 	}
 
