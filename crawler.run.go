@@ -137,7 +137,7 @@ func (c *Crawler) seedProcess(ctx context.Context, raw string) error {
 			return err
 		}
 
-		seedResult, cookieJar, err = c.download(tCtx, raw, seed)
+		seedResult, cookieJar, err = c.download(tCtx, seed)
 		if err == nil {
 			utils.Trace.TraceEnd(tCtx)
 			break
@@ -193,7 +193,7 @@ func (c *Crawler) seedProcess(ctx context.Context, raw string) error {
 }
 
 // 下载完善种子
-func (c *Crawler) download(ctx context.Context, raw string, seed *core.Seed) (*core.Seed, http.CookieJar, error) {
+func (c *Crawler) download(ctx context.Context, seed *core.Seed) (*core.Seed, http.CookieJar, error) {
 	ctx = utils.Trace.TraceStart(ctx, "download")
 	defer utils.Trace.TraceEnd(ctx)
 
@@ -202,19 +202,17 @@ func (c *Crawler) download(ctx context.Context, raw string, seed *core.Seed) (*c
 	// 下载
 	seed, err := c.downloader.Download(ctx, c, seed, cookieJar)
 	if err != nil {
-		utils.Trace.TraceErrEvent(ctx, "download", err, utils.Trace.AttrKey("raw").String(raw))
+		utils.Trace.TraceErrEvent(ctx, "download", err, utils.Trace.AttrKey("raw").String(seed.Raw))
 		return nil, nil, err
 	}
 
 	// 响应处理
-	seed.Raw = raw
 	seed, err = c.middleware.ResponseProcess(ctx, c, seed)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	// 检查是符合期望的响应
-	seed.Raw = raw
 	seed, err = c.CheckIsExpectResponse(ctx, seed)
 	if err != nil {
 		utils.Trace.TraceErrEvent(ctx, "CheckIsExpectResponse", err)

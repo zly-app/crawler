@@ -34,6 +34,7 @@ func NewSeed() *core.Seed {
 // 从原始数据生成seed
 func MakeSeedOfRaw(raw string) (*core.Seed, error) {
 	seed := &core.Seed{
+		Raw:  raw,
 		Meta: make(map[string]interface{}),
 	}
 	// 这是为了降低种子保存在队列的占用大小, 不使用用户自定义配置作为默认值是因为用户自定义配置可能会随时变更

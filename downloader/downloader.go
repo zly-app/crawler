@@ -41,7 +41,7 @@ func (d *Downloader) Download(ctx context.Context, crawler core.ICrawler, seed *
 	ctx, cancel := context.WithTimeout(ctx, time.Duration(seed.Request.Timeout)*time.Millisecond)
 	defer cancel()
 
-	ctx = utils.Trace.TraceStart(ctx, "downloader.Download")
+	ctx = utils.Trace.TraceStart(ctx, "downloader.Process")
 	defer utils.Trace.TraceEnd(ctx)
 
 	// 构建req
@@ -62,8 +62,14 @@ func (d *Downloader) Download(ctx context.Context, crawler core.ICrawler, seed *
 		req.AddCookie(c)
 	}
 
-	// 开始请求
 	Client.UseSeed(crawler, seed)
+
+	utils.Trace.TraceEvent(ctx, "Req",
+		utils.Trace.AttrKey("raw").String(seed.Raw),
+		utils.Trace.AttrKey("headers").StringSlice(headersToText(req.Header)),
+	)
+
+	// 开始请求
 	resp, err := Client.Do(req)
 	if err != nil {
 		utils.Trace.TraceErrEvent(ctx, "Req", err)
