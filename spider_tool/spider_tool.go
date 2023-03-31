@@ -48,8 +48,9 @@ func (s *SpiderTool) SaveResult(ctx context.Context, data interface{}) {
 	ctx = utils.Trace.TraceStart(ctx, "SaveResult")
 	defer utils.Trace.TraceEnd(ctx)
 
-	dataText, _ := jsoniter.MarshalToString(data)
-	utils.Trace.TraceEvent(ctx, "save", utils.Trace.AttrKey("data").String(dataText))
+	dataBytes, _ := jsoniter.Marshal(data)
+	dataBase64 := *utils.Convert.BytesToString(utils.Convert.Base64EncodeBytes(dataBytes))
+	utils.Trace.TraceEvent(ctx, "save", utils.Trace.AttrKey("data").String(dataBase64))
 	err := s.crawler.Pipeline().Process(ctx, s.spiderName, data)
 	if err != nil {
 		utils.Trace.TraceErrEvent(ctx, "save", err)
