@@ -10,6 +10,7 @@ import (
 	"github.com/zly-app/crawler/core"
 	"github.com/zly-app/crawler/middleware/request_middleware"
 	"github.com/zly-app/crawler/middleware/response_middleware"
+	"github.com/zly-app/crawler/utils"
 )
 
 // 请求中间件
@@ -35,25 +36,35 @@ func RegistryResponseMiddleware(m core.IResponseMiddleware) {
 type Middleware struct{}
 
 func (m *Middleware) RequestProcess(ctx context.Context, crawler core.ICrawler, seed *core.Seed) (*core.Seed, error) {
+	ctx = utils.Trace.TraceStart(ctx, "Middleware.RequestProcess")
+	defer utils.Trace.TraceEnd(ctx)
+
 	var err error
 	for _, middleware := range requestMiddlewares {
 		seed, err = middleware.Process(ctx, crawler, seed)
 		if err != nil {
+			utils.Trace.TraceErrEvent(ctx, middleware.Name(), err)
 			logger.Log.Error("请求中间件检查不通过", zap.String("middleware", middleware.Name()), zap.Error(err))
 			return nil, err
 		}
+		utils.Trace.TraceEvent(ctx, middleware.Name())
 	}
 	return seed, nil
 }
 
 func (m *Middleware) ResponseProcess(ctx context.Context, crawler core.ICrawler, seed *core.Seed) (*core.Seed, error) {
+	ctx = utils.Trace.TraceStart(ctx, "Middleware.ResponseProcess")
+	defer utils.Trace.TraceEnd(ctx)
+
 	var err error
 	for _, middleware := range responseMiddlewares {
 		seed, err = middleware.Process(ctx, crawler, seed)
 		if err != nil {
+			utils.Trace.TraceErrEvent(ctx, middleware.Name(), err)
 			logger.Log.Error("响应中间件检查不通过", zap.String("middleware", middleware.Name()), zap.Error(err))
 			return nil, err
 		}
+		utils.Trace.TraceEvent(ctx, middleware.Name())
 	}
 	return seed, nil
 }

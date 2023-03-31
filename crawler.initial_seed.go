@@ -22,7 +22,7 @@ func (c *Crawler) CheckSubmitInitialSeed(ctx context.Context) {
 	expression := c.conf.Spider.SubmitInitialSeedOpportunity
 
 	startCtx := utils.Trace.TraceStart(ctx, "CheckSubmitInitialSeed", utils.Trace.AttrKey("expression").String(expression))
-	c.app.Info(ctx, "检查提交初始化种子", zap.String("expression", expression))
+	c.app.Info(startCtx, "检查提交初始化种子", zap.String("expression", expression))
 
 	switch expression {
 	case "", "none":

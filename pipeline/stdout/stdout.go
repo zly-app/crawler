@@ -31,7 +31,7 @@ func (s *Stdout) Process(ctx context.Context, spiderName string, data interface{
 			return fmt.Errorf("编码失败: %v", err)
 		}
 	}
-	logger.Log.Info("pipeline", zap.String("name", PipelineName), zap.String("data", text))
+	logger.Log.Info(ctx, "pipeline", zap.String("name", PipelineName), zap.String("data", text))
 	return nil
 }
 

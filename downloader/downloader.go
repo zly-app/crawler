@@ -41,7 +41,7 @@ func (d *Downloader) Download(ctx context.Context, crawler core.ICrawler, seed *
 	ctx, cancel := context.WithTimeout(ctx, time.Duration(seed.Request.Timeout)*time.Millisecond)
 	defer cancel()
 
-	ctx = utils.Trace.TraceStart(ctx, "Download")
+	ctx = utils.Trace.TraceStart(ctx, "downloader.Download")
 	defer utils.Trace.TraceEnd(ctx)
 
 	// 构建req

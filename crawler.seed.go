@@ -19,7 +19,6 @@ func (c *Crawler) PopARawSeed(ctx context.Context) (string, error) {
 	for _, suffix := range c.conf.Frame.QueueSuffixes {
 		queueName := c.conf.Frame.Namespace + c.conf.Spider.Name + suffix
 
-		utils.Trace.TraceEvent(ctx, "Pop", utils.Trace.AttrKey("queueName").String(queueName))
 		raw, err := c.queue.Pop(ctx, queueName, true)
 		if err == core.EmptyQueueError { // 这个队列为空
 			utils.Trace.TraceEvent(ctx, "Pop", utils.Trace.AttrKey("queueName").String(queueName),
