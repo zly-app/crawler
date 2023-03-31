@@ -6,6 +6,7 @@ import (
 	"github.com/zly-app/crawler"
 	"github.com/zly-app/crawler/core"
 	"github.com/zly-app/plugin/honey"
+	"github.com/zly-app/plugin/zipkinotel"
 	"github.com/zly-app/zapp"
 	zapp_config "github.com/zly-app/zapp/config"
 
@@ -46,8 +47,9 @@ func (s *Spider) Close(ctx context.Context) error { return nil }
 
 func main() {
 	app := zapp.NewApp("{@spider_name}",
-		crawler.WithService(), // 启用crawler服务
-		honey.WithPlugin(), // 日志收集
+		crawler.WithService(),   // 启用crawler服务
+		honey.WithPlugin(),      // 日志收集
+		zipkinotel.WithPlugin(), // 链路
 		zapp.WithCustomComponent(component.CustomComponentCreator), // 使用自定义组件
 		zapp.WithConfigOption(zapp_config.WithFiles("../../configs/spider_base_config.dev.yaml", "./configs/config.dev.yaml")),
 	)
