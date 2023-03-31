@@ -29,7 +29,7 @@ func (s *Spider) Init(ctx context.Context) error {
 
 // 提交初始化种子
 func (s *Spider) SubmitInitialSeed(ctx context.Context) error {
-	seed := s.NewSeed(ctx, "https://www.sogou.com/", s.Parser) // 创建种子并指定解析方法
+	seed := s.NewSeed("https://www.sogou.com/", s.Parser) // 创建种子并指定解析方法
 	s.SubmitSeed(ctx, seed)                                    // 提交种子
 	return nil
 }
@@ -49,7 +49,7 @@ func main() {
 		crawler.WithService(), // 启用crawler服务
 		honey.WithPlugin(), // 日志收集
 		zapp.WithCustomComponent(component.CustomComponentCreator), // 使用自定义组件
-		zapp.WithConfigOption(zapp_config.WithFiles("../../configs/spider_base_config.dev.toml", "./configs/config.dev.toml")),
+		zapp.WithConfigOption(zapp_config.WithFiles("../../configs/spider_base_config.dev.yaml", "./configs/config.dev.yaml")),
 	)
 	crawler.RegistrySpider(newSpider()) // 注入spider
 	app.Run()                           // 运行

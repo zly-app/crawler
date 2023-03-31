@@ -132,7 +132,7 @@ func main() {
 	app := zapp.NewApp("crawler-scheduler",
 		cron.WithService(),
 		honey.WithPlugin(),
-		zapp.WithConfigOption(zapp_config.WithFiles("./configs/scheduler_config.dev.toml", "./configs/spider_base_config.dev.toml")),
+		zapp.WithConfigOption(zapp_config.WithFiles("./configs/scheduler_config.dev.yaml", "./configs/spider_base_config.dev.yaml")),
 	)
 
 	s := &Scheduler{

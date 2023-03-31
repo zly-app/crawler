@@ -170,7 +170,7 @@ services:
 
    `crawler start [-env <env>] <spider_name>` 命令为spider提交初始化种子信号到指定环境. 执行顺序如下:
 
-   1. 加载 `configs/spider_base_config.<env>.toml` 和 `spiders/<spider_name>/configs/config.<env>.toml` 配置文件.
+   1. 加载 `configs/spider_base_config.<env>.yaml` 和 `spiders/<spider_name>/configs/config.<env>.yaml` 配置文件.
    2. 根据配置文件得到分布式队列配置.
    3. 在分布式队列中提交spider的初始化种子信号.
 
@@ -178,7 +178,7 @@ services:
 
    `crawler clean [-env <env>] <spider_name>` 命令清空spider指定环境的所有队列, 也会清空错误队列.
 
-   1. 加载 `configs/spider_base_config.<env>.toml` 和 `spiders/<spider_name>/configs/config.<env>.toml` 配置文件.
+   1. 加载 `configs/spider_base_config.<env>.yaml` 和 `spiders/<spider_name>/configs/config.<env>.yaml` 配置文件.
    2. 根据配置文件得到分布式队列配置.
    3. 在分布式队列中清空spider所有队列.
 
@@ -186,7 +186,7 @@ services:
 
    `crawler clean_set [-env <env>] <spider_name>` 命令清空spider指定环境的所有集合数据.
 
-   1. 加载 `configs/spider_base_config.<env>.toml` 和 `spiders/<spider_name>/configs/config.<env>.toml` 配置文件.
+   1. 加载 `configs/spider_base_config.<env>.yaml` 和 `spiders/<spider_name>/configs/config.<env>.yaml` 配置文件.
    2. 根据配置文件得到分布式集合配置.
    3. 在分布式集合中清空spider集合数据.
 
@@ -195,7 +195,7 @@ services:
    `crawler make_supervisor [-env <env>]` 命令生成 `supervisor` 配置到 `supervisor_config/conf.d.<env>` 目录下. 生成配置之前会删除这个目录. 执行顺序如下:
 
    1. 删除 `supervisor_config/conf.d.<env>` 目录并重新创建该目录.
-   2. 加载 `configs/supervisor_programs.<env>.toml` 文件, 记录配置的spider组和spider配置. 
+   2. 加载 `configs/supervisor_programs.<env>.yaml` 文件, 记录配置的spider组和spider配置. 
    3. 加载 `template/supervisor_programs.<env>.ini.template` 文件, 这个文件作为spider配置模板.
    4. 遍历要配置的spider组和spider, 根据模板变量渲染spider配置模板后写入spider配置和spider组配置到 `supervisor_config/conf.d.<env>/<group_name>.ini` 文件
    5. 加载 `template/scheduler_config.ini.<env>.template` 文件作为调度器配置模板, 根据模板变量渲染后写入到 `supervisor_config/conf.d.<env>/crawler_scheduler.ini` 文件
@@ -208,7 +208,7 @@ services:
 2. 安装
    `go install github.com/zly-app/crawler/tools/crawler_scheduler@latest && mv ${GOPATH}/bin/crawler_scheduler .`
 
-调度器工具默认加载crawler项目下 `configs/scheduler_config.dev.toml` 和 `configs/spider_base_config.dev.toml` 配置文件.
+调度器工具默认加载crawler项目下 `configs/scheduler_config.dev.yaml` 和 `configs/spider_base_config.dev.yaml` 配置文件.
 
 可以通过 `-c` 命令指定配置文件, 也可以在 `supervisor` 配置中的`command`指定.
 

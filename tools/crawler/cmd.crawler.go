@@ -29,8 +29,8 @@ func makeCrawler(cl *cli.Context) (core.IApp, *crawler.Crawler, string, error) {
 	if env == "" {
 		logger.Log.Fatal("env为空")
 	}
-	configFile := fmt.Sprintf("./configs/spider_base_config.%s.toml", env)
-	spiderFile := fmt.Sprintf("./spiders/%s/configs/config.%s.toml", spiderName, env)
+	configFile := fmt.Sprintf("./configs/spider_base_config.%s.yaml", env)
+	spiderFile := fmt.Sprintf("./spiders/%s/configs/config.%s.yaml", spiderName, env)
 
 	// 检查spider存在
 	if !utils.CheckHasPath(fmt.Sprintf("spiders/%s", spiderName), true) {

@@ -1,0 +1,146 @@
+# spider会继承并覆盖这里的配置
+# 爬虫框架配置和队列配置和set配置应该放在这里, 否则调度器和crawler工具部分功能无法使用
+# 其它的公共配置都应该放在这里, 如 crawler框架配置, app框架配置, honye收集器插件配置
+
+# crawler 框架配置
+services:
+  crawler:
+    frame:
+      # 命名空间, 多项目可以用于区分项目
+      Namespace: '{@project_name}'
+      # 队列后缀, spider运行时按顺序在队列中取出种子
+      #QueueSuffixes: [':vip', ':debug', ':seed', ':error']
+      # 种子队列后缀名, 提交种子时会放在这个队列
+      #SeedQueueSuffix: ':seed'
+      # 错误种子队列后缀名, 下载器错误和请求中间件拦截以及响应中间件拦截时会放入这个队列
+      #ErrorSeedQueueSuffix: ':error'
+      # 解析错误种子队列后缀名, 包括处理程序错误或panic, 处理程序不存在, 种子解析失败错误会放入这个队列.
+      # 在这个队列的种子一般需要人工干预查看原因, 类似mq的死信队列.
+      #ParserErrorSeedQueueSuffix: ':error_parser'
+      # 集合后缀名
+      #SetSuffix: ':set'
+      # 非空队列不提交初始化种子
+      #StopSubmitInitialSeedIfNotEmptyQueue: true
+      # 检查是否为空队列时忽略error队列的检查, 一般会在提交初始化种子信号时检查
+      #CheckEmptyQueueIgnoreErrorQueue: true
+      # 控制提交种子到队列前面. 取出种子一定是从前面开始的.
+      # 如果设为 true(默认), 表示后进先出(深度优先).
+      # 如果设为 false, 表示先进先出(广度优先). 广度优先一般会占用更长的队列.
+      #SubmitSeedToQueueFront: true
+      # 请求超时, 单位毫秒
+      #RequestTimeout: 20000
+      # 下一个seed等待时间, 单位毫秒
+      #NextSeedWaitTime: 0
+      # spider错误后等待时间, 单位毫秒
+      #SpiderErrWaitTime: 3000
+      # 空队列等待时间, 单位毫秒
+      #EmptyQueueWaitTime: 60000
+      # 请求重试等待时间, 单位毫秒
+      #RequestRetryWaitTime: 1000
+      # 最大尝试请求次数
+      #RequestMaxAttemptCount: 5
+
+    # crawler redis 队列配置
+    #queue:
+      #type: 'redis' # 类型
+      #Address: localhost:6379 # 地址: host1:port1,host2:port2
+      #UserName: "" # 用户名
+      #Password: "" # 密码
+      #DB: 0 # db, 只有非集群有效
+      #MinIdle: 2 # 最小闲置连接数
+      #MaxIdle: 4 # 最大闲置连接数
+      #PoolSize: 10 # 客户端池大小
+      #IdleTimeout: 3600 # 空闲链接超时时间, 单位秒, 如果一个连接长时间未使用将被视为连接无效, 小于1表示永不超时
+      #WaitTimeout: 5 # 等待获取连接的超时时间, 单位秒
+      #ConnectTimeout: 5 # 连接超时, 单位秒
+      #MaxConnLifetime: 3600 # 一个连接最大存活时间, 单位秒, 小于1表示不限制
+      #MaxRetries: 0 # 操作尝试次数, <1 表示不重试
+      #ReadTimeoutSec: 5 # 超时, 秒
+      #WriteTimeoutSec: 5 # 超时, 秒
+
+    # crawler redis 集合配置
+    #set:
+      #type: 'redis' # 类型
+      #Address: localhost:6379 # 地址: host1:port1,host2:port2
+      #UserName: "" # 用户名
+      #Password: "" # 密码
+      #DB: 0 # db, 只有非集群有效
+      #MinIdle: 2 # 最小闲置连接数
+      #MaxIdle: 4 # 最大闲置连接数
+      #PoolSize: 10 # 客户端池大小
+      #IdleTimeout: 3600 # 空闲链接超时时间, 单位秒, 如果一个连接长时间未使用将被视为连接无效, 小于1表示永不超时
+      #WaitTimeout: 5 # 等待获取连接的超时时间, 单位秒
+      #ConnectTimeout: 5 # 连接超时, 单位秒
+      #MaxConnLifetime: 3600 # 一个连接最大存活时间, 单位秒, 小于1表示不限制
+      #MaxRetries: 0 # 操作尝试次数, <1 表示不重试
+      #ReadTimeoutSec: 5 # 超时, 秒
+      #WriteTimeoutSec: 5 # 超时, 秒
+
+    # 代理配置
+    #proxy:
+      #type: 'static'     # 静态代理, 支持 http, https, socks5, socks5h
+      #address: 'socks5://127.0.0.1:1080'  # 代理地址
+      #User: ''           # 用户名, 可选
+      #Password: ''       # 密码, 可选
+
+# app框架配置
+frame: # 框架配置
+  #debug: true # debug标志
+  #Name: '' # app名
+  #Env: '' # 环境名
+  #FreeMemoryInterval: 120000 # 主动清理内存间隔时间(毫秒), <= 0 表示禁用
+  #WaitServiceRunTime: 1000 # 默认等待服务启动阶段, 等待时间(毫秒), 如果时间到未收到服务启动成功信号则将服务标记为不稳定状态然后继续开始工作(我们总不能一直等着吧)
+  #ServiceUnstableObserveTime: 10000 # 默认服务不稳定观察时间, 等待时间(毫秒), 如果时间到仍未收到服务启动成功信号也将服务标记为启动成功
+  #Flags: [] # flag, 注意: flag是忽略大小写的, 示例 ['a', 'B', 'c']
+  #Labels: # 标签, 注意: 标签名是忽略大小写的
+  Log: # 日志配置
+    #Level: 'debug' # 日志等级, debug, info, warn, error, dpanic, panic, fatal
+    #Json: false # 启用json编码器, 输出的每一行日志转为json格式
+    #WriteToStream: true # 输出到屏幕
+    #WriteToFile: false # 日志是否输出到文件
+    #Name: '' # 日志文件名, 末尾会自动附加 .log 后缀
+    #AppendPid: false # 是否在日志文件名后附加进程号
+    #Path: './log' # 默认日志存放路径
+    #FileMaxSize: 32 # 每个日志最大尺寸,单位M
+    #FileMaxBackupsNum: 3 # 日志文件最多保存多少个备份, 0表示永久
+    #FileMaxDurableTime: 7 # 文件最多保存多长时间,单位天, 0表示永久
+    #Compress: false # 是否压缩历史日志
+    #TimeFormat: '2006-01-02 15:04:05' # 时间显示格式
+    #Color: true # 是否打印彩色日志等级, 只有关闭json编码器才生效
+    #CapitalLevel: false # 是否大写日志等级
+    #DevelopmentMode: true # 开发者模式, 在开发者模式下日志记录器在写完DPanic消息后程序会感到恐慌
+    #ShowFileAndLinenum: true # 显示文件路径和行号
+    #ShowFileAndLinenumMinLevel: 'debug' # 最小显示文件路径和行号的等级. 推荐所有等级都打印代码行, 相对于能快速定位问题来说, 这点性能损耗无关紧要
+    #MillisDuration: true # 对zap.Duration转为毫秒
+  #PrintConfig: true # app初始时是否打印配置
+
+plugins:
+  honey: # 日志收集插件配置
+    Env: 'dev' # 输出时标示的环境名
+    #App: '' # 输出时标示的app名, 如果为空则使用默认名
+    #Instance: '' # 输出时标示的实例名, 如果为空则使用本地ip
+    StopLogOutput: false # 停止原有的日志输出
+    #LogBatchSize: 10000 # 日志批次大小, 累计达到这个大小立即输出一次日志, 不用等待时间
+    #AutoRotateTime: 3 # 自动旋转时间(秒), 如果没有达到累计输出批次大小, 在指定时间后也会立即输出
+    #MaxRotateThreadNum: 10 # 最大旋转线程数, 表示同时允许多少批次发送到输出设备
+    Outputs: '' # 输出设备列表, 多个输出设备用半角逗号`,`分隔, 支持 std, honey-http, loki-http
+
+    honey-http: # honey-http 输出器
+      #Disable: false # 是否关闭
+      #PushAddress: http://127.0.0.1:8080/push # push地址, 示例: http://127.0.0.1:8080/push
+      #Compress: zstd # 压缩器名, 可选 raw, gzip, zstd
+      #Serializer: msgpack # 序列化器名, 可选 msgpack, json
+      #AuthToken: '' # 验证token, 如果设置, 客户端请求header必须带上 token={AuthToken}, 如 token=myAuthToken
+      #ReqTimeout: 5 # 请求超时, 单位秒
+      #RetryCount: 2 # 请求失败重试次数, 0表示禁用
+      #RetryIntervalMs: 2000 # 请求失败重试间隔毫秒数
+      #ProxyAddress = '' # 代理地址. 支持 http, https, socks5, socks5h. 示例: socks5://127.0.0.1:1080 socks5://user:pwd@127.0.0.1:1080
+
+    loki-http: # loki-http 输出器
+      #Disable: false # 关闭
+      #PushAddress: 'http://127.0.0.1:3100/loki/api/v1/push' # push地址, 示例: http://127.0.0.1:3100/loki/api/v1/push
+      #EnableCompress: true # 是否启用压缩
+      #ReqTimeout: 5 # 请求超时, 单位秒
+      #RetryCount: 2 # 请求失败重试次数, 0表示禁用
+      #RetryIntervalMs: 2000 # 请求失败重试间隔毫秒数
+      #ProxyAddress: '' # 代理地址. 支持 http, https, socks5, socks5h. 示例: socks5://127.0.0.1:1080 socks5://user:pwd@127.0.0.1:1080

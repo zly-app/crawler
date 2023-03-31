@@ -36,7 +36,7 @@ func main() {
 					&cli.StringFlag{
 						Name:  "env",
 						Value: "dev",
-						Usage: "环境, 将会读取 configs/crawler_config.{@env}.toml, spiders/{@spider_name}/configs/config.{@env}.toml 文件",
+						Usage: "环境, 将会读取 configs/crawler_config.{@env}.yaml, spiders/{@spider_name}/configs/config.{@env}.yaml 文件",
 					},
 				},
 			},
@@ -49,7 +49,7 @@ func main() {
 					&cli.StringFlag{
 						Name:  "env",
 						Value: "dev",
-						Usage: "环境, 将会读取 configs/crawler_config.{@env}.toml, spiders/{@spider_name}/configs/config.{@env}.toml 文件",
+						Usage: "环境, 将会读取 configs/crawler_config.{@env}.yaml, spiders/{@spider_name}/configs/config.{@env}.yaml 文件",
 					},
 				},
 			},
@@ -62,7 +62,7 @@ func main() {
 					&cli.StringFlag{
 						Name:  "env",
 						Value: "dev",
-						Usage: "环境, 将会读取 configs/crawler_config.{@env}.toml, spiders/{@spider_name}/configs/config.{@env}.toml 文件",
+						Usage: "环境, 将会读取 configs/crawler_config.{@env}.yaml, spiders/{@spider_name}/configs/config.{@env}.yaml 文件",
 					},
 				},
 			},
@@ -76,7 +76,7 @@ func main() {
 					&cli.StringFlag{
 						Name:  "env",
 						Value: "dev",
-						Usage: "环境, 将会读取 configs/supervisor_programs.{@env}.toml, template/supervisor_programs.{@env}.ini 文件",
+						Usage: "环境, 将会读取 configs/supervisor_programs.{@env}.yaml, template/supervisor_programs.{@env}.ini 文件",
 					},
 				},
 			},
