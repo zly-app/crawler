@@ -69,6 +69,7 @@ programs = {@spider_names}`
 		var spiderNames []string
 		for spiderName, conf := range g {
 			if !utils.CheckHasPath(fmt.Sprintf("./spiders/%s", spiderName), true) {
+				logger.Log.Warn("spider未找到, 将跳过", zap.String("spiderName", spiderName))
 				continue // 可能在别的机器上部署
 			}
 			// 解析配置
