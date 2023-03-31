@@ -200,7 +200,7 @@ func (c *Crawler) download(ctx context.Context, raw string, seed *core.Seed) (*c
 	// 下载
 	seed, err := c.downloader.Download(ctx, c, seed, cookieJar)
 	if err != nil {
-		utils.Trace.TraceErrEvent(ctx, "download", err)
+		utils.Trace.TraceErrEvent(ctx, "download", err, utils.Trace.AttrKey("raw").String(raw))
 		return nil, nil, err
 	}
 

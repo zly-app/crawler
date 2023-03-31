@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"sort"
 	"strings"
 	"time"
 
@@ -20,6 +21,17 @@ type Downloader struct {
 	app zapp_core.IApp
 }
 
+func headersToText(values map[string][]string) []string {
+	var temp []string
+	for k, vs := range values {
+		for _, v := range vs {
+			temp = append(temp, k+": "+v)
+		}
+	}
+	sort.Strings(temp)
+	return temp
+}
+
 func (d *Downloader) Download(ctx context.Context, crawler core.ICrawler, seed *core.Seed, cookieJar http.CookieJar) (*core.Seed, error) {
 	if seed.Request.Url == "" {
 		return seed, nil
@@ -29,9 +41,14 @@ func (d *Downloader) Download(ctx context.Context, crawler core.ICrawler, seed *
 	ctx, cancel := context.WithTimeout(ctx, time.Duration(seed.Request.Timeout)*time.Millisecond)
 	defer cancel()
 
+	ctx = utils.Trace.TraceStart(ctx, "Download")
+	defer utils.Trace.TraceEnd(ctx)
+
 	// 构建req
 	req, err := d.MakeRequestOfSeed(ctx, seed)
 	if err != nil {
+		utils.Trace.TraceErrEvent(ctx, "MakeRequestOfSeed", err)
+		d.app.Error(ctx, "MakeRequestOfSeed err", zap.Error(err))
 		return nil, err
 	}
 
@@ -49,6 +66,8 @@ func (d *Downloader) Download(ctx context.Context, crawler core.ICrawler, seed *
 	Client.UseSeed(crawler, seed)
 	resp, err := Client.Do(req)
 	if err != nil {
+		utils.Trace.TraceErrEvent(ctx, "Req", err)
+		d.app.Error(ctx, "Req err", zap.Error(err))
 		// 切换代理
 		Client.ChangeProxy(crawler, seed)
 		return nil, err
@@ -60,6 +79,12 @@ func (d *Downloader) Download(ctx context.Context, crawler core.ICrawler, seed *
 	seed.HttpResponseBody, _ = io.ReadAll(resp.Body)
 	_ = resp.Body.Close()
 	resp.Body = io.NopCloser(bytes.NewReader(seed.HttpResponseBody))
+
+	utils.Trace.TraceEvent(ctx, "Resp",
+		utils.Trace.AttrKey("status").Int(resp.StatusCode),
+		utils.Trace.AttrKey("headers").StringSlice(headersToText(resp.Header)),
+		utils.Trace.AttrKey("data").String(string(seed.HttpResponseBody)),
+	)
 
 	// 编码转换
 	switch strings.ToLower(seed.Request.Encoding) {
