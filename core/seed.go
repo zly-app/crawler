@@ -60,7 +60,7 @@ type Seed struct {
 		Cookies []*http.Cookie
 		// 是否自动跳转
 		AutoRedirects bool
-		// 响应数据编码
+		// 响应数据编码, 支持 utf8(默认), gbk, gb2312, gb18030, 用于告诉crawler这个页面的编码是什么, crawler会将它转为 utf8.
 		Encoding string
 		// 请求超时时间, 毫秒
 		Timeout int64
@@ -158,4 +158,22 @@ func (s *Seed) GetJsonDom() (*dom.JsonDom, error) {
 	}
 	s.jsonDom = d
 	return d, nil
+}
+
+// 尝试去掉 utf8 页面的 bom 头
+func (s *Seed) TryTrimUtf8Bom() {
+	boms := [][]byte{
+		{0xff, 0xfe, 0, 0}, // LittleEndianBom4
+		{0, 0, 0xfe, 0xff}, // BigEndianBom4
+		{0xef, 0xbb, 0xbf}, // Utf8Bom3
+		{0xfe, 0xff},       // BigEndianBom2
+		{0xff, 0xfe},       // LittleEndianBom2
+	}
+	for i := range boms {
+		if len(s.HttpResponseBody) >= len(boms[i]) &&
+			bytes.Equal(s.HttpResponseBody[:len(boms[i])], boms[i]) {
+			s.HttpResponseBody = s.HttpResponseBody[len(boms[i]):]
+			break
+		}
+	}
 }
