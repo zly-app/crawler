@@ -198,11 +198,12 @@ func (c *Crawler) download(ctx context.Context, seed *core.Seed) (*core.Seed, ht
 	defer utils.Trace.TraceEnd(ctx)
 
 	cookieJar, _ := cookiejar.New(nil)
+	raw := seed.Raw
 
 	// 下载
 	seed, err := c.downloader.Download(ctx, c, seed, cookieJar)
 	if err != nil {
-		rawBase64 := utils.Convert.Base64Encode(seed.Raw)
+		rawBase64 := utils.Convert.Base64Encode(raw)
 		utils.Trace.TraceErrEvent(ctx, "download", err,
 			utils.Trace.AttrKey("raw").String(rawBase64))
 		return nil, nil, err
