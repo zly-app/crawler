@@ -46,7 +46,7 @@ func (s *Spider) Parser(ctx context.Context, seed *core.Seed) error {
 func (s *Spider) Close(ctx context.Context) error { return nil }
 
 func main() {
-	app := zapp.NewApp("{@spider_name}",
+	app := zapp.NewApp("{@project_name}.{@spider_name}",
 		crawler.WithService(),   // 启用crawler服务
 		honey.WithPlugin(),      // 日志收集
 		zipkinotel.WithPlugin(), // 链路
