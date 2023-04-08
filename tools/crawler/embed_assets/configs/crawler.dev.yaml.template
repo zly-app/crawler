@@ -76,6 +76,12 @@ services:
       #ReadTimeoutSec: 5 # 超时, 秒
       #WriteTimeoutSec: 5 # 超时, 秒
 
+    # 管道配置
+    #pipeline:
+      #type: 'stdout' # 管道类型, 多管道用英文逗号分隔
+      #stdout:
+        #disable: false # 是否禁用
+
     # 代理配置
     #proxy:
       #type: 'static'     # 静态代理, 支持 http, https, socks5, socks5h

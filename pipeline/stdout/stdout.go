@@ -9,14 +9,22 @@ import (
 	"github.com/zly-app/zapp/logger"
 	"go.uber.org/zap"
 
+	"github.com/zly-app/crawler/config"
 	"github.com/zly-app/crawler/core"
 )
 
 const PipelineName = "stdout"
 
-type Stdout struct{}
+type Stdout struct {
+	Disable bool // 是否关闭
+}
 
+func (s *Stdout) Name() string { return PipelineName }
 func (s *Stdout) Process(ctx context.Context, spiderName string, data interface{}) (err error) {
+	if s.Disable {
+		return nil
+	}
+
 	var text string
 	switch t := data.(type) {
 	case nil:
@@ -38,5 +46,11 @@ func (s *Stdout) Process(ctx context.Context, spiderName string, data interface{
 func (s *Stdout) Close(ctx context.Context) error { return nil }
 
 func NewStdoutPipeline(app zapp_core.IApp) core.IPipeline {
-	return new(Stdout)
+	confKey := fmt.Sprintf("services.%s.pipeline.%s", config.NowServiceType, PipelineName)
+	s := &Stdout{}
+	err := app.GetConfig().Parse(confKey, s, true)
+	if err != nil {
+		app.Fatal("创建pipeline失败: 解析配置失败", zap.String("pipeline", PipelineName), zap.Error(err))
+	}
+	return s
 }

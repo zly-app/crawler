@@ -6,7 +6,7 @@ const (
 )
 
 type PipelineConfig struct {
-	Type string // 管道类型
+	Type string // 管道类型, 多管道用英文逗号分隔
 }
 
 func newPipelineConfig() PipelineConfig {
@@ -14,7 +14,7 @@ func newPipelineConfig() PipelineConfig {
 }
 
 func (conf *PipelineConfig) Check() error {
-	if len(conf.Type) == 0 {
+	if conf.Type == "" {
 		conf.Type = defaultPipelineType
 	}
 	return nil
