@@ -4,7 +4,7 @@ go 1.16
 
 require (
 	github.com/zly-app/crawler v0.2.0
-	github.com/zly-app/plugin/honey v0.2.6
-	github.com/zly-app/plugin/zipkinotel v0.0.1
+	github.com/zly-app/plugin/honey v0.2.7
+	github.com/zly-app/plugin/zipkinotel v0.0.2
 	github.com/zly-app/zapp v1.1.10
 )
