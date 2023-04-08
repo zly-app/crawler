@@ -13,24 +13,24 @@ frame: # 框架配置
   #Flags: [] # flag, 注意: flag是忽略大小写的, 示例 ['a', 'B', 'c']
   #Labels: # 标签, 注意: 标签名是忽略大小写的
   Log: # 日志配置
-  #Level: 'debug' # 日志等级, debug, info, warn, error, dpanic, panic, fatal
-  #Json: false # 启用json编码器, 输出的每一行日志转为json格式
-  #WriteToStream: true # 输出到屏幕
-  #WriteToFile: false # 日志是否输出到文件
-  #Name: '' # 日志文件名, 末尾会自动附加 .log 后缀
-  #AppendPid: false # 是否在日志文件名后附加进程号
-  #Path: './log' # 默认日志存放路径
-  #FileMaxSize: 32 # 每个日志最大尺寸,单位M
-  #FileMaxBackupsNum: 3 # 日志文件最多保存多少个备份, 0表示永久
-  #FileMaxDurableTime: 7 # 文件最多保存多长时间,单位天, 0表示永久
-  #Compress: false # 是否压缩历史日志
-  #TimeFormat: '2006-01-02 15:04:05' # 时间显示格式
-  #Color: true # 是否打印彩色日志等级, 只有关闭json编码器才生效
-  #CapitalLevel: false # 是否大写日志等级
-  #DevelopmentMode: true # 开发者模式, 在开发者模式下日志记录器在写完DPanic消息后程序会感到恐慌
-  #ShowFileAndLinenum: true # 显示文件路径和行号
-  #ShowFileAndLinenumMinLevel: 'debug' # 最小显示文件路径和行号的等级. 推荐所有等级都打印代码行, 相对于能快速定位问题来说, 这点性能损耗无关紧要
-  #MillisDuration: true # 对zap.Duration转为毫秒
+    #Level: 'debug' # 日志等级, debug, info, warn, error, dpanic, panic, fatal
+    #Json: false # 启用json编码器, 输出的每一行日志转为json格式
+    #WriteToStream: true # 输出到屏幕
+    #WriteToFile: false # 日志是否输出到文件
+    #Name: '' # 日志文件名, 末尾会自动附加 .log 后缀
+    #AppendPid: false # 是否在日志文件名后附加进程号
+    #Path: './log' # 默认日志存放路径
+    #FileMaxSize: 32 # 每个日志最大尺寸,单位M
+    #FileMaxBackupsNum: 3 # 日志文件最多保存多少个备份, 0表示永久
+    #FileMaxDurableTime: 7 # 文件最多保存多长时间,单位天, 0表示永久
+    #Compress: false # 是否压缩历史日志
+    #TimeFormat: '2006-01-02 15:04:05' # 时间显示格式
+    #Color: true # 是否打印彩色日志等级, 只有关闭json编码器才生效
+    #CapitalLevel: false # 是否大写日志等级
+    #DevelopmentMode: true # 开发者模式, 在开发者模式下日志记录器在写完DPanic消息后程序会感到恐慌
+    #ShowFileAndLinenum: true # 显示文件路径和行号
+    #ShowFileAndLinenumMinLevel: 'debug' # 最小显示文件路径和行号的等级. 推荐所有等级都打印代码行, 相对于能快速定位问题来说, 这点性能损耗无关紧要
+    #MillisDuration: true # 对zap.Duration转为毫秒
   #PrintConfig: true # app初始时是否打印配置
 
 plugins:
@@ -45,21 +45,21 @@ plugins:
     Outputs: 'std' # 输出设备列表, 多个输出设备用半角逗号`,`分隔, 支持 std, honey-http, loki-http
 
     honey-http: # honey-http 输出器
-    #Disable: false # 是否关闭
-    #PushAddress: http://127.0.0.1:8080/push # push地址, 示例: http://127.0.0.1:8080/push
-    #Compress: zstd # 压缩器名, 可选 raw, gzip, zstd
-    #Serializer: msgpack # 序列化器名, 可选 msgpack, json
-    #AuthToken: '' # 验证token, 如果设置, 客户端请求header必须带上 token={AuthToken}, 如 token=myAuthToken
-    #ReqTimeout: 5 # 请求超时, 单位秒
-    #RetryCount: 2 # 请求失败重试次数, 0表示禁用
-    #RetryIntervalMs: 2000 # 请求失败重试间隔毫秒数
-    #ProxyAddress = '' # 代理地址. 支持 http, https, socks5, socks5h. 示例: socks5://127.0.0.1:1080 socks5://user:pwd@127.0.0.1:1080
+      #Disable: false # 是否关闭
+      #PushAddress: http://127.0.0.1:8080/push # push地址, 示例: http://127.0.0.1:8080/push
+      #Compress: zstd # 压缩器名, 可选 raw, gzip, zstd
+      #Serializer: msgpack # 序列化器名, 可选 msgpack, json
+      #AuthToken: '' # 验证token, 如果设置, 客户端请求header必须带上 token={AuthToken}, 如 token=myAuthToken
+      #ReqTimeout: 5 # 请求超时, 单位秒
+      #RetryCount: 2 # 请求失败重试次数, 0表示禁用
+      #RetryIntervalMs: 2000 # 请求失败重试间隔毫秒数
+      #ProxyAddress = '' # 代理地址. 支持 http, https, socks5, socks5h. 示例: socks5://127.0.0.1:1080 socks5://user:pwd@127.0.0.1:1080
 
     loki-http: # loki-http 输出器
-    #Disable: false # 关闭
-    #PushAddress: 'http://127.0.0.1:3100/loki/api/v1/push' # push地址, 示例: http://127.0.0.1:3100/loki/api/v1/push
-    #EnableCompress: true # 是否启用压缩
-    #ReqTimeout: 5 # 请求超时, 单位秒
-    #RetryCount: 2 # 请求失败重试次数, 0表示禁用
-    #RetryIntervalMs: 2000 # 请求失败重试间隔毫秒数
-    #ProxyAddress: '' # 代理地址. 支持 http, https, socks5, socks5h. 示例: socks5://127.0.0.1:1080 socks5://user:pwd@127.0.0.1:1080
+      #Disable: false # 关闭
+      #PushAddress: 'http://127.0.0.1:3100/loki/api/v1/push' # push地址, 示例: http://127.0.0.1:3100/loki/api/v1/push
+      #EnableCompress: true # 是否启用压缩
+      #ReqTimeout: 5 # 请求超时, 单位秒
+      #RetryCount: 2 # 请求失败重试次数, 0表示禁用
+      #RetryIntervalMs: 2000 # 请求失败重试间隔毫秒数
+      #ProxyAddress: '' # 代理地址. 支持 http, https, socks5, socks5h. 示例: socks5://127.0.0.1:1080 socks5://user:pwd@127.0.0.1:1080
