@@ -29,7 +29,7 @@ func makeCrawler(cl *cli.Context) (core.IApp, *crawler.Crawler, string, error) {
 	if env == "" {
 		logger.Log.Fatal("env为空")
 	}
-	configFile := fmt.Sprintf("./configs/spider_base_config.%s.yaml", env)
+	configFile := fmt.Sprintf("./configs/crawler.%s.yaml", env)
 	spiderFile := fmt.Sprintf("./spiders/%s/configs/config.%s.yaml", spiderName, env)
 
 	// 检查spider存在
@@ -72,7 +72,7 @@ func CmdInitSeedSignal(cl *cli.Context) error {
 	}
 
 	// 放入提交初始化种子信号到队列
-	queueName := config.Conf.Frame.Namespace + spiderName + config.Conf.Frame.SeedQueueSuffix
+	queueName := config.Conf.Frame.Namespace + "." + spiderName + config.Conf.Frame.SeedQueueSuffix
 	_, err = c.Queue().Put(context.Background(), queueName, crawler.SubmitInitialSeedSignal, true)
 	if err != nil {
 		logger.Log.Fatal("放入提交初始化种子信号到队列失败", zap.Error(err))
@@ -103,7 +103,7 @@ func CmdCleanSpiderQueue(cl *cli.Context) error {
 	}, config.Conf.Frame.QueueSuffixes...)
 
 	for _, suffix := range suffixes {
-		queueName := config.Conf.Frame.Namespace + spiderName + suffix
+		queueName := config.Conf.Frame.Namespace + "." + spiderName + suffix
 		if err = c.Queue().Delete(context.Background(), queueName); err != nil {
 			logger.Log.Fatal("删除队列失败", zap.String("queueName", queueName), zap.Error(err))
 		}
@@ -125,7 +125,7 @@ func CmdCleanSpiderSet(cl *cli.Context) error {
 		logger.Log.Fatal("使用memory集合是无意义的")
 	}
 
-	setName := config.Conf.Frame.Namespace + spiderName + config.Conf.Frame.SetSuffix
+	setName := config.Conf.Frame.Namespace + "." + spiderName + config.Conf.Frame.SetSuffix
 	if err = c.Set().DeleteSet(context.Background(), setName); err != nil {
 		logger.Log.Fatal("删除集合失败", zap.String("setName", setName), zap.Error(err))
 	}

@@ -51,7 +51,7 @@ func main() {
 		honey.WithPlugin(),      // 日志收集
 		zipkinotel.WithPlugin(), // 链路
 		zapp.WithCustomComponent(component.CustomComponentCreator), // 使用自定义组件
-		zapp.WithConfigOption(zapp_config.WithFiles("../../configs/spider_base_config.dev.yaml", "./configs/config.dev.yaml")),
+		zapp.WithConfigOption(zapp_config.WithFiles("../../configs/crawler.dev.yaml", "./configs/config.dev.yaml")),
 	)
 	crawler.RegistrySpider(newSpider()) // 注入spider
 	app.Run()                           // 运行

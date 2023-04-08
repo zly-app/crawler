@@ -69,14 +69,14 @@ func main() {
 			{
 				Name:      "make_supervisor",
 				Aliases:   []string{"make"},
-				Usage:     "删除supervisor配置后根据模板文件 template/supervisor_programs.{@env}.ini 重新生成supervisor配置, 生成的文件路径为 supervisor_config/conf.d.{@env}/{@spider_name}.ini",
+				Usage:     "删除supervisor配置后根据模板文件 template/supervisor/spider_programs.{@env}.ini 重新生成supervisor配置, 生成的文件路径为 supervisor_config/conf.d.{@env}/{@spider_name}.ini",
 				ArgsUsage: " ",
 				Action:    CmdMakeSupervisorConfig,
 				Flags: []cli.Flag{
 					&cli.StringFlag{
 						Name:  "env",
 						Value: "dev",
-						Usage: "环境, 将会读取 configs/supervisor_programs.{@env}.yaml, template/supervisor_programs.{@env}.ini 文件",
+						Usage: "环境, 将会读取 configs/supervisor/spider_programs.{@env}.yaml, template/supervisor/spider_programs.{@env}.ini 文件",
 					},
 				},
 			},

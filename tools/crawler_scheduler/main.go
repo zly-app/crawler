@@ -9,11 +9,13 @@ import (
 
 	"github.com/spf13/viper"
 	"github.com/zly-app/plugin/honey"
-	"github.com/zly-app/service/cron"
+	"github.com/zly-app/plugin/zipkinotel"
 	"github.com/zly-app/zapp"
 	zapp_config "github.com/zly-app/zapp/config"
 	zapp_core "github.com/zly-app/zapp/core"
 	"go.uber.org/zap"
+
+	"github.com/zly-app/service/cron"
 
 	"github.com/zly-app/crawler"
 	"github.com/zly-app/crawler/config"
@@ -33,7 +35,7 @@ func (s *Scheduler) Start() {
 	}
 
 	var programsConfigFile string
-	err := s.app.GetConfig().Parse("crawler_scheduler.programs_config_file", &programsConfigFile)
+	err := s.app.GetConfig().Parse("crawler_scheduler.spider_programs_file", &programsConfigFile)
 	if err != nil {
 		s.app.Fatal("获取程序配置文件路径失败", zap.Error(err))
 	}
@@ -116,7 +118,7 @@ func (s *Scheduler) SendSubmitInitialSeedSignal(ctx cron.IContext) error {
 	}
 
 	// 放入提交初始化种子信号到队列
-	queueName := config.Conf.Frame.Namespace + spiderName + config.Conf.Frame.SeedQueueSuffix
+	queueName := config.Conf.Frame.Namespace + "." + spiderName + config.Conf.Frame.SeedQueueSuffix
 	_, err := s.cr.Queue().Put(context.Background(), queueName, crawler.SubmitInitialSeedSignal, true)
 	if err != nil {
 		return fmt.Errorf("提交初始化种子信号放入到队列失败, spiderName: %s, err: %v", spiderName, err)
@@ -132,7 +134,8 @@ func main() {
 	app := zapp.NewApp("crawler-scheduler",
 		cron.WithService(),
 		honey.WithPlugin(),
-		zapp.WithConfigOption(zapp_config.WithFiles("./configs/scheduler_config.dev.yaml", "./configs/spider_base_config.dev.yaml")),
+		zipkinotel.WithPlugin(), // 链路
+		zapp.WithConfigOption(zapp_config.WithFiles("./configs/crawler.dev.yaml")),
 	)
 
 	s := &Scheduler{

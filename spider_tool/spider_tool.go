@@ -179,6 +179,6 @@ func NewSpiderTool(crawler core.ICrawler) core.ISpiderTool {
 	return &SpiderTool{
 		crawler:    crawler,
 		spiderName: config.Conf.Spider.Name,
-		setKey:     config.Conf.Frame.Namespace + config.Conf.Spider.Name + config.Conf.Frame.SetSuffix,
+		setKey:     config.Conf.Frame.Namespace + "." + config.Conf.Spider.Name + config.Conf.Frame.SetSuffix,
 	}
 }

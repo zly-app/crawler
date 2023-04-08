@@ -83,6 +83,11 @@ services:
       #User: ''           # 用户名, 可选
       #Password: ''       # 密码, 可选
 
+# 调度器配置
+crawler_scheduler:
+  # spier程序配置文件路径
+  spider_programs_file: './configs/spider_programs.dev.yaml'
+
 # app框架配置
 frame: # 框架配置
   #debug: true # debug标志

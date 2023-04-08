@@ -26,8 +26,8 @@ func CmdMakeSupervisorConfig(cl *cli.Context) error {
 	if env == "" {
 		logger.Log.Fatal("env为空")
 	}
-	configFile := fmt.Sprintf("./configs/supervisor_programs.%s.yaml", env)
-	templateFile := fmt.Sprintf("./template/supervisor_programs.%s.ini.template", env)
+	configFile := fmt.Sprintf("./configs/spider_programs.%s.yaml", env)
+	templateFile := fmt.Sprintf("./template/supervisor/spider_programs.%s.ini.template", env)
 
 	vi := viper.New()
 	vi.SetConfigFile(configFile)
@@ -135,7 +135,7 @@ programs = {@spider_names}`
 	}
 
 	// 调度器配置
-	templateFile = fmt.Sprintf("template/scheduler_config.ini.%s.template", env)
+	templateFile = fmt.Sprintf("template/supervisor/scheduler_config.ini.%s.template", env)
 	s, err = os.ReadFile(templateFile)
 	if err != nil {
 		logger.Log.Fatal("读取调度器程序配置文件模板失败", zap.String("template", templateFile), zap.Error(err))
