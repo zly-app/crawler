@@ -8,11 +8,13 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/zly-app/crawler/core"
+	"github.com/zly-app/crawler/pipeline/redis_list"
 	"github.com/zly-app/crawler/pipeline/stdout"
 )
 
 var pipelineCreator = map[string]func(app zapp_core.IApp) core.IPipeline{
-	stdout.PipelineName: stdout.NewStdoutPipeline,
+	stdout.PipelineName:     stdout.NewStdoutPipeline,
+	redis_list.PipelineName: redis_list.NewRedisList,
 }
 
 func NewPipeline(app zapp_core.IApp, pipelineType string) core.IPipeline {

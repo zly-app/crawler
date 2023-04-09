@@ -179,7 +179,7 @@ func (c *Crawler) seedProcess(ctx context.Context, raw string) error {
 	}
 
 	utils.Trace.TraceErrEvent(pCtx, "Parser", err)
-	c.app.Error("解析时出错", zap.String("err", zapputils.Recover.GetRecoverErrorDetail(err)))
+	c.app.Error(pCtx, "解析时出错", zap.String("err", zapputils.Recover.GetRecoverErrorDetail(err)))
 
 	// 尝试将body保存到队列
 	utils.Trace.TraceEvent(pCtx, "trySaveParserErrorSeed")
