@@ -21,6 +21,7 @@ var requestMiddlewares = []core.IRequestMiddleware{
 // 响应中间件
 var responseMiddlewares = []core.IResponseMiddleware{
 	response_middleware.NewCheckSeedIsValidMiddleware(),
+	response_middleware.NewAutoTrimUtf8Bom(),
 }
 
 // 注册请求中间件

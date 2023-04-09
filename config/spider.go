@@ -26,6 +26,8 @@ const (
 	defaultSpiderHttpStatus4xxIsInvalid = true
 	// 默认将http状态码5xx视为无效
 	defaultSpiderHttpStatus5xxIsInvalid = true
+	// 对某些 ContentType 自动去掉utf8bom头, 多种类型用英文逗号分隔
+	defAutoTrimUtf8BomWithContentType = "text/html,text/plain,text/xml"
 )
 
 type SpiderConfig struct {
@@ -39,16 +41,17 @@ type SpiderConfig struct {
 	*/
 	SubmitInitialSeedOpportunity string
 
-	RequestMethod          string // 默认请求方法
-	AllowProxy             bool   // 允许使用代理
-	UserAgentType          string // user-agent 类型; pc,android,ios
-	AutoCookie             bool   // 是否自动管理cookie, 当前任务提交的种子会继承之前的cookies
-	AutoRedirects          bool   // 是否自动跳转
-	HtmlEncoding           string // 默认html编码
-	ExpectHttpStatusCode   []int  // 期望的http状态码列表, 示例: [200, 204]
-	InvalidHttpStatusCode  []int  // 无效的http状态码列表, 如果配置了ExpectHttpStatusCode, 则以ExpectHttpStatusCode为准. 示例: [404, 500]
-	HttpStatus4xxIsInvalid bool   // 将http状态码4xx视为无效, spider会自动重试
-	HttpStatus5xxIsInvalid bool   // 将http状态码5xx视为无效, spider会自动重试
+	RequestMethod                  string // 默认请求方法
+	AllowProxy                     bool   // 允许使用代理
+	UserAgentType                  string // user-agent 类型; pc,android,ios
+	AutoCookie                     bool   // 是否自动管理cookie, 当前任务提交的种子会继承之前的cookies
+	AutoRedirects                  bool   // 是否自动跳转
+	HtmlEncoding                   string // 默认html编码
+	ExpectHttpStatusCode           []int  // 期望的http状态码列表, 示例: [200, 204]
+	InvalidHttpStatusCode          []int  // 无效的http状态码列表, 如果配置了ExpectHttpStatusCode, 则以ExpectHttpStatusCode为准. 示例: [404, 500]
+	HttpStatus4xxIsInvalid         bool   // 将http状态码4xx视为无效, spider会自动重试
+	HttpStatus5xxIsInvalid         bool   // 将http状态码5xx视为无效, spider会自动重试
+	AutoTrimUtf8BomWithContentType string // 对某些 ContentType 自动去掉utf8bom头, 多种类型用英文逗号分隔
 }
 
 func newSpiderConfig(app zapp_core.IApp) SpiderConfig {
@@ -56,11 +59,12 @@ func newSpiderConfig(app zapp_core.IApp) SpiderConfig {
 		Name:                         app.Name(),
 		SubmitInitialSeedOpportunity: defaultSpiderSubmitInitialSeedOpportunity,
 
-		AllowProxy:             DefaultSpiderAllowProxy,
-		AutoCookie:             DefaultSpiderAutoCookie,
-		AutoRedirects:          DefaultSpiderAutoRedirects,
-		HttpStatus4xxIsInvalid: defaultSpiderHttpStatus4xxIsInvalid,
-		HttpStatus5xxIsInvalid: defaultSpiderHttpStatus5xxIsInvalid,
+		AllowProxy:                     DefaultSpiderAllowProxy,
+		AutoCookie:                     DefaultSpiderAutoCookie,
+		AutoRedirects:                  DefaultSpiderAutoRedirects,
+		HttpStatus4xxIsInvalid:         defaultSpiderHttpStatus4xxIsInvalid,
+		HttpStatus5xxIsInvalid:         defaultSpiderHttpStatus5xxIsInvalid,
+		AutoTrimUtf8BomWithContentType: defAutoTrimUtf8BomWithContentType,
 	}
 }
 func (conf *SpiderConfig) Check() error {

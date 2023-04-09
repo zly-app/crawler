@@ -36,8 +36,8 @@ type IResponseMiddleware interface {
 
 type MiddlewareBase struct{}
 
-func (m *MiddlewareBase) Name() string { return "base" }
-func (m *MiddlewareBase) Process(ctx context.Context, ICrawler, seed *Seed) (*Seed, error) {
+func (m MiddlewareBase) Name() string { return "base" }
+func (m MiddlewareBase) Process(ctx context.Context, ICrawler, seed *Seed) (*Seed, error) {
 	return seed, nil
 }
-func (m *MiddlewareBase) Close() error { return nil }
+func (m MiddlewareBase) Close() error { return nil }

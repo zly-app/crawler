@@ -82,6 +82,7 @@ func (c *Crawler) runOnce(ctx context.Context) error {
 	defer c.nowRawSeed.Store("")
 
 	// 开始处理
+	c.app.Info(timeCtx, "开始处理种子")
 	err = zapputils.Recover.WrapCall(func() error {
 		return c.seedProcess(timeCtx, raw)
 	})

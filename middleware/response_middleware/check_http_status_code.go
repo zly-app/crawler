@@ -12,12 +12,12 @@ type CheckHttpStatusCode struct {
 	core.MiddlewareBase
 }
 
-func NewCheckSeedIsValidMiddleware() core.IRequestMiddleware {
-	return new(CheckHttpStatusCode)
+func NewCheckSeedIsValidMiddleware() core.IResponseMiddleware {
+	return CheckHttpStatusCode{}
 }
 
-func (m *CheckHttpStatusCode) Name() string { return "CheckHttpStatusCode" }
-func (m *CheckHttpStatusCode) Process(ctx context.Context, crawler core.ICrawler, seed *core.Seed) (*core.Seed, error) {
+func (m CheckHttpStatusCode) Name() string { return "CheckHttpStatusCode" }
+func (m CheckHttpStatusCode) Process(ctx context.Context, crawler core.ICrawler, seed *core.Seed) (*core.Seed, error) {
 	if seed.HttpResponse == nil {
 		return seed, nil
 	}

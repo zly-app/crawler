@@ -25,3 +25,5 @@ services:
       #HttpStatus4xxIsInvalid: true
       # 将http状态码5xx视为无效, spider会自动重试
       #HttpStatus5xxIsInvalid: true
+      # 对某些 ContentType 自动去掉utf8bom头, 多种类型用英文逗号分隔
+      #AutoTrimUtf8BomWithContentType: text/html

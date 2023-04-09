@@ -12,6 +12,14 @@ import (
 	"github.com/zly-app/crawler/core/dom"
 )
 
+var Utf8Boms = [][]byte{
+	{0xff, 0xfe, 0, 0}, // LittleEndianBom4
+	{0, 0, 0xfe, 0xff}, // BigEndianBom4
+	{0xef, 0xbb, 0xbf}, // Utf8Bom3
+	{0xfe, 0xff},       // BigEndianBom2
+	{0xff, 0xfe},       // LittleEndianBom2
+}
+
 // 种子数据
 type Seed struct {
 	// 原始数据, 构建种子时的数据
@@ -162,17 +170,10 @@ func (s *Seed) GetJsonDom() (*dom.JsonDom, error) {
 
 // 尝试去掉 utf8 页面的 bom 头
 func (s *Seed) TryTrimUtf8Bom() {
-	boms := [][]byte{
-		{0xff, 0xfe, 0, 0}, // LittleEndianBom4
-		{0, 0, 0xfe, 0xff}, // BigEndianBom4
-		{0xef, 0xbb, 0xbf}, // Utf8Bom3
-		{0xfe, 0xff},       // BigEndianBom2
-		{0xff, 0xfe},       // LittleEndianBom2
-	}
-	for i := range boms {
-		if len(s.HttpResponseBody) >= len(boms[i]) &&
-			bytes.Equal(s.HttpResponseBody[:len(boms[i])], boms[i]) {
-			s.HttpResponseBody = s.HttpResponseBody[len(boms[i]):]
+	for i := range Utf8Boms {
+		if len(s.HttpResponseBody) >= len(Utf8Boms[i]) &&
+			bytes.Equal(s.HttpResponseBody[:len(Utf8Boms[i])], Utf8Boms[i]) {
+			s.HttpResponseBody = s.HttpResponseBody[len(Utf8Boms[i]):]
 			break
 		}
 	}
