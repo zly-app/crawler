@@ -9,6 +9,8 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/elgs/gojq"
+
 	"github.com/zly-app/crawler/core/dom"
 )
 
@@ -84,6 +86,7 @@ type Seed struct {
 	dom     *dom.Dom
 	xmlDom  *dom.XmlDom
 	jsonDom *dom.JsonDom
+	gojq    *gojq.JQ
 }
 
 // GetFuncName 获取函数或方法的名称
@@ -165,6 +168,22 @@ func (s *Seed) GetJsonDom() (*dom.JsonDom, error) {
 		return nil, err
 	}
 	s.jsonDom = d
+	return d, nil
+}
+
+// 获取GoJQ github.com/elgs/gojq
+func (s *Seed) GetGoJQ() (*gojq.JQ, error) {
+	if s.gojq != nil {
+		return s.gojq, nil
+	}
+	if len(s.HttpResponseBody) == 0 {
+		return nil, fmt.Errorf("body is empty")
+	}
+	d, err := gojq.NewStringQuery(string(s.HttpResponseBody))
+	if err != nil {
+		return nil, err
+	}
+	s.gojq = d
 	return d, nil
 }
 

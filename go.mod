@@ -7,6 +7,7 @@ require (
 	github.com/antchfx/htmlquery v1.2.3
 	github.com/antchfx/jsonquery v1.1.4
 	github.com/antchfx/xmlquery v1.3.6
+	github.com/elgs/gojq v0.0.0-20230628214826-df5c4045598e
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e
 	github.com/json-iterator/go v1.1.12
 	github.com/robfig/cron/v3 v3.0.1
@@ -37,6 +38,7 @@ require (
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/eknkc/amber v0.0.0-20171010120322-cdade1c07385 // indirect
+	github.com/elgs/gosplitargs v0.0.0-20230310130726-7d16e488436a // indirect
 	github.com/fatih/structs v1.1.0 // indirect
 	github.com/flosch/pongo2/v4 v4.0.1 // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
