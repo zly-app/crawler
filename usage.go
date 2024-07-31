@@ -9,11 +9,14 @@ import (
 	"github.com/zly-app/crawler/core"
 )
 
-// 启用crawler服务
-func WithService() zapp.Option {
+func init() {
 	service.RegisterCreatorFunc(config.NowServiceType, func(app zapp_core.IApp) zapp_core.IService {
 		return NewCrawler(app)
 	})
+}
+
+// 启用crawler服务
+func WithService() zapp.Option {
 	return zapp.WithService(config.NowServiceType)
 }
 
