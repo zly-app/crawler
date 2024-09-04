@@ -18,7 +18,7 @@ func (c *Component) Close() {
 }
 
 // 自定义component创造者
-func CustomComponentCreator(app zapp_core.IApp) zapp_core.IComponent {
+func CustomComponentCreator(app zapp_core.IApp, c zapp_core.IComponent) zapp_core.IComponent {
 	return &Component{
 		IComponent: app.GetComponent(),
 	}

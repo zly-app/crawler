@@ -3,15 +3,19 @@ package main
 import (
 	"context"
 
-	"github.com/zly-app/crawler"
-	"github.com/zly-app/crawler/core"
 	"github.com/zly-app/plugin/honey"
+	"github.com/zly-app/plugin/prometheus"
 	"github.com/zly-app/plugin/zipkinotel"
 	"github.com/zly-app/zapp"
 	zapp_config "github.com/zly-app/zapp/config"
 
+	"github.com/zly-app/crawler"
+	"github.com/zly-app/crawler/core"
+
 	"{@project_name}/{@spider_name}/component"
 )
+
+const AppName = "{@project_name}.{@spider_name}"
 
 // 一个spider
 type Spider struct {
@@ -31,14 +35,20 @@ func (s *Spider) Init(ctx context.Context) error {
 // 提交初始化种子
 func (s *Spider) SubmitInitialSeed(ctx context.Context) error {
 	seed := s.NewSeed("https://www.sogou.com/", s.Parser) // 创建种子并指定解析方法
+	seed.SetCheckExpectMethod(s.Check) // 设置检查方法, 可选
 	s.SubmitSeed(ctx, seed)                                    // 提交种子
 	return nil
 }
 
-// 解析方法
+// 解析方法. 必须以 Parser 开头
 func (s *Spider) Parser(ctx context.Context, seed *core.Seed) error {
 	data := string(seed.HttpResponseBody) // 获取响应body
 	s.SaveResult(ctx, data)                    // 保存结果
+	return nil
+}
+
+// 检查方法. 必须以 Check 开头
+func (s *Spider) Check(ctx context.Context, seed *core.Seed) error {
 	return nil
 }
 
@@ -46,13 +56,17 @@ func (s *Spider) Parser(ctx context.Context, seed *core.Seed) error {
 func (s *Spider) Close(ctx context.Context) error { return nil }
 
 func main() {
-	app := zapp.NewApp("{@project_name}.{@spider_name}",
+	app := zapp.NewApp(AppName,
 		crawler.WithService(),   // 启用crawler服务
-		honey.WithPlugin(),      // 日志收集
-		zipkinotel.WithPlugin(), // 链路
-		zapp.WithCustomComponent(component.CustomComponentCreator), // 使用自定义组件
+		zapp.CustomComponentFns(component.CustomComponentCreator), // 使用自定义组件
 		zapp.WithConfigOption(zapp_config.WithFiles("../../configs/crawler.dev.yaml", "./configs/config.dev.yaml")),
+
+		zipkinotel.WithPlugin(), // trace
+		honey.WithPlugin(),      // log
+		prometheus.WithPlugin(), // metrics
 	)
+	defer app.Exit()
+
 	crawler.RegistrySpider(newSpider()) // 注入spider
 	app.Run()                           // 运行
 }

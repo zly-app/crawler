@@ -119,6 +119,7 @@ frame: # 框架配置
   #debug: true # debug标志
   #Name: '' # app名
   #Env: '' # 环境名
+  #Instance: '' # 实例名
   #FreeMemoryInterval: 120000 # 主动清理内存间隔时间(毫秒), <= 0 表示禁用
   #WaitServiceRunTime: 1000 # 默认等待服务启动阶段, 等待时间(毫秒), 如果时间到未收到服务启动成功信号则将服务标记为不稳定状态然后继续开始工作(我们总不能一直等着吧)
   #ServiceUnstableObserveTime: 10000 # 默认服务不稳定观察时间, 等待时间(毫秒), 如果时间到仍未收到服务启动成功信号也将服务标记为启动成功
@@ -185,3 +186,23 @@ plugins:
     #AutoRotateTime: 5 # 自动旋转时间(秒), 如果没有达到累计输出批次大小, 在指定时间后也会立即输出
     #ExportTimeout: 30 # 上传span超时时间(秒)
     #ProxyAddress: '' # 代理地址. 支持 http, https, socks5, socks5h. 示例: socks5://127.0.0.1:1080 socks5://user:pwd@127.0.0.1:1080
+
+  metrics: # 指标
+    #ProcessCollector: true     # 启用进程收集器
+    #GoCollector: true          # 启用go收集器
+    #EnableOpenMetrics: false    # 启用 OpenMetrics 格式
+
+    PullBind: ""          # pull模式bind地址, 如: ':9100', 如果为空则不启用pull模式
+    #PullPath: "/metrics"       # pull模式拉取路径, 如: '/metrics'
+
+    #PushAddress: "https://metrics-push.zly.m" # push模式 pushGateway地址, 如果为空则不启用push模式, 如: 'http://127.0.0.1:9091'
+    #PushInstance: "" # 实例名, 一般为ip或主机名
+    #PushTimeInterval: 1000 # push模式推送时间间隔, 单位毫秒
+    #PushRetry: 2 # push模式推送重试次数
+    #PushRetryInterval: 1000 # push模式推送重试时间间隔, 单位毫秒
+
+    #WriteAddress: "" # RemoteWrite 地址, 如果为空则不启用, 如: 'http://127.0.0.1:9090'
+    #WriteInstance: "" # 实例, 一般为ip或主机名
+    #WriteTimeInterval: 10000 # RemoteWrite 模式推送时间间隔, 单位毫秒
+    #WriteRetry: 2 # RemoteWrite 模式推送重试次数
+    #WriteRetryInterval: 1000 # RemoteWrite 模式推送重试时间间隔, 单位毫秒

@@ -2,7 +2,6 @@ package utils
 
 import (
 	"embed"
-	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -226,19 +225,15 @@ func searchProjectName(path string) string {
 
 	data, err := os.ReadFile(file)
 	if err != nil {
-		logger.Log.Fatal("读取项目文件失败", zap.String("file", file), zap.Error(err))
+		return ""
 	}
-	var projectName string
 	for _, suf := range []string{"\n", "\r\n", "\r", ""} {
-		projectName = ExtractMiddleText(string(data), "project=", suf, "", false)
+		projectName := ExtractMiddleText(string(data), "project:", suf, "", false)
 		if projectName != "" {
-			return projectName
+			return strings.TrimSpace(projectName)
 		}
 	}
-	if projectName == "" {
-		logger.Log.Fatal("读取项目文件失败", zap.String("file", file), zap.Error(fmt.Errorf("无法获取项目名")))
-	}
-	return projectName
+	return ""
 }
 
 /*

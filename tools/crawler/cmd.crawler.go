@@ -6,6 +6,9 @@ import (
 	"strings"
 
 	"github.com/urfave/cli/v2"
+	"github.com/zly-app/plugin/honey"
+	"github.com/zly-app/plugin/prometheus"
+	"github.com/zly-app/plugin/zipkinotel"
 	"github.com/zly-app/zapp"
 	zapp_config "github.com/zly-app/zapp/config"
 	"github.com/zly-app/zapp/core"
@@ -40,6 +43,10 @@ func makeCrawler(cl *cli.Context) (core.IApp, *crawler.Crawler, string, error) {
 	// 通过zapp创建crawler
 	app := zapp.NewApp("crawler",
 		zapp.WithConfigOption(zapp_config.WithFiles(configFile, spiderFile)),
+
+		zipkinotel.WithPlugin(), // trace
+		honey.WithPlugin(),      // log
+		prometheus.WithPlugin(), // metrics
 	)
 	c := crawler.NewCrawler(app)
 

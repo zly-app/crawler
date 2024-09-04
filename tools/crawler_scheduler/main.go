@@ -9,6 +9,7 @@ import (
 
 	"github.com/spf13/viper"
 	"github.com/zly-app/plugin/honey"
+	"github.com/zly-app/plugin/prometheus"
 	"github.com/zly-app/plugin/zipkinotel"
 	"github.com/zly-app/zapp"
 	zapp_config "github.com/zly-app/zapp/config"
@@ -133,9 +134,11 @@ func main() {
 
 	app := zapp.NewApp("crawler-scheduler",
 		cron.WithService(),
-		honey.WithPlugin(),
-		zipkinotel.WithPlugin(), // 链路
 		zapp.WithConfigOption(zapp_config.WithFiles("./configs/crawler.dev.yaml")),
+
+		zipkinotel.WithPlugin(), // trace
+		honey.WithPlugin(),      // log
+		prometheus.WithPlugin(), // metrics
 	)
 
 	s := &Scheduler{

@@ -22,6 +22,7 @@ func (s *Spider) Init(ctx context.Context) error {
 // 提交初始化种子
 func (s *Spider) SubmitInitialSeed(ctx context.Context) error {
 	seed := s.NewSeed("https://www.sogou.com/", s.Parser) // 创建种子并指定解析方法
+	seed.SetCheckExpectMethod(s.Check) // 设置检查方法, 可选
 	s.SubmitSeed(ctx, seed)                               // 提交种子
 	return nil
 }
@@ -30,6 +31,11 @@ func (s *Spider) SubmitInitialSeed(ctx context.Context) error {
 func (s *Spider) Parser(ctx context.Context, seed *core.Seed) error {
 	data := string(seed.HttpResponseBody) // 获取响应body
 	s.SaveResult(ctx, data)               // 保存结果
+	return nil
+}
+
+// 检查方法. 必须以 Check 开头
+func (s *Spider) Check(ctx context.Context, seed *core.Seed) error {
 	return nil
 }
 
