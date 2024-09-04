@@ -51,7 +51,7 @@ func (r *RedisQueue) Delete(ctx context.Context, queueName string) error {
 }
 
 func NewRedisQueue(app zapp_core.IApp) core.IQueue {
-	confKey := fmt.Sprintf("services.%s.queue", config.NowServiceType)
+	confKey := fmt.Sprintf("services.%s.queue", config.DefaultServiceType)
 	conf := redis.NewRedisConfig()
 	err := app.GetConfig().Parse(confKey, conf)
 	if err != nil {

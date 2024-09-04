@@ -7,9 +7,6 @@ import (
 // 默认服务类型
 const DefaultServiceType zapp_core.ServiceType = "crawler"
 
-// 当前服务类型
-var NowServiceType = DefaultServiceType
-
 var Conf *ServiceConfig
 
 type ServiceConfig struct {

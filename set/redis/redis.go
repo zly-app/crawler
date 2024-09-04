@@ -52,7 +52,7 @@ func (r *RedisSet) Close(ctx context.Context) error {
 }
 
 func NewRedisSet(app zapp_core.IApp) core.ISet {
-	confKey := fmt.Sprintf("services.%s.set", config.NowServiceType)
+	confKey := fmt.Sprintf("services.%s.set", config.DefaultServiceType)
 	conf := redis.NewRedisConfig()
 	err := app.GetConfig().Parse(confKey, conf)
 	if err != nil {

@@ -151,16 +151,12 @@ func (c *Crawler) CookieJar() http.CookieJar    { return c.cookieJar }
 
 func NewCrawler(app zapp_core.IApp) *Crawler {
 	conf := config.NewConfig(app)
-	confKey := "services." + string(config.NowServiceType)
-	if app.GetConfig().GetViper().IsSet(confKey) {
-		err := app.GetConfig().ParseServiceConfig(config.NowServiceType, conf)
-		if err != nil {
-			logger.Log.Panic("服务配置错误", zap.String("serviceType", string(config.NowServiceType)), zap.Error(err))
-		}
+	err := app.GetConfig().ParseServiceConfig(config.DefaultServiceType, conf, true)
+	if err == nil{
+		err = conf.Check()
 	}
-	err := conf.Check()
 	if err != nil {
-		logger.Log.Panic("服务配置错误", zap.String("serviceType", string(config.NowServiceType)), zap.Error(err))
+		logger.Log.Panic("服务配置错误", zap.String("serviceType", string(config.DefaultServiceType)), zap.Error(err))
 	}
 
 	crawler := &Crawler{

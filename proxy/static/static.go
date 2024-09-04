@@ -46,7 +46,7 @@ func (h *HttpProxy) Close() error                                  { return nil 
 
 func NewStaticProxy(app zapp_core.IApp) core.IProxy {
 	conf := newProxyConfig()
-	confKey := fmt.Sprintf("services.%s.proxy", config.NowServiceType)
+	confKey := fmt.Sprintf("services.%s.proxy", config.DefaultServiceType)
 	err := app.GetConfig().Parse(confKey, &conf)
 	if err == nil {
 		err = conf.Check()

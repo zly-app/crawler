@@ -61,7 +61,7 @@ func (r *RedisList) Close(ctx context.Context) error {
 }
 
 func NewRedisList(app zapp_core.IApp) core.IPipeline {
-	confKey := fmt.Sprintf("services.%s.pipeline.%s", config.NowServiceType, PipelineName)
+	confKey := fmt.Sprintf("services.%s.pipeline.%s", config.DefaultServiceType, PipelineName)
 	rl := &RedisList{
 		QueuePrefix: defQueuePrefix,
 	}
