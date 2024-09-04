@@ -1648,8 +1648,9 @@ github.com/yvasiyarov/gorelic v0.0.0-20141212073537-a9bba5b9ab50/go.mod h1:NUSPS
 github.com/yvasiyarov/newrelic_platform_go v0.0.0-20140908184405-b21fdbd4370f/go.mod h1:GlGEuHIJweS1mbCqG+7vt2nvWLzLLnRHbXz5JKd/Qbg=
 github.com/zly-app/component/redis v0.0.0-20240711030119-a996778d22ce h1:y2S/wo3qiePvXO8tbxBW/TjjFrkEVS5qGD8llJQX8A4=
 github.com/zly-app/component/redis v0.0.0-20240711030119-a996778d22ce/go.mod h1:pFOGw975Qkzihjyobr8UlHna+94H0JJv2Uo8pgBNN4A=
-github.com/zly-app/honey v0.2.7 h1:VKUEsD6bD+ajzyiIr4nzYDqqogXzHUrfJvCKdECamwI=
 github.com/zly-app/honey v0.2.7/go.mod h1:412sb+btwfPSprYH/qOHNi0DFDh432us1BAXyD2gWIs=
+github.com/zly-app/honey v0.2.10 h1:PNWaFFZmeydVQLgrdLBJzy88RfhLGbQ1BAXAKfim8iY=
+github.com/zly-app/honey v0.2.10/go.mod h1:VgflIuY5CkhGKoxc9Pk5Hm+2Z5vr8tfhhNQqaihh4tg=
 github.com/zly-app/plugin/honey v0.2.7 h1:9PlLDcSFbmdo78IaLnxxsP+AMiAyz9TD7va74hn9nMo=
 github.com/zly-app/plugin/honey v0.2.7/go.mod h1:hmz+RXc1SqSO4+iNUSftbFodpAXN+7ybPOQ7BRCp3oQ=
 github.com/zly-app/plugin/prometheus v0.0.0-20240902015356-bbc7a3c6ef58 h1:X1nJGDI25aSQ7U3/wpmKmHgumG83OCixO3X3FPOBOQw=

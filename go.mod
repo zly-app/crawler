@@ -112,7 +112,7 @@ require (
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	github.com/yosssi/ace v0.0.5 // indirect
 	github.com/yusufpapurcu/wmi v1.2.3 // indirect
-	github.com/zly-app/honey v0.2.7 // indirect
+	github.com/zly-app/honey v0.2.10 // indirect
 	github.com/zly-app/service/api v0.0.0-20220430055931-779fb32fc812 // indirect
 	github.com/zlyuancn/zretry v0.0.0-20220514032503-d78bfd22a441 // indirect
 	go.opentelemetry.io/otel v1.16.0 // indirect
