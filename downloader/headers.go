@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	pcHeaders = []string{
+	PcHeaders = []string{
 		`Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36`,
 		`Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36`,
 		`Mozilla/5.0 (Windows NT 10.0; WOW64; rv:40.0) Gecko/20100101 Firefox/40.0`,
@@ -20,7 +20,7 @@ var (
 		`Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.120 Safari/537.36`,
 		`Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.115 Safari/537.36`,
 	}
-	androidHeaders = []string{
+	AndroidHeaders = []string{
 		`Mozilla/5.0 (Linux; Android 4.4.4; MI 2 Build/KTU84P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Mobile Safari/537.36`,
 		`Mozilla/5.0 (Linux; U; Android 2.2; en-us; Nexus One Build/FRF91) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1`,
 		`Mozilla/5.0 (Linux; U; Android 4.2.1; zh-cn; HUAWEI G700-U00 Build/HuaweiG700-U00) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 Mobile Safari/534.30`,
@@ -32,7 +32,7 @@ var (
 		`Mozilla/5.0 (Linux; Android 6.0; vivo Y67 Build/MRA58K; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/56.0.2924.87 Mobile Safari/537.36`,
 		`Mozilla/5.0 (Linux; U; Android 4.2.2; zh-cn; VANHON-A60 Build/JDQ39) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 Safari/534.30 ImgoTV-aPhone/5.3.1`,
 	}
-	iosHeaders = []string{
+	IosHeaders = []string{
 		`Mozilla/5.0 (iPhone; CPU iPhone OS 7_0 like Mac OS X) AppleWebKit/537.51.1 (KHTML, like Gecko) Version/7.0 Mobile/11A465 Safari/9537.53 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)`,
 		`Mozilla/5.0 (iPhone; CPU OS 6_0 like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Version/6.0 Mobile/10A5355d Safari/8536.25`,
 		`Mozilla/5.0 (iPad; CPU OS 5_1_1 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/6.0 MQQBrowser/4.3 Mobile/9B206 Safari/7534.48.3`,
@@ -47,17 +47,17 @@ var (
 )
 
 // 随机headers
-func RandomHeaders(userAgentType string) http.Header {
+var RandomHeaders = func(userAgentType string) http.Header {
 	var uas []string
 	switch strings.ToLower(userAgentType) {
 	case "pc":
-		uas = pcHeaders
+		uas = PcHeaders
 	case "android":
-		uas = androidHeaders
+		uas = AndroidHeaders
 	case "ios":
-		uas = iosHeaders
+		uas = IosHeaders
 	default:
-		uas = pcHeaders
+		uas = PcHeaders
 	}
 
 	userAgent := uas[utils.Rand.Rand(int64(len(uas)))]

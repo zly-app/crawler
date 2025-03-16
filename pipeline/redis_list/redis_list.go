@@ -19,14 +19,14 @@ const PipelineName = "redis_list"
 
 const (
 	defQueuePrefix = "result:"
-	defSerializer  = "jsoniter_standard"
+	defSerializer  = "sonic_std"
 	defCompactor   = "raw"
 )
 
 type RedisList struct {
 	SaveToQueueFront bool   // 保存到队列前面
 	QueuePrefix      string // 队列名前缀
-	Serializer       string // 默认序列化器名, 可选 msgpack, jsoniter_standard, jsoniter, json, yaml
+	Serializer       string // 默认序列化器名, 可选 msgpack, sonic, sonic_std, jsoniter_standard, jsoniter, json, yaml
 	Compactor        string // 默认压缩器名, 可选 raw, zstd, gzip
 
 	client     redis.UniversalClient

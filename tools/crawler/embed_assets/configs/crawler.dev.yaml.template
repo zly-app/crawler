@@ -84,7 +84,7 @@ services:
       #redis_list:
         #SaveToQueueFront: false #保存到队列前面
         #QueuePrefix: "result:" # 队列名前缀
-        #Serializer: "jsoniter_standard" # 默认序列化器名, 可选 msgpack, jsoniter_standard, jsoniter, json, yaml
+        #Serializer: "sonic_std" # 默认序列化器名, 可选 msgpack, sonic, sonic_std, jsoniter_standard, jsoniter, json, yaml
         #Compactor: "raw" # 默认压缩器名, 可选 raw, zstd, gzip
 
         #Address: localhost:6379 # 地址: host1:port1,host2:port2
@@ -195,7 +195,7 @@ plugins:
     PullBind: ""          # pull模式bind地址, 如: ':9100', 如果为空则不启用pull模式
     #PullPath: "/metrics"       # pull模式拉取路径, 如: '/metrics'
 
-    #PushAddress: "https://metrics-push.zly.m" # push模式 pushGateway地址, 如果为空则不启用push模式, 如: 'http://127.0.0.1:9091'
+    #PushAddress: "http://127.0.0.1:9091" # push模式 pushGateway地址, 如果为空则不启用push模式, 如: 'http://127.0.0.1:9091'
     #PushInstance: "" # 实例名, 一般为ip或主机名
     #PushTimeInterval: 1000 # push模式推送时间间隔, 单位毫秒
     #PushRetry: 2 # push模式推送重试次数

@@ -4,5 +4,5 @@ go 1.18
 
 require (
 	github.com/zly-app/crawler v0.2.3
-	github.com/zly-app/zapp v1.3.19
+	github.com/zly-app/zapp v1.3.21
 )
