@@ -30,9 +30,9 @@ func (c *Crawler) PopARawSeed(ctx context.Context) (string, error) {
 			return "", err
 		}
 
-		rawBase64 := utils.Convert.Base64Encode(raw)
+		//rawBase64 := utils.Convert.Base64Encode(raw)
 		utils.Trace.TraceEvent(ctx, "PopOk", utils.Trace.AttrKey("queueName").String(queueName),
-			utils.Trace.AttrKey("raw").String(rawBase64))
+			utils.Trace.AttrKey("raw").String(raw))
 		if raw == SubmitInitialSeedSignal {
 			return raw, nil
 		}

@@ -6,9 +6,11 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/zly-app/zapp/filter"
 	zapputils "github.com/zly-app/zapp/pkg/utils"
 	"go.uber.org/zap"
 
+	"github.com/zly-app/crawler/config"
 	"github.com/zly-app/crawler/utils"
 
 	"github.com/zly-app/crawler/cookiejar"
@@ -27,8 +29,9 @@ func (c *Crawler) Run() {
 		default:
 		}
 
+		ctx := utils.Trace.TraceStart(context.Background(), "runOnceSeed")
 		err := zapputils.Recover.WrapCall(func() error {
-			return c.runOnce(context.Background())
+			return c.runOnce(ctx)
 		})
 		if err != nil {
 			c.app.Error("运行出错, 稍后继续", zap.Int64("waitTime", c.conf.Frame.SpiderErrWaitTime/1000),
@@ -45,8 +48,6 @@ func (c *Crawler) Run() {
 
 // 开始一次任务
 func (c *Crawler) runOnce(ctx context.Context) error {
-	ctx = utils.Trace.TraceStart(context.Background(), "runOnceSeed")
-
 	timeCtx, cancel := context.WithTimeout(ctx, time.Duration(c.conf.Frame.SeedProcessTimeout)*time.Millisecond)
 	defer cancel()
 
@@ -83,14 +84,16 @@ func (c *Crawler) runOnce(ctx context.Context) error {
 
 	// 开始处理
 	c.app.Info(timeCtx, "开始处理种子")
-	err = zapputils.Recover.WrapCall(func() error {
-		return c.seedProcess(timeCtx, raw)
+
+	seedProcessCtx, chain := filter.GetServiceFilter(timeCtx, string(config.DefaultServiceType), "seedProcess")
+	_, err = chain.Handle(seedProcessCtx, raw, func(ctx context.Context, req interface{}) (interface{}, error) {
+		raw = req.(string)
+		err := c.seedProcess(seedProcessCtx, raw)
+		return nil, err
 	})
 	if err == nil {
 		return nil
 	}
-
-	utils.Trace.TraceErrEvent(ctx, "seedProcess", err)
 
 	switch err {
 	case core.InterceptError: // 拦截, 应该立即结束本次任务
@@ -111,8 +114,8 @@ func (c *Crawler) runOnce(ctx context.Context) error {
 
 // 种子处理
 func (c *Crawler) seedProcess(ctx context.Context, raw string) error {
-	ctx = utils.Trace.TraceStart(ctx, "seedProcess")
-	defer utils.Trace.TraceEnd(ctx)
+	//ctx = utils.Trace.TraceStart(ctx, "seedProcess")
+	//defer utils.Trace.TraceEnd(ctx)
 
 	var seedResult *core.Seed
 	var cookieJar http.CookieJar

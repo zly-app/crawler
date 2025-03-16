@@ -13,7 +13,7 @@ require (
 	github.com/golang/groupcache v0.0.0-20241129210726-2c02b8208cf8
 	github.com/json-iterator/go v1.1.12
 	github.com/robfig/cron/v3 v3.0.1
-	github.com/spf13/viper v1.20.0
+	github.com/spf13/viper v1.7.1
 	github.com/urfave/cli/v2 v2.27.6
 	github.com/zly-app/component/redis v0.0.0-20250113115202-54207e1efaeb
 	github.com/zly-app/plugin/honey v0.2.7
@@ -61,12 +61,12 @@ require (
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.25.0 // indirect
 	github.com/go-redis/redis/v8 v8.11.5 // indirect
-	github.com/go-viper/mapstructure/v2 v2.2.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/golang/snappy v1.0.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/css v1.0.1 // indirect
+	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/iris-contrib/middleware/cors v0.0.0-20210110101738-6d0a4d799b5d // indirect
 	github.com/kardianos/service v1.2.2 // indirect
 	github.com/kataras/blocks v0.0.11 // indirect
@@ -79,14 +79,16 @@ require (
 	github.com/klauspost/cpuid/v2 v2.2.10 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/lufia/plan9stats v0.0.0-20250303091104-876f3ea5145d // indirect
+	github.com/magiconair/properties v1.8.1 // indirect
 	github.com/mailru/easyjson v0.9.0 // indirect
 	github.com/microcosm-cc/bluemonday v1.0.27 // indirect
+	github.com/mitchellh/mapstructure v1.4.1 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
 	github.com/openzipkin/zipkin-go v0.4.3 // indirect
-	github.com/pelletier/go-toml/v2 v2.2.3 // indirect
+	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/power-devops/perfstat v0.0.0-20240221224432-82ca36839d55 // indirect
 	github.com/prometheus/client_golang v1.21.1 // indirect
 	github.com/prometheus/client_model v0.6.1 // indirect
@@ -97,12 +99,11 @@ require (
 	github.com/redis/go-redis/extra/redisotel/v9 v9.7.1 // indirect
 	github.com/redis/go-redis/v9 v9.7.1 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
-	github.com/sagikazarmark/locafero v0.8.0 // indirect
 	github.com/schollz/closestmatch v2.1.0+incompatible // indirect
 	github.com/shirou/gopsutil/v3 v3.24.5 // indirect
-	github.com/sourcegraph/conc v0.3.0 // indirect
 	github.com/spf13/afero v1.14.0 // indirect
 	github.com/spf13/cast v1.7.1 // indirect
+	github.com/spf13/jwalterweatherman v1.0.0 // indirect
 	github.com/spf13/pflag v1.0.6 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/tdewolff/minify/v2 v2.22.2 // indirect
@@ -119,7 +120,7 @@ require (
 	github.com/zly-app/honey v0.2.10 // indirect
 	github.com/zly-app/service/api v0.0.0-20220430055931-779fb32fc812 // indirect
 	github.com/zlyuancn/zretry v0.0.0-20220514032503-d78bfd22a441 // indirect
-	github.com/zlyuancn/zutils v0.0.0-20240710092024-0b40857d46af // indirect
+	github.com/zlyuancn/zutils v0.0.0-20230801064828-fc3d7cbcf2c5 // indirect
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect
 	go.opentelemetry.io/otel v1.35.0 // indirect
 	go.opentelemetry.io/otel/bridge/opentracing v1.35.0 // indirect
@@ -135,5 +136,6 @@ require (
 	google.golang.org/protobuf v1.36.5 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/ugjka/go-tz.v2 v2.0.12 // indirect
+	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
