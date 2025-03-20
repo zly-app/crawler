@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"net/url"
 
-	jsoniter "github.com/json-iterator/go"
+	"github.com/bytedance/sonic"
 
 	"github.com/zly-app/crawler/config"
 	"github.com/zly-app/crawler/core"
@@ -50,7 +50,7 @@ func MakeSeedOfRaw(raw string) (*core.Seed, error) {
 	seed.Request.AutoRedirects = config.DefaultSpiderAutoRedirects
 	seed.Request.Encoding = config.DefaultSpiderHtmlEncoding
 	seed.Request.Timeout = config.DefaultFrameRequestTimeout
-	err := jsoniter.ConfigCompatibleWithStandardLibrary.UnmarshalFromString(raw, seed)
+	err := sonic.ConfigStd.UnmarshalFromString(raw, seed)
 	if err != nil {
 		return nil, err
 	}
@@ -125,5 +125,5 @@ func EncodeSeed(seed *core.Seed) (string, error) {
 		data["Request"] = req
 	}
 
-	return jsoniter.ConfigCompatibleWithStandardLibrary.MarshalToString(data)
+	return sonic.ConfigStd.MarshalToString(data)
 }

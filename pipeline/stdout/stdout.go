@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	jsoniter "github.com/json-iterator/go"
+	"github.com/bytedance/sonic"
 	zapp_core "github.com/zly-app/zapp/core"
 	"github.com/zly-app/zapp/logger"
 	"go.uber.org/zap"
@@ -34,7 +34,7 @@ func (s *Stdout) Process(ctx context.Context, spiderName string, data interface{
 	case []byte:
 		text = string(t)
 	default:
-		text, err = jsoniter.ConfigCompatibleWithStandardLibrary.MarshalToString(data)
+		text, err = sonic.ConfigStd.MarshalToString(data)
 		if err != nil {
 			return fmt.Errorf("编码失败: %v", err)
 		}

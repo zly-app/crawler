@@ -8,8 +8,9 @@ import (
 )
 
 var (
-	InterceptError = errors.New("intercept error") // 拦截错误, 应该立即结束本次任务
-	ParserError    = errors.New("parser error")    // 解析错误, 这种错误应该将seed放入解析错误队列
+	InterceptError    = errors.New("intercept error")  // 拦截错误, 应该立即结束本次任务
+	ParserError       = errors.New("parser error")     // 解析错误, 这种错误应该将seed放入解析错误队列
+	ErrEmptyQueueWait = errors.New("empty queue wait") // 空队列错误, 这种错误应该等待一定时间
 )
 
 type ICrawler interface {

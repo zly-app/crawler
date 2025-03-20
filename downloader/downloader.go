@@ -64,9 +64,8 @@ func (d *Downloader) Download(ctx context.Context, crawler core.ICrawler, seed *
 
 	Client.UseSeed(crawler, seed)
 
-	rawBase64 := utils.Convert.Base64Encode(seed.Raw)
 	utils.Trace.TraceEvent(ctx, "Req",
-		utils.Trace.AttrKey("raw").String(rawBase64),
+		utils.Trace.AttrKey("raw").String(seed.Raw),
 		utils.Trace.AttrKey("headers").StringSlice(headersToText(req.Header)),
 	)
 
@@ -87,11 +86,10 @@ func (d *Downloader) Download(ctx context.Context, crawler core.ICrawler, seed *
 	_ = resp.Body.Close()
 	resp.Body = io.NopCloser(bytes.NewReader(seed.HttpResponseBody))
 
-	respBodyBase64 := *utils.Convert.BytesToString(utils.Convert.Base64EncodeBytes(seed.HttpResponseBody))
 	utils.Trace.TraceEvent(ctx, "Resp",
 		utils.Trace.AttrKey("status").Int(resp.StatusCode),
 		utils.Trace.AttrKey("headers").StringSlice(headersToText(resp.Header)),
-		utils.Trace.AttrKey("data").String(respBodyBase64),
+		utils.Trace.AttrKey("data").String(string(seed.HttpResponseBody)),
 	)
 
 	// 编码转换

@@ -30,7 +30,6 @@ func (c *Crawler) PopARawSeed(ctx context.Context) (string, error) {
 			return "", err
 		}
 
-		//rawBase64 := utils.Convert.Base64Encode(raw)
 		utils.Trace.TraceEvent(ctx, "PopOk", utils.Trace.AttrKey("queueName").String(queueName),
 			utils.Trace.AttrKey("raw").String(raw))
 		if raw == SubmitInitialSeedSignal {
@@ -68,10 +67,9 @@ func (c *Crawler) PutSeed(ctx context.Context, seed *core.Seed, front bool) erro
 func (c *Crawler) PutRawSeed(ctx context.Context, raw string, parserFuncName string, front bool) error {
 	queueName := c.conf.Frame.Namespace + "." + c.conf.Spider.Name + c.conf.Frame.SeedQueueSuffix
 
-	rawBase64 := utils.Convert.Base64Encode(raw)
 	ctx = utils.Trace.TraceStart(ctx, "PutRawSeed",
 		utils.Trace.AttrKey("queueName").String(queueName),
-		utils.Trace.AttrKey("raw").String(rawBase64),
+		utils.Trace.AttrKey("raw").String(raw),
 		utils.Trace.AttrKey("parserFuncName").String(parserFuncName),
 		utils.Trace.AttrKey("front").Bool(front),
 	)
@@ -121,10 +119,9 @@ func (c *Crawler) PutErrorRawSeed(ctx context.Context, raw string, isParserError
 		queueName = c.conf.Frame.Namespace + "." + c.conf.Spider.Name + c.conf.Frame.ErrorSeedQueueSuffix
 	}
 
-	rawBase64 := utils.Convert.Base64Encode(raw)
 	ctx = utils.Trace.TraceStart(ctx, "PutErrorRawSeed",
 		utils.Trace.AttrKey("queueName").String(queueName),
-		utils.Trace.AttrKey("raw").String(rawBase64),
+		utils.Trace.AttrKey("raw").String(raw),
 		utils.Trace.AttrKey("isParserError").Bool(isParserError),
 		utils.Trace.AttrKey("front").Bool(false),
 	)
