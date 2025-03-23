@@ -6,8 +6,12 @@ import (
 	"net/http"
 	"time"
 
-	zapputils "github.com/zly-app/zapp/pkg/utils"
 	"go.uber.org/zap"
+
+	"github.com/zly-app/zapp/filter"
+	zapputils "github.com/zly-app/zapp/pkg/utils"
+
+	"github.com/zly-app/crawler/config"
 
 	"github.com/zly-app/crawler/utils"
 
@@ -28,9 +32,18 @@ func (c *Crawler) Run() {
 		}
 
 		ctx := utils.Trace.TraceStart(context.Background(), "runOnceSeed")
+
+		serviceName := string(config.DefaultServiceType) + "." + c.conf.Frame.Namespace + "." + c.conf.Spider.Name
+		metricsCtx, meta := filter.Metrics.StartService(ctx, serviceName, "runOnceSeed")
 		err := zapputils.Recover.WrapCall(func() error {
 			return c.runOnce(ctx)
 		})
+		metricsErr := err
+		if metricsErr == core.ErrEmptyQueueWait {
+			metricsErr = nil
+		}
+		filter.Metrics.End(metricsCtx, meta, nil, metricsErr)
+
 		if err == core.ErrEmptyQueueWait {
 			time.Sleep(time.Duration(c.conf.Frame.EmptyQueueWaitTime) * time.Millisecond)
 		}
@@ -53,7 +66,14 @@ func (c *Crawler) runOnce(ctx context.Context) error {
 	defer cancel()
 
 	// 获取种子原始数据
+	clientName := c.conf.Frame.Namespace + "." + c.conf.Spider.Name
+	metricsCtx, meta := filter.Metrics.StartClient(timeCtx, string(config.DefaultServiceType), clientName, "PopARawSeed")
 	raw, err := c.PopARawSeed(timeCtx)
+	metricsErr := err
+	if err == core.EmptyQueueError {
+		metricsErr = nil
+	}
+	filter.Metrics.End(metricsCtx, meta, nil, metricsErr)
 	if err == core.EmptyQueueError {
 		utils.Trace.TraceEvent(timeCtx, "emptyQueue")
 		c.app.Info(timeCtx, "空队列, 休眠后重试", zap.Int64("waitTime", c.conf.Frame.EmptyQueueWaitTime/1000))
@@ -71,7 +91,10 @@ func (c *Crawler) runOnce(ctx context.Context) error {
 
 	// 提交初始化种子信号
 	if raw == SubmitInitialSeedSignal {
-		if err = c.SubmitInitialSeed(ctx); err != nil {
+		metricsCtx, meta := filter.Metrics.StartClient(ctx, string(config.DefaultServiceType), clientName, "SubmitInitialSeed")
+		err = c.SubmitInitialSeed(ctx)
+		filter.Metrics.End(metricsCtx, meta, nil, err)
+		if err != nil {
 			return fmt.Errorf("提交初始化种子失败: %v", err)
 		}
 		return nil
@@ -83,9 +106,15 @@ func (c *Crawler) runOnce(ctx context.Context) error {
 
 	// 开始处理
 	c.app.Info(timeCtx, "开始处理种子")
+	metricsCtx, meta = filter.Metrics.StartClient(timeCtx, string(config.DefaultServiceType), clientName, "seedProcess")
 	err = zapputils.Recover.WrapCall(func() error {
 		return c.seedProcess(timeCtx, raw)
 	})
+	metricsErr = err
+	if metricsErr == core.InterceptError {
+		metricsErr = nil
+	}
+	filter.Metrics.End(metricsCtx, meta, nil, metricsErr)
 	if err == nil {
 		return nil
 	}
@@ -115,50 +144,12 @@ func (c *Crawler) seedProcess(ctx context.Context, raw string) error {
 	utils.Trace.TraceEvent(ctx, "raw", utils.Trace.AttrKey("data").String(raw))
 	defer utils.Trace.TraceEnd(ctx)
 
-	var seedResult *core.Seed
-	var cookieJar http.CookieJar
-	// 循环尝试下载
-	var attempt int
-	for {
-		attempt++
-
-		// 每次重新生成seed, 因为每次处理可能会修改seed
-		seed, err := seeds.MakeSeedOfRaw(raw)
-		if err != nil {
-			utils.Trace.TraceErrEvent(ctx, "MakeSeedOfRaw", err)
-			c.app.Error("构建种子失败")
-			return core.ParserError
-		}
-
-		tCtx := utils.Trace.TraceStart(ctx, "downloadLoop", utils.Trace.AttrKey("attempt").Int(attempt))
-
-		// 请求处理
-		seed, err = c.middleware.RequestProcess(tCtx, c, seed)
-		if err != nil {
-			utils.Trace.TraceEnd(tCtx)
-			return err
-		}
-
-		seedResult, cookieJar, err = c.download(tCtx, seed)
-		if err == nil {
-			utils.Trace.TraceEnd(tCtx)
-			break
-		}
-
-		utils.Trace.TraceErrEvent(tCtx, "download", err)
-		utils.Trace.TraceEnd(tCtx)
-
-		if err == core.InterceptError || err == core.ParserError {
-			utils.Trace.TraceErrEvent(ctx, "download", err)
-			return err
-		}
-		if attempt >= c.conf.Frame.RequestMaxAttemptCount {
-			utils.Trace.TraceErrEvent(ctx, "download", err)
-			return fmt.Errorf("尝试下载失败, 超过最大尝试次数: %v", err)
-		}
-		c.app.Error(tCtx, "尝试下载失败, 等待重试", zap.Int64("waitTime", c.conf.Frame.EmptyQueueWaitTime),
-			zap.String("attempt", fmt.Sprintf("%d/%d", attempt, c.conf.Frame.RequestMaxAttemptCount)), zap.Error(err))
-		time.Sleep(time.Duration(c.conf.Frame.RequestRetryWaitTime) * time.Millisecond)
+	clientName := c.conf.Frame.Namespace + "." + c.conf.Spider.Name
+	metricsCtx, meta := filter.Metrics.StartClient(ctx, string(config.DefaultServiceType), clientName, "downloadLoop")
+	seedResult, cookieJar, err := c.downloadLoop(ctx, raw)
+	filter.Metrics.End(metricsCtx, meta, nil, err)
+	if err != nil {
+		return err
 	}
 
 	// 保存cookieJar
@@ -172,9 +163,11 @@ func (c *Crawler) seedProcess(ctx context.Context, raw string) error {
 
 	// 解析
 	utils.Trace.TraceEvent(pCtx, "Parser")
-	err := zapputils.Recover.WrapCall(func() error {
+	metricsCtx, meta = filter.Metrics.StartClient(pCtx, string(config.DefaultServiceType), clientName, "Parser")
+	err = zapputils.Recover.WrapCall(func() error {
 		return c.Parser(pCtx, seedResult)
 	})
+	filter.Metrics.End(metricsCtx, meta, nil, err)
 	if err == nil {
 		return nil
 	}
@@ -184,7 +177,10 @@ func (c *Crawler) seedProcess(ctx context.Context, raw string) error {
 
 	// 尝试将body保存到队列
 	utils.Trace.TraceEvent(pCtx, "trySaveParserErrorSeed")
-	if err := c.trySaveParserErrorSeed(context.Background(), raw, seedResult.HttpResponseBody); err != nil {
+	metricsCtx, meta = filter.Metrics.StartClient(context.Background(), string(config.DefaultServiceType), clientName, "trySaveParserErrorSeed")
+	err = c.trySaveParserErrorSeed(context.Background(), raw, seedResult.HttpResponseBody)
+	filter.Metrics.End(metricsCtx, meta, nil, err)
+	if err != nil {
 		utils.Trace.TraceErrEvent(pCtx, "trySaveParserErrorSeed", err)
 		c.app.Error("尝试保存解析错误的seed失败, 只能放入原始数据", zap.String("err", zapputils.Recover.GetRecoverErrorDetail(err)))
 	} else {
@@ -192,6 +188,58 @@ func (c *Crawler) seedProcess(ctx context.Context, raw string) error {
 	}
 
 	return core.ParserError
+}
+
+func (c *Crawler) downloadLoop(ctx context.Context, raw string) (*core.Seed, http.CookieJar, error) {
+	var seedResult *core.Seed
+	var cookieJar http.CookieJar
+	// 循环尝试下载
+	var attempt int
+	for {
+		attempt++
+
+		// 每次重新生成seed, 因为每次处理可能会修改seed
+		seed, err := seeds.MakeSeedOfRaw(raw)
+		if err != nil {
+			utils.Trace.TraceErrEvent(ctx, "MakeSeedOfRaw", err)
+			c.app.Error("构建种子失败")
+			return nil, nil, core.ParserError
+		}
+
+		tCtx := utils.Trace.TraceStart(ctx, "downloadLoop", utils.Trace.AttrKey("attempt").Int(attempt))
+
+		// 请求处理
+		clientName := c.conf.Frame.Namespace + "." + c.conf.Spider.Name
+		metricsCtx, meta := filter.Metrics.StartClient(tCtx, string(config.DefaultServiceType), clientName, "RequestProcess")
+		seed, err = c.middleware.RequestProcess(tCtx, c, seed)
+		filter.Metrics.End(metricsCtx, meta, nil, err)
+		if err != nil {
+			utils.Trace.TraceEnd(tCtx)
+			return nil, nil, err
+		}
+
+		seedResult, cookieJar, err = c.download(tCtx, seed)
+		if err == nil {
+			utils.Trace.TraceEnd(tCtx)
+			break
+		}
+
+		utils.Trace.TraceErrEvent(tCtx, "download", err)
+		utils.Trace.TraceEnd(tCtx)
+
+		if err == core.InterceptError || err == core.ParserError {
+			utils.Trace.TraceErrEvent(ctx, "download", err)
+			return nil, nil, err
+		}
+		if attempt >= c.conf.Frame.RequestMaxAttemptCount {
+			utils.Trace.TraceErrEvent(ctx, "download", err)
+			return nil, nil, fmt.Errorf("尝试下载失败, 超过最大尝试次数: %v", err)
+		}
+		c.app.Error(tCtx, "尝试下载失败, 等待重试", zap.Int64("waitTime", c.conf.Frame.EmptyQueueWaitTime),
+			zap.String("attempt", fmt.Sprintf("%d/%d", attempt, c.conf.Frame.RequestMaxAttemptCount)), zap.Error(err))
+		time.Sleep(time.Duration(c.conf.Frame.RequestRetryWaitTime) * time.Millisecond)
+	}
+	return seedResult, cookieJar, nil
 }
 
 // 下载完善种子
@@ -203,7 +251,10 @@ func (c *Crawler) download(ctx context.Context, seed *core.Seed) (*core.Seed, ht
 	raw := seed.Raw
 
 	// 下载
+	clientName := c.conf.Frame.Namespace + "." + c.conf.Spider.Name
+	metricsCtx, meta := filter.Metrics.StartClient(ctx, string(config.DefaultServiceType), clientName, "Download")
 	seed, err := c.downloader.Download(ctx, c, seed, cookieJar)
+	filter.Metrics.End(ctx, meta, nil, err)
 	if err != nil {
 		utils.Trace.TraceErrEvent(ctx, "download", err,
 			utils.Trace.AttrKey("raw").String(raw))
@@ -211,13 +262,17 @@ func (c *Crawler) download(ctx context.Context, seed *core.Seed) (*core.Seed, ht
 	}
 
 	// 响应处理
+	metricsCtx, meta = filter.Metrics.StartClient(ctx, string(config.DefaultServiceType), clientName, "ResponseProcess")
 	seed, err = c.middleware.ResponseProcess(ctx, c, seed)
+	filter.Metrics.End(metricsCtx, meta, nil, err)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	// 检查是符合期望的响应
+	metricsCtx, meta = filter.Metrics.StartClient(ctx, string(config.DefaultServiceType), clientName, "CheckIsExpectResponse")
 	seed, err = c.CheckIsExpectResponse(ctx, seed)
+	filter.Metrics.End(metricsCtx, meta, nil, err)
 	if err != nil {
 		utils.Trace.TraceErrEvent(ctx, "CheckIsExpectResponse", err)
 		return nil, nil, err

@@ -7,9 +7,10 @@ import (
 	"reflect"
 	"sync/atomic"
 
+	"go.uber.org/zap"
+
 	zapp_core "github.com/zly-app/zapp/core"
 	"github.com/zly-app/zapp/logger"
-	"go.uber.org/zap"
 
 	"github.com/zly-app/crawler/config"
 	"github.com/zly-app/crawler/core"
@@ -152,7 +153,7 @@ func (c *Crawler) CookieJar() http.CookieJar    { return c.cookieJar }
 func NewCrawler(app zapp_core.IApp) *Crawler {
 	conf := config.NewConfig(app)
 	err := app.GetConfig().ParseServiceConfig(config.DefaultServiceType, conf, true)
-	if err == nil{
+	if err == nil {
 		err = conf.Check()
 	}
 	if err != nil {

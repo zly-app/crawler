@@ -5,9 +5,10 @@ import (
 	"fmt"
 
 	"github.com/bytedance/sonic"
+	"go.uber.org/zap"
+
 	zapp_core "github.com/zly-app/zapp/core"
 	"github.com/zly-app/zapp/logger"
-	"go.uber.org/zap"
 
 	"github.com/zly-app/crawler/config"
 	"github.com/zly-app/crawler/core"
@@ -20,7 +21,7 @@ type Stdout struct {
 }
 
 func (s *Stdout) Name() string { return PipelineName }
-func (s *Stdout) Process(ctx context.Context, spiderName string, data interface{}) (err error) {
+func (s *Stdout) Process(ctx context.Context, namespace, spiderName string, data interface{}) (err error) {
 	if s.Disable {
 		return nil
 	}

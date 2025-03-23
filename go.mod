@@ -9,9 +9,9 @@ require (
 	github.com/antchfx/htmlquery v1.3.4
 	github.com/antchfx/jsonquery v1.3.6
 	github.com/antchfx/xmlquery v1.4.4
+	github.com/bytedance/sonic v1.13.1
 	github.com/elgs/gojq v0.0.0-20230628214826-df5c4045598e
 	github.com/golang/groupcache v0.0.0-20241129210726-2c02b8208cf8
-	github.com/json-iterator/go v1.1.12
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/spf13/viper v1.7.1
 	github.com/urfave/cli/v2 v2.27.6
@@ -20,7 +20,7 @@ require (
 	github.com/zly-app/plugin/prometheus v0.0.0-20250315110859-d9c974724e1c
 	github.com/zly-app/plugin/zipkinotel v0.0.4
 	github.com/zly-app/service/cron v0.0.0-20240902040426-02054f7ccc67
-	github.com/zly-app/zapp v1.3.21
+	github.com/zly-app/zapp v1.3.22
 	github.com/zlyuancn/zstr v0.0.0-20230412074414-14d6b645962f
 	go.uber.org/zap v1.27.0
 	golang.org/x/net v0.37.0
@@ -43,7 +43,6 @@ require (
 	github.com/antchfx/xpath v1.3.3 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
-	github.com/bytedance/sonic v1.13.1 // indirect
 	github.com/bytedance/sonic/loader v0.2.4 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/cloudwego/base64x v0.1.5 // indirect
@@ -68,6 +67,7 @@ require (
 	github.com/gorilla/css v1.0.1 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/iris-contrib/middleware/cors v0.0.0-20210110101738-6d0a4d799b5d // indirect
+	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/kardianos/service v1.2.2 // indirect
 	github.com/kataras/blocks v0.0.11 // indirect
 	github.com/kataras/golog v0.1.12 // indirect

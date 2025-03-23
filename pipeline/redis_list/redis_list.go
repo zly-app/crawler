@@ -6,10 +6,11 @@ import (
 	"strings"
 
 	"github.com/zly-app/component/redis"
+	"go.uber.org/zap"
+
 	zapp_core "github.com/zly-app/zapp/core"
 	"github.com/zly-app/zapp/pkg/compactor"
 	"github.com/zly-app/zapp/pkg/serializer"
-	"go.uber.org/zap"
 
 	"github.com/zly-app/crawler/config"
 	"github.com/zly-app/crawler/core"
@@ -37,7 +38,7 @@ type RedisList struct {
 
 func (r *RedisList) Name() string { return PipelineName }
 
-func (r *RedisList) Process(ctx context.Context, spiderName string, data interface{}) error {
+func (r *RedisList) Process(ctx context.Context, namespace, spiderName string, data interface{}) error {
 	rawData, err := r.serializer.MarshalBytes(data)
 	if err != nil {
 		return fmt.Errorf("序列化失败: %v", err)

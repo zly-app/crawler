@@ -11,7 +11,7 @@ type ISet interface {
 	HasItem(ctx context.Context, key, item string) (bool, error)
 	// 从集合中移除一些元素, 返回成功移除的数量, 元素不存在不会计数也不会报错
 	Remove(ctx context.Context, key string, items ...string) (int, error)
-	// 删除set
+	// 删除整个set, 危险操作, 这个spider存放的所有标记都将失效
 	DeleteSet(ctx context.Context, key string) error
 	// 获取集合大小
 	GetSetSize(ctx context.Context, key string) (int, error)

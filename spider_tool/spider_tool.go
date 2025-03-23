@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/bytedance/sonic"
+	"github.com/zly-app/zapp/filter"
 
 	"github.com/zly-app/crawler/config"
 	"github.com/zly-app/crawler/core"
@@ -17,6 +18,7 @@ import (
 
 type SpiderTool struct {
 	crawler    core.ICrawler
+	namespace  string
 	spiderName string
 	setKey     string
 }
@@ -50,7 +52,11 @@ func (s *SpiderTool) SaveResult(ctx context.Context, data interface{}) {
 
 	dataText, _ := sonic.ConfigStd.MarshalToString(data)
 	utils.Trace.TraceEvent(ctx, "save", utils.Trace.AttrKey("data").String(dataText))
-	err := s.crawler.Pipeline().Process(ctx, s.spiderName, data)
+
+	clientName := s.namespace + "." + s.spiderName
+	metricsCtx, meta := filter.Metrics.StartClient(ctx, string(config.DefaultServiceType), clientName, "SaveResult")
+	err := s.crawler.Pipeline().Process(ctx, s.namespace, s.spiderName, data)
+	filter.Metrics.End(metricsCtx, meta, nil, err)
 	if err != nil {
 		utils.Trace.TraceErrEvent(ctx, "save", err)
 		panic(fmt.Errorf("保存结果失败: %v", err))
@@ -177,6 +183,7 @@ func (s *SpiderTool) GetJsonDom(seed *core.Seed) *dom.JsonDom {
 func NewSpiderTool(crawler core.ICrawler) core.ISpiderTool {
 	return &SpiderTool{
 		crawler:    crawler,
+		namespace:  config.Conf.Frame.Namespace,
 		spiderName: config.Conf.Spider.Name,
 		setKey:     config.Conf.Frame.Namespace + "." + config.Conf.Spider.Name + config.Conf.Frame.SetSuffix,
 	}

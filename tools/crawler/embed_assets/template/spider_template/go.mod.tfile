@@ -3,6 +3,6 @@ module {@project_name}/{@spider_name}
 go 1.18
 
 require (
-	github.com/zly-app/crawler v0.2.3
-	github.com/zly-app/zapp v1.3.21
+	github.com/zly-app/crawler v0.2.4
+	github.com/zly-app/zapp v1.3.22
 )

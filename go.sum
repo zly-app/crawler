@@ -1510,8 +1510,8 @@ github.com/zly-app/zapp v1.1.9/go.mod h1:MszpwW6QqAhZZRAKo9UtzT4eaYXkyCMpGuRKBsH
 github.com/zly-app/zapp v1.1.11/go.mod h1:itTp7wuwF18fUw0/WvLO13Gid/NpiZmnkUBxtHegW5Q=
 github.com/zly-app/zapp v1.3.3/go.mod h1:SpUxksSSDYnwK+vHhObro4a49TyAkQps+9diVVfFIbc=
 github.com/zly-app/zapp v1.3.17/go.mod h1:1w5AkqKazGiTSb6mWZN4UWph+2jwCbTghALVV7s8mH8=
-github.com/zly-app/zapp v1.3.21 h1:esMDqMxU4Xuofh7I6c+kGzh1z9+FZi/Exopbjp1b2V8=
-github.com/zly-app/zapp v1.3.21/go.mod h1:ARKIUXe2HKDeGvs8KxgR3KGEOpmmDsXrPh6LMg8QQjU=
+github.com/zly-app/zapp v1.3.22 h1:lKSRp3y6awGVQ+AZiJh14zTfADw2gmRSGC0AbAYq5LI=
+github.com/zly-app/zapp v1.3.22/go.mod h1:mRVOd7/P5uyV20V11hVAzrx1UcNg8O1LXWJ1PoZt8DY=
 github.com/zlyuancn/zretry v0.0.0-20220514032503-d78bfd22a441 h1:Sw0KI54iN5+zLL74vWx9R1o9S1yWc+f3oRKOjKrMCqA=
 github.com/zlyuancn/zretry v0.0.0-20220514032503-d78bfd22a441/go.mod h1:nXpt3JELMAirMyc5KExlSX96ixpohjHkxHpJlhqRnUU=
 github.com/zlyuancn/zstr v0.0.0-20230412074414-14d6b645962f h1:s4xoe70+PMGec95geCKaIk/nSUo5Gu2QGqDjZOKeMXY=
