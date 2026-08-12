@@ -2,6 +2,8 @@
 
 > 提供用于 https://github.com/zly-app/zapp 的服务
 
+> 💡 **AI 开发参考**: 给 AI 的完整开发指南(如何开发/接入/使用)见 [AGENTS.md](./AGENTS.md)
+
 <!-- TOC -->
 
 - [分布式爬虫框架服务](#%E5%88%86%E5%B8%83%E5%BC%8F%E7%88%AC%E8%99%AB%E6%A1%86%E6%9E%B6%E6%9C%8D%E5%8A%A1)
