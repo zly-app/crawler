@@ -8,7 +8,7 @@ import (
 	"go.uber.org/zap"
 
 	zapp_core "github.com/zly-app/zapp/core"
-	"github.com/zly-app/zapp/logger"
+	"github.com/zly-app/zapp/log"
 
 	"github.com/zly-app/crawler/config"
 	"github.com/zly-app/crawler/core"
@@ -40,7 +40,7 @@ func (s *Stdout) Process(ctx context.Context, namespace, spiderName string, data
 			return fmt.Errorf("编码失败: %v", err)
 		}
 	}
-	logger.Log.Info(ctx, "pipeline", zap.String("name", PipelineName), zap.String("data", text))
+	log.Log.Info(ctx, "pipeline", zap.String("name", PipelineName), zap.String("data", text))
 	return nil
 }
 

@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/zly-app/zapp/logger"
+	"github.com/zly-app/zapp/log"
 	"github.com/zlyuancn/zstr"
 	"go.uber.org/zap"
 )
@@ -18,7 +18,7 @@ import (
 func MustReadEmbedFile(fs embed.FS, file string) []byte {
 	data, err := fs.ReadFile(file)
 	if err != nil {
-		logger.Log.Fatal("读取内嵌文件数据失败", zap.String("file", file), zap.Error(err))
+		log.Log.Fatal("读取内嵌文件数据失败", zap.String("file", file), zap.Error(err))
 	}
 	return data
 }
@@ -27,7 +27,7 @@ func MustReadEmbedFile(fs embed.FS, file string) []byte {
 func MustReadFile(file string) []byte {
 	data, err := os.ReadFile(file)
 	if err != nil {
-		logger.Log.Fatal("读取文件数据失败", zap.String("file", file), zap.Error(err))
+		log.Log.Fatal("读取文件数据失败", zap.String("file", file), zap.Error(err))
 	}
 	return data
 }
@@ -52,10 +52,10 @@ func DirIsEmpty(path string) (bool, error) {
 func DirMustEmpty(path string) {
 	empty, err := DirIsEmpty(path)
 	if err != nil {
-		logger.Log.Fatal("检查目录为空失败", zap.String("path", path), zap.Error(err))
+		log.Log.Fatal("检查目录为空失败", zap.String("path", path), zap.Error(err))
 	}
 	if !empty {
-		logger.Log.Fatal("目录必须为空", zap.String("path", path))
+		log.Log.Fatal("目录必须为空", zap.String("path", path))
 	}
 }
 
@@ -67,7 +67,7 @@ func MustMkdir(name string, perm ...os.FileMode) {
 	}
 	err := os.MkdirAll(name, p)
 	if err != nil {
-		logger.Log.Fatal("创建文件夹失败", zap.String("path", name), zap.Error(err))
+		log.Log.Fatal("创建文件夹失败", zap.String("path", name), zap.Error(err))
 	}
 }
 
@@ -88,18 +88,18 @@ func MustCreateDirOrDirIsEmpty(name string, perm ...os.FileMode) {
 			return
 		}
 		if err != nil {
-			logger.Log.Fatal("判断为空文件夹失败", zap.String("path", name), zap.Error(err))
+			log.Log.Fatal("判断为空文件夹失败", zap.String("path", name), zap.Error(err))
 		}
-		logger.Log.Fatal("文件夹不为空", zap.String("path", name))
+		log.Log.Fatal("文件夹不为空", zap.String("path", name))
 	}
 	if os.IsNotExist(err) { // 文件夹不存在
 		err = os.MkdirAll(name, p)
 		if err == nil {
 			return
 		}
-		logger.Log.Fatal("创建文件夹失败", zap.String("path", name), zap.Error(err))
+		log.Log.Fatal("创建文件夹失败", zap.String("path", name), zap.Error(err))
 	}
-	logger.Log.Fatal("创建文件夹失败", zap.String("path", name), zap.Error(err))
+	log.Log.Fatal("创建文件夹失败", zap.String("path", name), zap.Error(err))
 }
 
 // 必须创建文件夹并且是创建
@@ -113,15 +113,15 @@ func MustMkdirAndIsCreate(name string, perm ...os.FileMode) {
 		defer dir.Close()
 	}
 	if err == nil {
-		logger.Log.Fatal("创建文件夹失败, 文件夹已存在", zap.String("path", name))
+		log.Log.Fatal("创建文件夹失败, 文件夹已存在", zap.String("path", name))
 	}
 	if !os.IsNotExist(err) {
-		logger.Log.Fatal("创建文件夹失败", zap.String("path", name), zap.Error(err))
+		log.Log.Fatal("创建文件夹失败", zap.String("path", name), zap.Error(err))
 	}
 
 	err = os.MkdirAll(name, p)
 	if err != nil {
-		logger.Log.Fatal("创建文件夹失败", zap.String("path", name), zap.Error(err))
+		log.Log.Fatal("创建文件夹失败", zap.String("path", name), zap.Error(err))
 	}
 }
 
@@ -133,7 +133,7 @@ func MustWriteFile(name string, data []byte, perm ...os.FileMode) {
 	}
 	err := os.WriteFile(name, data, p)
 	if err != nil {
-		logger.Log.Fatal("创建文件失败", zap.Error(err))
+		log.Log.Fatal("创建文件失败", zap.Error(err))
 	}
 }
 
@@ -147,11 +147,11 @@ func CheckHasPath(path string, isDir bool) bool {
 		if os.IsNotExist(err) {
 			return false
 		}
-		logger.Log.Fatal("读取失败", zap.String("path", path), zap.Error(err))
+		log.Log.Fatal("读取失败", zap.String("path", path), zap.Error(err))
 	}
 	s, err := d.Stat()
 	if err != nil {
-		logger.Log.Fatal("读取失败", zap.String("path", path), zap.Error(err))
+		log.Log.Fatal("读取失败", zap.String("path", path), zap.Error(err))
 	}
 	return s.IsDir() == isDir
 }
@@ -164,19 +164,19 @@ func MustHasPath(path string, isDir bool) {
 	}
 	if err != nil {
 		if os.IsNotExist(err) {
-			logger.Log.Fatal("path不存在", zap.String("path", path))
+			log.Log.Fatal("path不存在", zap.String("path", path))
 		}
-		logger.Log.Fatal("读取失败", zap.String("path", path), zap.Error(err))
+		log.Log.Fatal("读取失败", zap.String("path", path), zap.Error(err))
 	}
 	s, err := d.Stat()
 	if err != nil {
-		logger.Log.Fatal("读取失败", zap.String("path", path), zap.Error(err))
+		log.Log.Fatal("读取失败", zap.String("path", path), zap.Error(err))
 	}
 	if isDir && !s.IsDir() {
-		logger.Log.Fatal("path不是一个目录", zap.String("path", path))
+		log.Log.Fatal("path不是一个目录", zap.String("path", path))
 	}
 	if !isDir && s.IsDir() {
-		logger.Log.Fatal("path不是一个文件", zap.String("path", path))
+		log.Log.Fatal("path不是一个文件", zap.String("path", path))
 	}
 }
 
@@ -190,9 +190,9 @@ func MustNoExistPath(path string) {
 		if os.IsNotExist(err) {
 			return
 		}
-		logger.Log.Fatal("读取失败", zap.String("path", path), zap.Error(err))
+		log.Log.Fatal("读取失败", zap.String("path", path), zap.Error(err))
 	}
-	logger.Log.Fatal("路径已存在", zap.String("path", path))
+	log.Log.Fatal("路径已存在", zap.String("path", path))
 }
 
 // 必须在项目中, 依次向上查找并进入项目根目录, 返回项目名
@@ -203,14 +203,14 @@ func MustEnterProject() string {
 		if pn != "" {
 			// 进入工程目录
 			if err := os.Chdir(wd); err != nil {
-				logger.Log.Fatal("进入工程目录失败", zap.String("path", wd), zap.Error(err))
+				log.Log.Fatal("进入工程目录失败", zap.String("path", wd), zap.Error(err))
 			}
 			return pn
 		}
 
 		wd2 := filepath.Dir(wd)
 		if wd2 == wd { // 已经是根目录了
-			logger.Log.Fatal("无法读取项目名")
+			log.Log.Fatal("无法读取项目名")
 		}
 		wd = wd2
 	}
@@ -277,7 +277,7 @@ func ExtractMiddleText(s, pre, suf, def string, greedy bool) string {
 func MustGetWorkdir() string {
 	dir, err := os.Getwd()
 	if err != nil {
-		logger.Log.Fatal("无法获取当前目录", zap.Error(err))
+		log.Log.Fatal("无法获取当前目录", zap.Error(err))
 	}
 	return dir
 }
@@ -289,7 +289,7 @@ func MustDirJoin(path1, path2 string) string {
 	}
 	path, err := filepath.Abs(path2)
 	if err != nil {
-		logger.Log.Fatal("获取绝对路径失败", zap.String("path", path2), zap.Error(err))
+		log.Log.Fatal("获取绝对路径失败", zap.String("path", path2), zap.Error(err))
 	}
 	return path
 }

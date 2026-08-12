@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/urfave/cli/v2"
-	"github.com/zly-app/zapp/logger"
+	"github.com/zly-app/zapp/log"
 	"go.uber.org/zap"
 
 	"github.com/zly-app/crawler/tools/utils"
@@ -36,7 +36,7 @@ func embedFilesRelease(projectName, basePath string) {
 		path = path + "/" + dir.Name()
 		dirs, err := embedFiles.ReadDir(path)
 		if err != nil {
-			logger.Log.Fatal("读取目录资源失败", zap.String("path", path), zap.Error(err))
+			log.Log.Fatal("读取目录资源失败", zap.String("path", path), zap.Error(err))
 		}
 		utils.MustMkdir(strings.TrimPrefix(path, basePath)[1:], 666)
 		dispatchDirs(path, dirs)
@@ -45,7 +45,7 @@ func embedFilesRelease(projectName, basePath string) {
 		path = path + "/" + file.Name()
 		bs, err := embedFiles.ReadFile(path)
 		if err != nil {
-			logger.Log.Fatal("读取文件资源失败", zap.String("path", path), zap.Error(err))
+			log.Log.Fatal("读取文件资源失败", zap.String("path", path), zap.Error(err))
 		}
 
 		if strings.HasSuffix(path, ".file") {
@@ -62,7 +62,7 @@ func embedFilesRelease(projectName, basePath string) {
 
 	dirs, err := embedFiles.ReadDir(basePath)
 	if err != nil {
-		logger.Log.Fatal("读取资源失败", zap.String("path", basePath), zap.Error(err))
+		log.Log.Fatal("读取资源失败", zap.String("path", basePath), zap.Error(err))
 	}
 	dispatchDirs(basePath, dirs)
 }
@@ -70,7 +70,7 @@ func embedFilesRelease(projectName, basePath string) {
 // 初始化工程
 func CmdInit(cl *cli.Context) error {
 	if cl.Args().Len() != 1 {
-		logger.Log.Fatal("必须也只能写入一个工程名")
+		log.Log.Fatal("必须也只能写入一个工程名")
 	}
 	projectName := cl.Args().Get(0)
 
@@ -82,7 +82,7 @@ func CmdInit(cl *cli.Context) error {
 		utils.MustCreateDirOrDirIsEmpty(projectName, 666)
 		// 进入工程目录
 		if err := os.Chdir(projectName); err != nil {
-			logger.Log.Fatal("进入工程目录失败", zap.String("projectName", projectName), zap.Error(err))
+			log.Log.Fatal("进入工程目录失败", zap.String("projectName", projectName), zap.Error(err))
 		}
 	}
 

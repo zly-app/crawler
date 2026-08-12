@@ -3,9 +3,7 @@ package main
 import (
 	"context"
 
-	"github.com/zly-app/plugin/honey"
-	"github.com/zly-app/plugin/prometheus"
-	"github.com/zly-app/plugin/zipkinotel"
+	"github.com/zly-app/plugin/otlp"
 	"github.com/zly-app/zapp"
 	zapp_config "github.com/zly-app/zapp/config"
 
@@ -61,9 +59,7 @@ func main() {
 		zapp.CustomComponentFns(component.CustomComponentCreator), // 使用自定义组件
 		zapp.WithConfigOption(zapp_config.WithFiles("../../configs/crawler.dev.yaml", "./configs/config.dev.yaml")),
 
-		zipkinotel.WithPlugin(), // trace
-		honey.WithPlugin(),      // log
-		prometheus.WithPlugin(), // metrics
+		otlp.WithPlugin(), // trace/log/metrics
 	)
 	defer app.Exit()
 

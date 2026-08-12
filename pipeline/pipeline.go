@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	zapp_core "github.com/zly-app/zapp/core"
-	"github.com/zly-app/zapp/logger"
+	"github.com/zly-app/zapp/log"
 	"go.uber.org/zap"
 
 	"github.com/zly-app/crawler/core"
@@ -23,7 +23,7 @@ func NewPipeline(app zapp_core.IApp, pipelineType string) core.IPipeline {
 	for _, t := range types {
 		creator, ok := pipelineCreator[t]
 		if !ok {
-			logger.Log.Fatal("pipeline.type 未定义", zap.String("type", pipelineType))
+			log.Log.Fatal("pipeline.type 未定义", zap.String("type", pipelineType))
 		}
 		pipe := creator(app)
 		pipes = append(pipes, pipe)
@@ -34,7 +34,7 @@ func NewPipeline(app zapp_core.IApp, pipelineType string) core.IPipeline {
 // 注册管道创造者, 重复注册会报错并结束程序
 func RegistryPipelineCreator(pipelineType string, creator func(app zapp_core.IApp) core.IPipeline) {
 	if _, ok := pipelineCreator[pipelineType]; ok {
-		logger.Log.Fatal("重复注册pipeline建造者", zap.String("type", pipelineType))
+		log.Log.Fatal("重复注册pipeline建造者", zap.String("type", pipelineType))
 	}
 	pipelineCreator[pipelineType] = creator
 }

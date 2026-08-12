@@ -1,6 +1,6 @@
 # spider会继承并覆盖这里的配置
 # 爬虫框架配置和队列配置和set配置应该放在这里, 否则调度器和crawler工具部分功能无法使用
-# 其它的公共配置都应该放在这里, 如 crawler框架配置, app框架配置, honye收集器插件配置
+# 其它的公共配置都应该放在这里, 如 crawler框架配置, app框架配置, otlp插件配置
 
 # crawler 框架配置
 services:
@@ -141,68 +141,53 @@ frame: # 框架配置
     #Color: true # 是否打印彩色日志等级, 只有关闭json编码器才生效
     #CapitalLevel: false # 是否大写日志等级
     #DevelopmentMode: true # 开发者模式, 在开发者模式下日志记录器在写完DPanic消息后程序会感到恐慌
-    #ShowFileAndLinenum: true # 显示文件路径和行号
     #ShowFileAndLinenumMinLevel: 'debug' # 最小显示文件路径和行号的等级. 推荐所有等级都打印代码行, 相对于能快速定位问题来说, 这点性能损耗无关紧要
     #MillisDuration: true # 对zap.Duration转为毫秒
   #PrintConfig: true # app初始时是否打印配置
 
 plugins:
-  honey: # 日志收集插件配置
-    Env: 'dev' # 输出时标示的环境名
-    #App: '' # 输出时标示的app名, 如果为空则使用默认名
-    #Instance: '' # 输出时标示的实例名, 如果为空则使用本地ip
-    StopLogOutput: false # 停止原有的日志输出
-    #LogBatchSize: 10000 # 日志批次大小, 累计达到这个大小立即输出一次日志, 不用等待时间
-    #AutoRotateTime: 3 # 自动旋转时间(秒), 如果没有达到累计输出批次大小, 在指定时间后也会立即输出
-    #MaxRotateThreadNum: 10 # 最大旋转线程数, 表示同时允许多少批次发送到输出设备
-    Outputs: '' # 输出设备列表, 多个输出设备用半角逗号`,`分隔, 支持 std, honey-http, loki-http
-
-    honey-http: # honey-http 输出器
-      #Disable: false # 是否关闭
-      #PushAddress: http://127.0.0.1:8080/push # push地址, 示例: http://127.0.0.1:8080/push
-      #Compress: zstd # 压缩器名, 可选 raw, gzip, zstd
-      #Serializer: msgpack # 序列化器名, 可选 msgpack, json
-      #AuthToken: '' # 验证token, 如果设置, 客户端请求header必须带上 token={AuthToken}, 如 token=myAuthToken
-      #ReqTimeout: 5 # 请求超时, 单位秒
-      #RetryCount: 2 # 请求失败重试次数, 0表示禁用
-      #RetryIntervalMs: 2000 # 请求失败重试间隔毫秒数
-      #ProxyAddress = '' # 代理地址. 支持 http, https, socks5, socks5h. 示例: socks5://127.0.0.1:1080 socks5://user:pwd@127.0.0.1:1080
-
-    loki-http: # loki-http 输出器
-      #Disable: false # 关闭
-      #PushAddress: 'http://127.0.0.1:3100/loki/api/v1/push' # push地址, 示例: http://127.0.0.1:3100/loki/api/v1/push
-      #EnableCompress: true # 是否启用压缩
-      #ReqTimeout: 5 # 请求超时, 单位秒
-      #RetryCount: 2 # 请求失败重试次数, 0表示禁用
-      #RetryIntervalMs: 2000 # 请求失败重试间隔毫秒数
-      #ProxyAddress: '' # 代理地址. 支持 http, https, socks5, socks5h. 示例: socks5://127.0.0.1:1080 socks5://user:pwd@127.0.0.1:1080
-
-  zipkinotel: # 链路
-    CollectorURL: '' # 收集器地址, 优先级高于 agent, 如 http://localhost:9411/api/v2/spans
-    #SamplerFraction: 1 # // 采样器采样率, <= 0.0 表示不采样, 1.0 表示总是采样
-    #SpanQueueSize: 4096 # 待上传的span队列大小. 超出的span会被丢弃
-    #SpanBatchSize: 1024 # span信息批次发送大小, 存满后一次性发送到收集器
-    #BlockOnSpanQueueFull: false # 如果span队列满了, 不会丢弃新的span, 而是阻塞直到有空间. 注意, 开启后如果发生阻塞会影响程序性能.
-    #AutoRotateTime: 5 # 自动旋转时间(秒), 如果没有达到累计输出批次大小, 在指定时间后也会立即输出
-    #ExportTimeout: 30 # 上传span超时时间(秒)
-    #ProxyAddress: '' # 代理地址. 支持 http, https, socks5, socks5h. 示例: socks5://127.0.0.1:1080 socks5://user:pwd@127.0.0.1:1080
-
-  metrics: # 指标
-    #ProcessCollector: true     # 启用进程收集器
-    #GoCollector: true          # 启用go收集器
-    #EnableOpenMetrics: false    # 启用 OpenMetrics 格式
-
-    PullBind: ""          # pull模式bind地址, 如: ':9100', 如果为空则不启用pull模式
-    #PullPath: "/metrics"       # pull模式拉取路径, 如: '/metrics'
-
-    #PushAddress: "http://127.0.0.1:9091" # push模式 pushGateway地址, 如果为空则不启用push模式, 如: 'http://127.0.0.1:9091'
-    #PushInstance: "" # 实例名, 一般为ip或主机名
-    #PushTimeInterval: 1000 # push模式推送时间间隔, 单位毫秒
-    #PushRetry: 2 # push模式推送重试次数
-    #PushRetryInterval: 1000 # push模式推送重试时间间隔, 单位毫秒
-
-    #WriteAddress: "" # RemoteWrite 地址, 如果为空则不启用, 如: 'http://127.0.0.1:9090'
-    #WriteInstance: "" # 实例, 一般为ip或主机名
-    #WriteTimeInterval: 10000 # RemoteWrite 模式推送时间间隔, 单位毫秒
-    #WriteRetry: 2 # RemoteWrite 模式推送重试次数
-    #WriteRetryInterval: 1000 # RemoteWrite 模式推送重试时间间隔, 单位毫秒
+  otlp: # otlp插件配置, 提供 log/trace/metrics 上报到 OTLP Collector
+    Log: # 日志上报配置
+      #Enabled: true # 是否启用
+      #Addr: 'http://localhost:4318' # 地址, 如 http://localhost:4318
+      #URLPath: '/v1/logs' # path, 如 /v1/logs
+      #Gzip: true # 是否启用gzip压缩
+      #SpanQueueSize: 8192 # 待上传的log队列大小. 超出的log会被丢弃
+      #SpanBatchSize: 2048 # log信息批次发送大小, 存满后一次性发送
+      #AutoRotateTime: 5 # 自动旋转时间(秒), 如果没有达到累计输出批次大小, 在指定时间后也会立即输出
+      #ExportTimeout: 30 # 上传log超时时间(秒)
+      #Retry: # 重试配置
+        #Enabled: true # 是否启用
+        #InitialIntervalSec: 5 # 第一次上传失败的重试间隔秒数
+        #MaxIntervalSec: 30 # 最大重试间隔秒数
+        #MaxElapsedTimeSec: 60 # 超过这个秒数后则放弃这一批数据
+    Trace: # trace上报配置
+      #Enabled: true # 是否启用
+      #Addr: 'http://localhost:4318' # 地址, 如 http://localhost:4318
+      #URLPath: '/v1/traces' # path, 如 /v1/traces
+      #Gzip: true # 是否启用gzip压缩
+      #SamplerFraction: 1 # 采样器采样率, <= 0.0 表示不采样, 1.0 表示总是采样
+      #SpanQueueSize: 8192 # 待上传的span队列大小. 超出的span会被丢弃
+      #SpanBatchSize: 2048 # span信息批次发送大小, 存满后一次性发送
+      #BlockOnSpanQueueFull: false # 如果span队列满了, 不会丢弃新的span, 而是阻塞直到有空间. 注意, 开启后如果发生阻塞会影响程序性能.
+      #AutoRotateTime: 5 # 自动旋转时间(秒), 如果没有达到累计输出批次大小, 在指定时间后也会立即输出
+      #ExportTimeout: 30 # 上传span超时时间(秒)
+      #Retry: # 重试配置
+        #Enabled: true # 是否启用
+        #InitialIntervalSec: 5 # 第一次上传失败的重试间隔秒数
+        #MaxIntervalSec: 30 # 最大重试间隔秒数
+        #MaxElapsedTimeSec: 60 # 超过这个秒数后则放弃这一批数据
+    Metric: # 指标上报配置
+      #Enabled: true # 是否启用
+      #Addr: 'http://localhost:4318' # 地址, 如 http://localhost:4318
+      #URLPath: '/v1/metrics' # path, 如 /v1/metrics
+      #Gzip: true # 是否启用gzip压缩
+      #ProcessCollector: true # 启用进程收集器
+      #GoCollector: true # 启用go收集器
+      #AutoRotateTime: 5 # 自动旋转时间(秒)
+      #ExportTimeout: 30 # 上传metric超时时间(秒)
+      #Retry: # 重试配置
+        #Enabled: true # 是否启用
+        #InitialIntervalSec: 5 # 第一次上传失败的重试间隔秒数
+        #MaxIntervalSec: 30 # 最大重试间隔秒数
+        #MaxElapsedTimeSec: 60 # 超过这个秒数后则放弃这一批数据

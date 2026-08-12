@@ -4,7 +4,7 @@ import (
 	"context"
 
 	zapp_core "github.com/zly-app/zapp/core"
-	"github.com/zly-app/zapp/logger"
+	"github.com/zly-app/zapp/log"
 	"go.uber.org/zap"
 
 	"github.com/zly-app/crawler/core"
@@ -45,7 +45,7 @@ func (m *Middleware) RequestProcess(ctx context.Context, crawler core.ICrawler, 
 		seed, err = middleware.Process(ctx, crawler, seed)
 		if err != nil {
 			utils.Trace.TraceErrEvent(ctx, middleware.Name(), err)
-			logger.Log.Error("请求中间件检查不通过", zap.String("middleware", middleware.Name()), zap.Error(err))
+			log.Log.Error("请求中间件检查不通过", zap.String("middleware", middleware.Name()), zap.Error(err))
 			return nil, err
 		}
 		utils.Trace.TraceEvent(ctx, middleware.Name())
@@ -62,7 +62,7 @@ func (m *Middleware) ResponseProcess(ctx context.Context, crawler core.ICrawler,
 		seed, err = middleware.Process(ctx, crawler, seed)
 		if err != nil {
 			utils.Trace.TraceErrEvent(ctx, middleware.Name(), err)
-			logger.Log.Error("响应中间件检查不通过", zap.String("middleware", middleware.Name()), zap.Error(err))
+			log.Log.Error("响应中间件检查不通过", zap.String("middleware", middleware.Name()), zap.Error(err))
 			return nil, err
 		}
 		utils.Trace.TraceEvent(ctx, middleware.Name())
@@ -74,12 +74,12 @@ func (m *Middleware) Close() {
 	var err error
 	for _, middleware := range requestMiddlewares {
 		if err = middleware.Close(); err != nil {
-			logger.Log.Error("关闭请求中间件失败", zap.Error(err))
+			log.Log.Error("关闭请求中间件失败", zap.Error(err))
 		}
 	}
 	for _, middleware := range responseMiddlewares {
 		if err = middleware.Close(); err != nil {
-			logger.Log.Error("关闭响应中间件失败", zap.Error(err))
+			log.Log.Error("关闭响应中间件失败", zap.Error(err))
 		}
 	}
 }

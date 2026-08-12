@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/urfave/cli/v2"
-	"github.com/zly-app/zapp/logger"
+	"github.com/zly-app/zapp/log"
 	"go.uber.org/zap"
 
 	"github.com/zly-app/crawler/tools/utils"
@@ -17,7 +17,7 @@ import (
 // 创建一个爬虫
 func CmdCreateSpider(cl *cli.Context) error {
 	if cl.Args().Len() != 1 {
-		logger.Log.Fatal("必须也只能写入一个爬虫名")
+		log.Log.Fatal("必须也只能写入一个爬虫名")
 	}
 	projectName := utils.MustEnterProject()
 	spiderName := cl.Args().Get(0)
@@ -46,7 +46,7 @@ func CmdCreateSpider(cl *cli.Context) error {
 		path = path + "/" + dir.Name()
 		dirs, err := os.ReadDir(path)
 		if err != nil {
-			logger.Log.Fatal("读取目录资源失败", zap.String("path", path), zap.Error(err))
+			log.Log.Fatal("读取目录资源失败", zap.String("path", path), zap.Error(err))
 		}
 		newPath := utils.MustDirJoin(spiderBasePath, strings.TrimPrefix(path, templateBasePath)[1:])
 		fmt.Printf("dir %s >> %s\n", path, newPath)
@@ -57,7 +57,7 @@ func CmdCreateSpider(cl *cli.Context) error {
 		path = path + "/" + file.Name()
 		bs, err := os.ReadFile(path)
 		if err != nil {
-			logger.Log.Fatal("读取文件资源失败", zap.String("path", path), zap.Error(err))
+			log.Log.Fatal("读取文件资源失败", zap.String("path", path), zap.Error(err))
 		}
 		newPath := utils.MustDirJoin(spiderBasePath, strings.TrimPrefix(path, templateBasePath)[1:])
 
@@ -73,17 +73,17 @@ func CmdCreateSpider(cl *cli.Context) error {
 	}
 	dirs, err := os.ReadDir(templateBasePath)
 	if err != nil {
-		logger.Log.Fatal("读取模板资源失败", zap.String("path", templateBasePath), zap.Error(err))
+		log.Log.Fatal("读取模板资源失败", zap.String("path", templateBasePath), zap.Error(err))
 	}
 	dispatchDirs(templateBasePath, dirs)
 
 	// go mod tidy
 	// 进入spider目录
 	if err = os.Chdir(spiderBasePath); err != nil {
-		logger.Log.Fatal("go mod tidy 失败, 进入工程目录失败", zap.String("path", spiderBasePath), zap.Error(err))
+		log.Log.Fatal("go mod tidy 失败, 进入工程目录失败", zap.String("path", spiderBasePath), zap.Error(err))
 	}
 	if err = exec.Command("go", "mod", "tidy").Run(); err != nil {
-		logger.Log.Fatal("go mod tidy 失败", zap.String("path", spiderBasePath), zap.Error(err))
+		log.Log.Fatal("go mod tidy 失败", zap.String("path", spiderBasePath), zap.Error(err))
 	}
 
 	fmt.Println("创建成功")

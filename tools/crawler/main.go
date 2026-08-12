@@ -4,7 +4,7 @@ import (
 	"os"
 
 	"github.com/urfave/cli/v2"
-	"github.com/zly-app/zapp/logger"
+	"github.com/zly-app/zapp/log"
 	"go.uber.org/zap"
 )
 
@@ -84,6 +84,6 @@ func main() {
 	}
 	err := app.Run(os.Args)
 	if err != nil {
-		logger.Log.Fatal("启动失败", zap.Error(err))
+		log.Log.Fatal("启动失败", zap.Error(err))
 	}
 }

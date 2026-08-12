@@ -5,7 +5,7 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/zly-app/zapp/logger"
+	"github.com/zly-app/zapp/log"
 	zapputils "github.com/zly-app/zapp/pkg/utils"
 
 	"github.com/zly-app/crawler/core"
@@ -32,7 +32,7 @@ func (m *multiPipelineWrap) Process(ctx context.Context, namespace, spiderName s
 			err := pipe.Process(pipeCtx, namespace, spiderName, data)
 			if err != nil {
 				utils.Trace.TraceErrEvent(pipeCtx, "process", err)
-				logger.Log.Error(ctx, "执行pipeline失败", zap.String("pipeline", pipe.Name()), zap.Error(err))
+				log.Log.Error(ctx, "执行pipeline失败", zap.String("pipeline", pipe.Name()), zap.Error(err))
 			}
 			return err
 		})
@@ -48,7 +48,7 @@ func (m *multiPipelineWrap) Close(ctx context.Context) error {
 		handlers = append(handlers, func() error {
 			err := pipe.Close(ctx)
 			if err != nil {
-				logger.Log.Error(ctx, "关闭pipeline失败", zap.String("pipeline", pipe.Name()), zap.Error(err))
+				log.Log.Error(ctx, "关闭pipeline失败", zap.String("pipeline", pipe.Name()), zap.Error(err))
 			}
 			return err
 		})

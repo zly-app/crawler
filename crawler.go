@@ -10,7 +10,7 @@ import (
 	"go.uber.org/zap"
 
 	zapp_core "github.com/zly-app/zapp/core"
-	"github.com/zly-app/zapp/logger"
+	"github.com/zly-app/zapp/log"
 
 	"github.com/zly-app/crawler/config"
 	"github.com/zly-app/crawler/core"
@@ -157,7 +157,7 @@ func NewCrawler(app zapp_core.IApp) *Crawler {
 		err = conf.Check()
 	}
 	if err != nil {
-		logger.Log.Panic("服务配置错误", zap.String("serviceType", string(config.DefaultServiceType)), zap.Error(err))
+		log.Log.Panic("服务配置错误", zap.String("serviceType", string(config.DefaultServiceType)), zap.Error(err))
 	}
 
 	crawler := &Crawler{
