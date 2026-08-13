@@ -279,3 +279,13 @@ crawler/
 - zapp v1.4.x 移除了 `zapp/logger` 包(改为 `zapp/log`), 移除了 `pkg/utils` 中的 `utils.Otel`(改为 `utils.Trace`)
 - 所有 zly-app 生态包必须使用适配 zapp v1.4.x 的版本
 - 升级 zapp 版本时, 需同步更新 `go.mod.tfile` 模板中的 zapp/otlp/crawler 版本
+
+## 发布流程
+
+普通提交推送**不需要**打 tag。仅当用户明确要求「打 tag / 发布新版本」时，才执行以下顺序（禁止跳过）：
+
+1. **先更新模板版本**：将 `tools/crawler/embed_assets/template/spider_template/go.mod.tfile` 中 `github.com/zly-app/crawler` 的依赖版本更新为本次即将发布的 tag 版本。
+2. **再提交并推送**：提交全部变更（含模板版本更新）并推送到远程 `master`/`main` 分支。
+3. **最后打 tag**：在已推送的提交上打最新 tag（如 `v0.3.1`），并推送 tag。
+
+关键约束：模板中引用的 crawler 版本必须等于最终打的 tag，否则 `crawler create` 生成的新项目会引用到旧的框架版本。
