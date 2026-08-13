@@ -3,7 +3,7 @@ module {@project_name}/{@spider_name}
 go 1.25.0
 
 require (
-	github.com/zly-app/crawler v0.3.0
+	github.com/zly-app/crawler v0.3.1
 	github.com/zly-app/plugin/otlp v0.0.0-20251201105815-b4c372b9135e
 	github.com/zly-app/zapp v1.4.5
 )

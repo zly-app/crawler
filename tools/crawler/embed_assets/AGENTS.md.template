@@ -1,0 +1,263 @@
+# AGENTS.md - {@project_name} 爬虫工程 AI 开发参考
+
+## 项目概述
+
+本工程是由 [crawler](https://github.com/zly-app/crawler) 工程管理工具 `crawler init` 生成的一个**爬虫工程**，用于统一管理多个独立运行的爬虫（spider）。每个 spider 是一个**独立的 Go module**，单独编译、单独部署，通过共享的 redis 队列/集合协作，可单机多进程或分布式运行。
+
+- 依赖框架: `github.com/zly-app/zapp` v1.4.x（`go 1.25+`）
+- 依赖库: `github.com/zly-app/crawler`（爬虫框架核心）、`github.com/zly-app/plugin/otlp`（log/trace/metrics 上报）
+
+## 目录结构
+
+```
+{@project_name}/
+├── .crawler                           # 工程标记文件(内容为 project: {@project_name}), 工程管理工具据此定位工程根目录
+├── configs/
+│   ├── crawler.dev.yaml               # 全局公共配置: 爬虫框架/队列/集合/管道/代理 + app框架 + otlp 插件
+│   └── spider_programs.dev.yaml       # spider 进程组配置(供 make_supervisor 使用)
+├── template/                          # 工程管理工具使用的模板, 不要手动修改
+│   ├── spider_template/               # create 命令生成 spider 时的模板
+│   │   ├── component/component.go.template
+│   │   ├── configs/config.dev.yaml.template
+│   │   ├── go.mod.template
+│   │   └── main.go.template
+│   └── supervisor/                    # make_supervisor 命令生成 supervisor 配置的模板
+│       ├── scheduler_config.ini.dev.template
+│       └── spider_programs.dev.ini.template
+└── spiders/                           # create 命令生成, 每个 spider 一个独立 module
+    └── <spider_name>/
+        ├── component/component.go     # 自定义 zapp 组件
+        ├── configs/config.dev.yaml    # 该 spider 的私有配置(继承并覆盖公共配置)
+        ├── go.mod / go.sum
+        └── main.go                    # spider 入口
+```
+
+## 运行逻辑
+
+### 1. 队列驱动模型
+
+crawler 框架以 **seed（种子）** 为基本单位驱动抓取，整体流程如下：
+
+```
+SubmitInitialSeed 提交初始化种子
+        ↓
+   queue(队列) ──取出种子──> downloader(下载器) ──> 请求/响应中间件 ──> Parser 解析方法
+        ↓                                                                      ↓
+   新种子(可跨请求)                                                    SaveResult → pipeline(管道)
+```
+
+- **seed**: 一个待抓取的 url + 请求参数 + 解析方法名，跨请求传递数据用 `Meta`。
+- **queue**: 种子队列，`memory`（进程内）或 `redis`（分布式）。取出种子一定是**从队列前面**开始。
+- **set**: 去重集合，`memory` 或 `redis`。
+- **downloader**: 真正发起 HTTP 请求的模块。
+- **middleware**: 请求中间件（请求前检查）与响应中间件（响应后检查）。
+- **pipeline**: 结果输出，`stdout` 或 `redis_list`。
+- **proxy**: 代理，`direct` 或 `static`。
+
+### 2. spider 是独立进程
+
+每个 spider 是 `spiders/<spider_name>/` 下的独立 Go module，有自己的 `main.go`，运行后会作为独立进程从共享队列中消费种子。因此：
+
+- spider 之间**不共享内存**，跨 spider 只能通过 redis 队列/集合协作。
+- 每个 spider 的 `main.go` 结构固定：`zapp.NewApp` + `crawler.WithService()` + `otlp.WithPlugin()`，再 `crawler.RegistrySpider(...)` 注入实现，最后 `app.Run()`。
+
+### 3. 初始化种子的提交时机
+
+spider 的 `SubmitInitialSeed(ctx)` 方法决定如何产生第一批种子，其触发时机由配置 `services.crawler.spider.SubmitInitialSeedOpportunity` 控制：
+
+- `start`: 进程启动时提交一次。
+- `none` / 空: 不自动提交。
+- 固定时间(`YYYY-MM-DD hh:mm:ss`) / cron 表达式: 由 `crawler_scheduler` 调度器定时投递提交信号。
+
+调度器 `crawler_scheduler` 读取 `configs/spider_programs.dev.yaml`，对配置了定时时机的 spider，通过 cron 向队列投递「提交初始化种子信号」，spider 收到后执行 `SubmitInitialSeed`。
+
+## 如何开发
+
+### 1. 创建 spider
+
+在工程根目录执行：
+
+```bash
+crawler create <spider_name>   # 别名 cs
+```
+
+命令会在 `spiders/<spider_name>/` 生成完整可运行的 spider 骨架，并自动执行 `go mod tidy`。生成后需自行在 `main.go` 中实现抓取逻辑。
+
+### 2. 实现 Spider
+
+一个 spider 必须实现 `core.ISpider` 接口（`Init` / `SubmitInitialSeed` / `Close`），并且**必须继承 `core.ISpiderTool`**：
+
+```go
+package main
+
+import (
+	"context"
+
+	"github.com/zly-app/plugin/otlp"
+	"github.com/zly-app/zapp"
+
+	"github.com/zly-app/crawler"
+	"github.com/zly-app/crawler/core"
+)
+
+type Spider struct {
+	core.ISpiderTool // 必须继承这个接口
+}
+
+// 初始化
+func (s *Spider) Init(ctx context.Context) error { return nil }
+
+// 提交初始化种子
+func (s *Spider) SubmitInitialSeed(ctx context.Context) error {
+	seed := s.NewSeed("https://www.sogou.com/", s.Parser)
+	seed.SetCheckExpectMethod(s.Check)
+	s.SubmitSeed(ctx, seed)
+	return nil
+}
+
+// 解析方法, 必须以 Parser 开头
+func (s *Spider) Parser(ctx context.Context, seed *core.Seed) error {
+	body := string(seed.HttpResponseBody)
+	s.SaveResult(ctx, body)
+	return nil
+}
+
+// 检查方法, 必须以 Check 开头
+func (s *Spider) Check(ctx context.Context, seed *core.Seed) error { return nil }
+
+// 关闭
+func (s *Spider) Close(ctx context.Context) error { return nil }
+
+func main() {
+	app := zapp.NewApp("{@project_name}.<spider_name>",
+		crawler.WithService(),
+		otlp.WithPlugin(),
+	)
+	defer app.Exit()
+	crawler.RegistrySpider(new(Spider))
+	app.Run()
+}
+```
+
+### 3. 方法命名规则
+
+- **解析方法**: 方法名必须以 `Parser` 前缀开头，如 `Parser`、`ParserList`、`ParserDetail`，框架会自动扫描注册。
+- **检查方法**: 方法名必须以 `Check` 前缀开头，如 `Check`，用于检查响应是否符合期望。
+
+### 4. SpiderTool 可用方法
+
+| 方法 | 说明 |
+|------|------|
+| `NewSeed(url, parserMethod)` | 创建种子, parserMethod 可以是方法名或方法实体 |
+| `SubmitSeed(ctx, seed)` | 提交种子到队列 |
+| `SaveResult(ctx, data)` | 保存抓取结果到管道 |
+| `PutSeed(ctx, seed, front)` | 放入种子, front 表示是否放队列前面 |
+| `PutRawSeed(ctx, raw, parserFuncName, front)` | 放入种子原始数据 |
+| `PutErrorSeed(ctx, seed, isParserError)` | 放入错误种子 |
+| `SetAdd / SetHasItem / SetRemove / GetSetSize` | 集合去重操作 |
+| `UrlJoin(seed, link)` | 生成相对当前页面的绝对连接 |
+| `GetDom / GetXmlDom / GetJsonDom` | 获取 DOM 解析器 |
+
+### 5. Seed 结构
+
+```go
+type Seed struct {
+	Raw               string           // 原始数据
+	HttpRequest       *http.Request    // 请求体
+	HttpResponse      *http.Response   // 响应
+	HttpResponseBody  []byte           // 响应数据
+	HttpCookies       []*http.Cookie   // 最终cookies
+	Request           struct {         // 请求参数
+		Method, Url, Body string
+		Params, Form, PostForm url.Values
+		Headers, Trailer http.Header
+		UserAgentType string
+		AllowProxy, AutoCookie, AutoRedirects bool
+		Cookies, ParentCookies []*http.Cookie
+		Encoding string // utf8/gbk/gb2312/gb18030, 自动转utf8
+		Timeout   int64  // 毫秒
+	}
+	ParserMethod      string
+	CheckExpectMethod string
+	Meta              map[string]interface{} // 元数据, 跨请求传递数据
+}
+```
+
+### 6. DOM 解析
+
+- HTML: `s.GetDom(seed)` 支持 `Xpath`/`XpathOne`/`Css`/`CssOne`/`GetAttr`/`InnerText`/`OutputHTML` 等
+- XML: `s.GetXmlDom(seed)` 支持 xpath
+- JSON: `s.GetJsonDom(seed)` 支持 xpath, `FindOneChild`, `InnerText`
+- 也支持 `seed.GetGoJQ()` 使用 gojq 查询 JSON
+
+### 7. Meta 元数据
+
+`seed` 无状态，需要跨请求传递数据时使用 `Meta`：
+
+```go
+// 在 A 页面解析时创建 B 页面的种子并带上数据
+newSeed := s.NewSeed(bUrl, s.ParserB)
+newSeed.Meta["itemId"] = itemId
+s.SubmitSeed(ctx, newSeed)
+
+// 在 B 页面解析时读取
+func (s *Spider) ParserB(ctx context.Context, seed *core.Seed) error {
+	itemId := seed.Meta["itemId"]
+	// ...
+}
+```
+
+## 关键组件说明
+
+### component/（自定义 zapp 组件）
+
+每个 spider 都带一个 `component/component.go`，用于提供该 spider 私有的公共组件（如共享的 http client、配置等）：
+
+- `IComponent` 接口继承 `zapp_core.IComponent`。
+- `CustomComponentCreator(app, component)` 是自定义组件创建器，在 `main.go` 中通过 `zapp.CustomComponentFns(component.CustomComponentCreator)` 注入。
+- `GetComponent()` 用于在 spider 内获取组件实例（见 `main.go` 中 `newSpider` 用法）。
+
+如果 spider 需要公共能力，扩展 `IComponent` 接口并在 `Component` 上实现即可。
+
+### configs/（配置）
+
+配置文件通过 zapp 加载，采用「公共配置 + spider 私有配置叠加」模式：
+
+- `configs/crawler.dev.yaml`：全局公共配置，包含 `services.crawler.frame`（框架配置）、`queue`/`set`/`pipeline`/`proxy`、`frame`（app 框架）、`plugins.otlp`。
+  - 注意：框架配置、队列配置、集合配置**必须**放在公共配置中，否则调度器与 crawler 工具的 `start`/`clean` 等功能无法使用。
+- `spiders/<spider_name>/configs/config.dev.yaml`：该 spider 的私有配置，会继承并覆盖公共配置。
+- `configs/spider_programs.dev.yaml`：spider 进程组配置，供 `make_supervisor` 和调度器使用，格式见文件内注释。
+
+加载顺序（在 `main.go` 中）：`zapp.WithConfigOption(zapp_config.WithFiles("../../configs/crawler.dev.yaml", "./configs/config.dev.yaml"))`。
+
+### template/（工程管理工具模板）
+
+- `template/spider_template/`：`crawler create` 生成 spider 时使用的模板，修改它会影响后续新建的 spider。
+- `template/supervisor/`：`crawler make_supervisor` 生成 supervisor 配置时使用的模板。
+
+这些模板使用 `{@var}` 占位符，由工程管理工具渲染，一般无需手动修改。
+
+### .crawler（工程标记）
+
+工程根目录下的 `.crawler` 文件（内容为 `project: {@project_name}`），工程管理工具据此向上查找并定位工程根目录与项目名。请勿删除。
+
+## 工程管理工具命令
+
+在工程根目录执行：
+
+| 命令 | 说明 |
+|------|------|
+| `crawler init <name>` | 初始化一个工程（本工程即由此生成） |
+| `crawler create <spider>` (alias `cs`) | 在 `spiders` 目录创建一个 spider |
+| `crawler start [-env <env>] <spider>` (alias `ss`) | 提交初始化种子信号到队列 |
+| `crawler clean [-env <env>] <spider>` | 清空 spider 所有队列 |
+| `crawler clean_set [-env <env>] <spider>` | 清空 spider 集合数据 |
+| `crawler make_supervisor [-env <env>]` (alias `make`) | 生成 supervisor 配置 |
+
+## 禁止事项
+
+- 禁止自行实现日志功能，应使用 `github.com/zly-app/zapp/log`（`log.Log.Info/Warn/Error/Fatal(...)`），禁止使用标准库 `log` 包，禁止自行创建 `zap.NewProduction()` 等 logger。
+- 禁止使用未适配 zapp v1.4.x 的旧插件（honey/zipkinotel/prometheus），统一使用 `otlp`。
+- 通用并发/Recover/Trace 等工具使用 `github.com/zly-app/zapp/pkg/utils`（如 `utils.Recover.WrapCall`、`utils.Go.GoAndWait`、`utils.Trace`），禁止自行实现。
+- 定时任务使用 `github.com/zly-app/service/cron`，禁止自行实现调度器。
+- 禁止在 `template/` 模板中引入与 spider 主 module `go.mod` 不一致的依赖版本。
