@@ -7,16 +7,16 @@ require (
 	github.com/antchfx/htmlquery v1.3.4
 	github.com/antchfx/jsonquery v1.3.6
 	github.com/antchfx/xmlquery v1.4.4
-	github.com/bytedance/sonic v1.15.2
+	github.com/bytedance/sonic v1.15.5
 	github.com/elgs/gojq v0.0.0-20230628214826-df5c4045598e
 	github.com/golang/groupcache v0.0.0-20241129210726-2c02b8208cf8
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/spf13/viper v1.7.1
 	github.com/urfave/cli/v2 v2.27.6
-	github.com/zly-app/component/redis v0.0.0-20260426124536-cc50b8df5c6f
+	github.com/zly-app/component/redis v0.0.0-20261109090157-272e1bfac65e
 	github.com/zly-app/plugin/otlp v0.0.0-20251201105815-b4c372b9135e
-	github.com/zly-app/service/cron v0.0.0-20260412021423-6b44c9eb9a5d
-	github.com/zly-app/zapp v1.4.5
+	github.com/zly-app/service/cron v0.0.0-20261109092838-cacf94394158
+	github.com/zly-app/zapp v1.4.6
 	github.com/zlyuancn/zstr v0.0.0-20230412074414-14d6b645962f
 	go.uber.org/zap v1.27.0
 	golang.org/x/net v0.55.0
@@ -26,7 +26,7 @@ require (
 require (
 	github.com/antchfx/xpath v1.3.3 // indirect
 	github.com/bytedance/gopkg v0.1.3 // indirect
-	github.com/bytedance/sonic/loader v0.5.1 // indirect
+	github.com/bytedance/sonic/loader v0.5.3 // indirect
 	github.com/cenkalti/backoff/v5 v5.0.3 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/cloudwego/base64x v0.1.6 // indirect

@@ -81,7 +81,7 @@ func (s *Scheduler) Start() {
 			default:
 				t, err := time.ParseInLocation(crawler.OnceTriggerTimeLayout, expression, time.Local)
 				if err == nil {
-					cron.RegistryTask(cron.NewTaskOfConfig(spiderName, cron.TaskConfig{
+					cron.Install(s.app).RegistryTask(cron.NewTaskOfConfig(spiderName, cron.TaskConfig{
 						Trigger:  cron.NewOnceTrigger(t),
 						Executor: cron.NewExecutor(2, time.Second, 1),
 						Handler:  s.SendSubmitInitialSeedSignal,
@@ -89,7 +89,7 @@ func (s *Scheduler) Start() {
 					}))
 					continue
 				}
-				cron.RegistryTask(cron.NewTaskOfConfig(spiderName, cron.TaskConfig{
+				cron.Install(s.app).RegistryTask(cron.NewTaskOfConfig(spiderName, cron.TaskConfig{
 					Trigger:  cron.NewCronTrigger(expression),
 					Executor: cron.NewExecutor(2, time.Second, 1),
 					Handler:  s.SendSubmitInitialSeedSignal,
