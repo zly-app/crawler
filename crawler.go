@@ -167,9 +167,12 @@ func NewCrawler(app zapp_core.IApp) *Crawler {
 		set:        set.NewSet(app, conf.Set.Type),
 		downloader: downloader.NewDownloader(app),
 		proxy:      proxy.NewProxy(app, conf.Proxy.Type),
-		middleware: middleware.NewMiddleware(app),
-		pipeline:   pipeline.NewPipeline(app, conf.Pipeline.Type),
+		middleware: middleware.NewMiddleware(app, conf),
+		pipeline:   pipeline.NewPipeline(app, conf.Pipeline.Type, conf),
 	}
-	crawler.spiderTool = spider_tool.NewSpiderTool(crawler)
+	crawler.spiderTool = spider_tool.NewSpiderTool(crawler, conf)
 	return crawler
 }
+
+// Conf 返回服务配置实例。配置归 Crawler 持有的模型数据，不再有包级全局。
+func (c *Crawler) Conf() *config.ServiceConfig { return c.conf }

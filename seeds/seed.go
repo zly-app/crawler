@@ -10,9 +10,9 @@ import (
 	"github.com/zly-app/crawler/core"
 )
 
-// 创建seed
-func NewSeed() *core.Seed {
-	conf := config.Conf.Spider
+// 创建seed。配置由调用方（组合根注入的 SpiderTool）传入。
+func NewSeed(serviceConf *config.ServiceConfig) *core.Seed {
+	conf := serviceConf.Spider
 	seed := &core.Seed{
 		Meta: make(map[string]interface{}),
 	}
@@ -27,7 +27,7 @@ func NewSeed() *core.Seed {
 	seed.Request.AutoCookie = conf.AutoCookie
 	seed.Request.AutoRedirects = conf.AutoRedirects
 	seed.Request.Encoding = conf.HtmlEncoding
-	seed.Request.Timeout = config.Conf.Frame.RequestTimeout
+	seed.Request.Timeout = serviceConf.Frame.RequestTimeout
 	return seed
 }
 

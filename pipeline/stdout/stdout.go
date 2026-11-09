@@ -46,7 +46,7 @@ func (s *Stdout) Process(ctx context.Context, namespace, spiderName string, data
 
 func (s *Stdout) Close(ctx context.Context) error { return nil }
 
-func NewStdoutPipeline(app zapp_core.IApp) core.IPipeline {
+func NewStdoutPipeline(app zapp_core.IApp, _ *config.ServiceConfig) core.IPipeline {
 	confKey := fmt.Sprintf("services.%s.pipeline.%s", config.DefaultServiceType, PipelineName)
 	s := &Stdout{}
 	err := app.GetConfig().Parse(confKey, s, true)

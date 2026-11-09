@@ -23,13 +23,14 @@ import (
 )
 
 type Scheduler struct {
-	app zapp_core.IApp
-	cr  core.ICrawler
+	app  zapp_core.IApp
+	cr   core.ICrawler
+	conf *config.ServiceConfig
 }
 
 // 启动
 func (s *Scheduler) Start() {
-	if strings.ToLower(config.Conf.Queue.Type) == "memory" {
+	if strings.ToLower(s.conf.Queue.Type) == "memory" {
 		s.app.Fatal("使用memory队列是无意义的")
 	}
 
@@ -105,7 +106,7 @@ func (s *Scheduler) SendSubmitInitialSeedSignal(ctx cron.IContext) error {
 	spiderName := ctx.Task().Name()
 
 	// 检查非空队列不提交初始化种子
-	if config.Conf.Frame.StopSubmitInitialSeedIfNotEmptyQueue {
+	if s.conf.Frame.StopSubmitInitialSeedIfNotEmptyQueue {
 		empty, err := s.cr.CheckQueueIsEmpty(context.Background(), spiderName)
 		if err != nil {
 			return fmt.Errorf("检查队列是否为空失败, spiderName: %s, err: %v", spiderName, err)
@@ -117,7 +118,7 @@ func (s *Scheduler) SendSubmitInitialSeedSignal(ctx cron.IContext) error {
 	}
 
 	// 放入提交初始化种子信号到队列
-	queueName := config.Conf.Frame.Namespace + "." + spiderName + config.Conf.Frame.SeedQueueSuffix
+	queueName := s.conf.Frame.Namespace + "." + spiderName + s.conf.Frame.SeedQueueSuffix
 	_, err := s.cr.Queue().Put(context.Background(), queueName, crawler.SubmitInitialSeedSignal, true)
 	if err != nil {
 		return fmt.Errorf("提交初始化种子信号放入到队列失败, spiderName: %s, err: %v", spiderName, err)
@@ -137,9 +138,11 @@ func main() {
 		otlp.WithPlugin(), // trace/log/metrics
 	)
 
+	c := crawler.NewCrawler(app)
 	s := &Scheduler{
-		app: app,
-		cr:  crawler.NewCrawler(app),
+		app:  app,
+		cr:   c,
+		conf: c.Conf(),
 	}
 	s.Start()
 

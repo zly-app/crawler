@@ -30,6 +30,7 @@ type RedisList struct {
 	Serializer       string // 默认序列化器名, 可选 msgpack, sonic, sonic_std, jsoniter_standard, jsoniter, json, yaml
 	Compactor        string // 默认压缩器名, 可选 raw, zstd, gzip
 
+	conf       *config.ServiceConfig
 	client     redis.UniversalClient
 	redisKey   string
 	compactor  compactor.ICompactor
@@ -61,9 +62,10 @@ func (r *RedisList) Close(ctx context.Context) error {
 	return r.client.Close()
 }
 
-func NewRedisList(app zapp_core.IApp) core.IPipeline {
+func NewRedisList(app zapp_core.IApp, conf *config.ServiceConfig) core.IPipeline {
 	confKey := fmt.Sprintf("services.%s.pipeline.%s", config.DefaultServiceType, PipelineName)
 	rl := &RedisList{
+		conf:        conf,
 		QueuePrefix: defQueuePrefix,
 	}
 	err := app.GetConfig().Parse(confKey, rl)
@@ -71,7 +73,7 @@ func NewRedisList(app zapp_core.IApp) core.IPipeline {
 		app.Fatal("创建pipeline失败: 解析配置失败", zap.String("pipeline", PipelineName), zap.Error(err))
 	}
 
-	rl.redisKey = config.Conf.Frame.Namespace + ":" + rl.QueuePrefix + config.Conf.Spider.Name
+	rl.redisKey = conf.Frame.Namespace + ":" + rl.QueuePrefix + conf.Spider.Name
 
 	var ok bool
 	if rl.Serializer == "" {

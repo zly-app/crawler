@@ -10,16 +10,17 @@ import (
 
 type AutoTrimUtf8Bom struct {
 	core.MiddlewareBase
+	conf *config.ServiceConfig
 }
 
-func NewAutoTrimUtf8Bom() core.IRequestMiddleware {
-	return AutoTrimUtf8Bom{}
+func NewAutoTrimUtf8Bom(conf *config.ServiceConfig) core.IRequestMiddleware {
+	return AutoTrimUtf8Bom{conf: conf}
 }
 
 func (a AutoTrimUtf8Bom) Name() string { return "AutoTrimUtf8Bom" }
 
 func (a AutoTrimUtf8Bom) Process(ctx context.Context, crawler core.ICrawler, seed *core.Seed) (*core.Seed, error) {
-	if seed.HttpResponse == nil || config.Conf.Spider.AutoTrimUtf8BomWithContentType == "" {
+	if seed.HttpResponse == nil || a.conf.Spider.AutoTrimUtf8BomWithContentType == "" {
 		return seed, nil
 	}
 
@@ -29,7 +30,7 @@ func (a AutoTrimUtf8Bom) Process(ctx context.Context, crawler core.ICrawler, see
 	}
 	ts := strings.Split(t, ";")
 
-	expectTs := strings.Split(config.Conf.Spider.AutoTrimUtf8BomWithContentType, ",")
+	expectTs := strings.Split(a.conf.Spider.AutoTrimUtf8BomWithContentType, ",")
 	checkIsExpect := func(t string) bool {
 		t = strings.TrimSpace(t)
 		for i := range expectTs {

@@ -14,7 +14,6 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/zly-app/crawler"
-	"github.com/zly-app/crawler/config"
 	"github.com/zly-app/crawler/tools/utils"
 )
 
@@ -58,12 +57,12 @@ func CmdInitSeedSignal(cl *cli.Context) error {
 	defer app.Exit()
 
 	// 内存队列不能发送提交初始化种子信号
-	if strings.ToLower(config.Conf.Queue.Type) == "memory" {
+	if strings.ToLower(c.Conf().Queue.Type) == "memory" {
 		log.Log.Fatal("使用memory队列是无意义的")
 	}
 
 	// 检查非空队列不提交初始化种子
-	if config.Conf.Frame.StopSubmitInitialSeedIfNotEmptyQueue {
+	if c.Conf().Frame.StopSubmitInitialSeedIfNotEmptyQueue {
 		empty, err := c.CheckQueueIsEmpty(context.Background(), spiderName)
 		if err != nil {
 			log.Log.Fatal("检查队列是否为空失败", zap.Error(err))
@@ -75,7 +74,7 @@ func CmdInitSeedSignal(cl *cli.Context) error {
 	}
 
 	// 放入提交初始化种子信号到队列
-	queueName := config.Conf.Frame.Namespace + "." + spiderName + config.Conf.Frame.SeedQueueSuffix
+	queueName := c.Conf().Frame.Namespace + "." + spiderName + c.Conf().Frame.SeedQueueSuffix
 	_, err = c.Queue().Put(context.Background(), queueName, crawler.SubmitInitialSeedSignal, true)
 	if err != nil {
 		log.Log.Fatal("放入提交初始化种子信号到队列失败", zap.Error(err))
@@ -94,19 +93,19 @@ func CmdCleanSpiderQueue(cl *cli.Context) error {
 	defer app.Exit()
 
 	// 内存队列不能清空
-	if strings.ToLower(config.Conf.Queue.Type) == "memory" {
+	if strings.ToLower(c.Conf().Queue.Type) == "memory" {
 		log.Log.Fatal("使用memory队列是无意义的")
 	}
 
 	// 包含完整后缀
 	suffixes := append([]string{
-		config.Conf.Frame.SeedQueueSuffix,
-		config.Conf.Frame.ErrorSeedQueueSuffix,
-		config.Conf.Frame.ParserErrorSeedQueueSuffix,
-	}, config.Conf.Frame.QueueSuffixes...)
+		c.Conf().Frame.SeedQueueSuffix,
+		c.Conf().Frame.ErrorSeedQueueSuffix,
+		c.Conf().Frame.ParserErrorSeedQueueSuffix,
+	}, c.Conf().Frame.QueueSuffixes...)
 
 	for _, suffix := range suffixes {
-		queueName := config.Conf.Frame.Namespace + "." + spiderName + suffix
+		queueName := c.Conf().Frame.Namespace + "." + spiderName + suffix
 		if err = c.Queue().Delete(context.Background(), queueName); err != nil {
 			log.Log.Fatal("删除队列失败", zap.String("queueName", queueName), zap.Error(err))
 		}
@@ -124,11 +123,11 @@ func CmdCleanSpiderSet(cl *cli.Context) error {
 	defer app.Exit()
 
 	// 内存集合不能清空
-	if strings.ToLower(config.Conf.Set.Type) == "memory" {
+	if strings.ToLower(c.Conf().Set.Type) == "memory" {
 		log.Log.Fatal("使用memory集合是无意义的")
 	}
 
-	setName := config.Conf.Frame.Namespace + "." + spiderName + config.Conf.Frame.SetSuffix
+	setName := c.Conf().Frame.Namespace + "." + spiderName + c.Conf().Frame.SetSuffix
 	if err = c.Set().DeleteSet(context.Background(), setName); err != nil {
 		log.Log.Fatal("删除集合失败", zap.String("setName", setName), zap.Error(err))
 	}

@@ -7,8 +7,6 @@ import (
 // 默认服务类型
 const DefaultServiceType zapp_core.ServiceType = "crawler"
 
-var Conf *ServiceConfig
-
 type ServiceConfig struct {
 	Spider   SpiderConfig
 	Frame    FrameConfig    // 框架配置
@@ -18,8 +16,10 @@ type ServiceConfig struct {
 	Pipeline PipelineConfig // 管道配置
 }
 
+// NewConfig 读取服务配置并返回实例。实例由组合根（Crawler）持有并向下注入，
+// 不再有包级配置全局。
 func NewConfig(app zapp_core.IApp) *ServiceConfig {
-	Conf = &ServiceConfig{
+	return &ServiceConfig{
 		Spider:   newSpiderConfig(app),
 		Frame:    newFrameConfig(),
 		Queue:    newQueueConfig(),
@@ -27,7 +27,6 @@ func NewConfig(app zapp_core.IApp) *ServiceConfig {
 		Set:      newSetConfig(),
 		Pipeline: newPipelineConfig(),
 	}
-	return Conf
 }
 func (conf *ServiceConfig) Check() (err error) {
 	if err = conf.Spider.Check(); err != nil {

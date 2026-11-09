@@ -44,6 +44,6 @@ func (s *Spider) Close(ctx context.Context) error { return nil }
 
 func main() {
 	app := zapp.NewApp("a_spider", crawler.WithService()) // 启用crawler服务
-	crawler.RegistrySpider(new(Spider))                   // 注入spider
+	crawler.Install(app).RegistrySpider(new(Spider))      // 注入spider
 	app.Run()                                             // 运行
 }

@@ -18,7 +18,8 @@ import (
 )
 
 type Downloader struct {
-	app zapp_core.IApp
+	app    zapp_core.IApp
+	client *HttpClient
 }
 
 func headersToText(values map[string][]string) []string {
@@ -62,7 +63,7 @@ func (d *Downloader) Download(ctx context.Context, crawler core.ICrawler, seed *
 		req.AddCookie(c)
 	}
 
-	Client.UseSeed(crawler, seed)
+	d.client.UseSeed(crawler, seed)
 
 	utils.Trace.TraceEvent(ctx, "Req",
 		utils.Trace.AttrKey("raw").String(seed.Raw),
@@ -70,12 +71,12 @@ func (d *Downloader) Download(ctx context.Context, crawler core.ICrawler, seed *
 	)
 
 	// 开始请求
-	resp, err := Client.Do(req)
+	resp, err := d.client.Do(req)
 	if err != nil {
 		utils.Trace.TraceErrEvent(ctx, "Req", err)
 		d.app.Error(ctx, "Req err", zap.Error(err))
 		// 切换代理
-		Client.ChangeProxy(crawler, seed)
+		d.client.ChangeProxy(crawler, seed)
 		return nil, err
 	}
 
@@ -157,6 +158,7 @@ func (d *Downloader) Close() error {
 
 func NewDownloader(app zapp_core.IApp) core.IDownloader {
 	return &Downloader{
-		app: app,
+		app:    app,
+		client: NewHttpClient(),
 	}
 }

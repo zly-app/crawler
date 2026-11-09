@@ -14,8 +14,6 @@ type HttpClient struct {
 	transport *http.Transport
 }
 
-var Client = NewHttpClient()
-
 func NewHttpClient() *HttpClient {
 	transport := &http.Transport{
 		MaxIdleConns:        5,                // 最大连接数

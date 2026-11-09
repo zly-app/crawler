@@ -18,6 +18,7 @@ import (
 
 type SpiderTool struct {
 	crawler    core.ICrawler
+	conf       *config.ServiceConfig
 	namespace  string
 	spiderName string
 	setKey     string
@@ -26,7 +27,7 @@ type SpiderTool struct {
 func (s *SpiderTool) Crawler() core.ICrawler { return s.crawler }
 
 func (s *SpiderTool) NewSeed(url string, parserMethod interface{}) *core.Seed {
-	seed := seeds.NewSeed()
+	seed := seeds.NewSeed(s.conf)
 	seed.Request.Url = url
 	if seed.Request.AutoCookie && s.crawler.CookieJar() != nil && url != "" {
 		req, err := http.NewRequest(strings.ToUpper(seed.Request.Method), url, nil)
@@ -43,7 +44,7 @@ func (s *SpiderTool) SubmitSeed(ctx context.Context, seed *core.Seed) {
 	ctx = utils.Trace.TraceStart(ctx, "SubmitSeed")
 	defer utils.Trace.TraceEnd(ctx)
 
-	s.PutSeed(ctx, seed, config.Conf.Frame.SubmitSeedToQueueFront)
+	s.PutSeed(ctx, seed, s.conf.Frame.SubmitSeedToQueueFront)
 }
 
 func (s *SpiderTool) SaveResult(ctx context.Context, data interface{}) {
@@ -180,11 +181,12 @@ func (s *SpiderTool) GetJsonDom(seed *core.Seed) *dom.JsonDom {
 	return d
 }
 
-func NewSpiderTool(crawler core.ICrawler) core.ISpiderTool {
+func NewSpiderTool(crawler core.ICrawler, conf *config.ServiceConfig) core.ISpiderTool {
 	return &SpiderTool{
 		crawler:    crawler,
-		namespace:  config.Conf.Frame.Namespace,
-		spiderName: config.Conf.Spider.Name,
-		setKey:     config.Conf.Frame.Namespace + "." + config.Conf.Spider.Name + config.Conf.Frame.SetSuffix,
+		conf:       conf,
+		namespace:  conf.Frame.Namespace,
+		spiderName: conf.Spider.Name,
+		setKey:     conf.Frame.Namespace + "." + conf.Spider.Name + conf.Frame.SetSuffix,
 	}
 }
