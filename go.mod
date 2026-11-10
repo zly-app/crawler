@@ -14,7 +14,7 @@ require (
 	github.com/spf13/viper v1.7.1
 	github.com/urfave/cli/v2 v2.27.6
 	github.com/zly-app/component/redis v0.0.0-20261109090157-272e1bfac65e
-	github.com/zly-app/plugin/otlp v0.0.0-20251201105815-b4c372b9135e
+	github.com/zly-app/plugin/otlp v0.1.0
 	github.com/zly-app/service/cron v0.0.0-20261109092838-cacf94394158
 	github.com/zly-app/zapp v1.4.6
 	github.com/zlyuancn/zstr v0.0.0-20230412074414-14d6b645962f
@@ -85,9 +85,12 @@ require (
 	go.opentelemetry.io/contrib/instrumentation/runtime v0.63.0 // indirect
 	go.opentelemetry.io/otel v1.39.0 // indirect
 	go.opentelemetry.io/otel/bridge/opentracing v1.38.0 // indirect
+	go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc v0.14.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp v0.14.0 // indirect
+	go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc v1.38.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp v1.38.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.38.0 // indirect
+	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.38.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.38.0 // indirect
 	go.opentelemetry.io/otel/log v0.14.0 // indirect
 	go.opentelemetry.io/otel/metric v1.39.0 // indirect
