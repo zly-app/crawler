@@ -331,6 +331,8 @@ github.com/zly-app/plugin/otlp v0.0.0-20251201105815-b4c372b9135e h1:dMUVOspYFGV
 github.com/zly-app/plugin/otlp v0.0.0-20251201105815-b4c372b9135e/go.mod h1:PM30ztb4rxLcxl1dcB7WodNxRQgaZs0YXEEQRTULnd0=
 github.com/zly-app/plugin/otlp v0.1.0 h1:w0ZDBjG1+od1PA2lhb+1od8LLDh+crnMDfCJ0kwnUeE=
 github.com/zly-app/plugin/otlp v0.1.0/go.mod h1:vNxbEEPmIee61x1roPoNdyB0bDFyLeJxuPVHiqxoGgM=
+github.com/zly-app/plugin/otlp v0.1.1 h1:o7RUq2FjVn0AaX3PKVUeL+io4fmVwpZ2iO6Ytf5pR/U=
+github.com/zly-app/plugin/otlp v0.1.1/go.mod h1:vNxbEEPmIee61x1roPoNdyB0bDFyLeJxuPVHiqxoGgM=
 github.com/zly-app/service/cron v0.0.0-20261109092838-cacf94394158 h1:18kXeR5qcnaUD+xt2JAqD9cNkBAi/7A5p/yygg3xg1s=
 github.com/zly-app/service/cron v0.0.0-20261109092838-cacf94394158/go.mod h1:o85k+1udPkqEnH3LVyMULcsXoIUYTT+KQIvQuvCOCN4=
 github.com/zly-app/zapp v1.4.6 h1:kPTiGdFdQ3zSjOhNUFb8zWAAVRRp0HeRghUI1iDpI88=
